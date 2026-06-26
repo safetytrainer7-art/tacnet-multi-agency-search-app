@@ -2,62 +2,47 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TacNet Command</title>
+    <title>TacNet Tactical</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
     <style>
         body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
         #map { height: 100vh; width: 100vw; }
+        /* Cleaned UI Panel */
         .tactical-ui {
-            position: absolute; top: 10px; left: 10px; z-index: 1000;
-            background: rgba(0, 0, 0, 0.85); padding: 12px; border: 2px solid #5ab0e5;
-            border-radius: 8px; display: flex; flex-direction: column; gap: 8px;
+            position: absolute; top: 15px; left: 15px; z-index: 1000;
+            background: rgba(0, 0, 0, 0.9); padding: 15px; border-radius: 8px;
+            display: flex; flex-direction: column; gap: 12px; width: 220px;
         }
-        button { cursor: pointer; padding: 8px; font-weight: bold; }
-        .sos { color: white; background: red; border: none; }
+        button { padding: 12px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; }
     </style>
 </head>
 <body>
 
     <div class="tactical-ui">
-        <button id="cmd-btn" onclick="toggleCommand()">REQUEST COMMAND</button>
+        <button id="cmd-btn" onclick="toggleCommand()" style="background:#5ab0e5;">REQUEST COMMAND</button>
         <button id="lock-btn" onclick="toggleMapLock()">LOCK MAP</button>
         <button onclick="logArticle()">[ARTICLE FIND]</button>
-        <button class="sos" onclick="triggerSOS()">SOS EMERGENCY</button>
+        <button onclick="triggerSOS()" style="background:red; color:white;">SOS EMERGENCY</button>
     </div>
 
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-    
     <script>
-        const map = L.map('map').setView([37.5857, -79.0361], 13);
+        const map = L.map('map', {zoomControl: false}).setView([37.5857, -79.0361], 13);
         
         // Base Layers
-        const street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
-        const parcels = L.tileLayer('https://tiles.arcgis.com/tiles/C804GZ6tB9r1v52z/arcgis/rest/services/US_Parcel_Boundaries/MapServer/tile/{z}/{y}/{x}', {opacity: 0.6});
+        const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+        const parcels = L.tileLayer('https://tiles.arcgis.com/tiles/C804GZ6tB9r1v52z/arcgis/rest/services/US_Parcel_Boundaries/MapServer/tile/{z}/{y}/{x}', {opacity: 0.5});
         
-        L.control.layers({"Street": street, "Satellite": sat, "Parcel View": parcels}).addTo(map);
-
-        // Drawing Tools
-        const drawnItems = new L.FeatureGroup();
-        map.addLayer(drawnItems);
-        const drawControl = new L.Control.Draw({ 
-            edit: { featureGroup: drawnItems }, 
-            draw: { polyline: { color: 'red' }, polygon: false, marker: false, circle: false, rectangle: false } 
-        });
-        map.addControl(drawControl);
-        map.on(L.Draw.Event.CREATED, function (e) { drawnItems.addLayer(e.layer); });
-
-        // Logic
+        // Simple Controls
         let isCommander = false;
         let mapLocked = false;
 
         function toggleCommand() {
             isCommander = !isCommander;
             document.getElementById('cmd-btn').innerText = isCommander ? "COMMAND ACTIVE" : "REQUEST COMMAND";
+            document.getElementById('cmd-btn').style.background = isCommander ? "red" : "#5ab0e5";
         }
 
         function toggleMapLock() {
@@ -66,21 +51,13 @@
             document.getElementById('lock-btn').innerText = mapLocked ? "MAP LOCKED" : "LOCK MAP";
         }
 
-        function triggerSOS() {
-            if(confirm("ACTIVATE SOS BROADCAST?")) {
-                document.body.style.backgroundColor = "red";
-                alert("SOS SIGNAL SENT TO ALL UNITS");
-                setTimeout(() => { document.body.style.backgroundColor = "white"; }, 2000);
-            }
-        }
+        function triggerSOS() { alert("EMERGENCY SIGNAL BROADCAST"); }
+        function logArticle() { alert("Article Logged."); }
 
-        function logArticle() { alert("Article Coordinates Logged."); }
-
-        // Unit Placement
+        // Unit Placement (Only when Command Active)
         map.on('click', function(e) {
             if (!isCommander) return;
-            const name = prompt("Unit ID (e.g. K9-1, LEO-A):");
-            if (name) L.circleMarker(e.latlng, { radius: 10, color: 'blue' }).addTo(map).bindPopup(name + "<br><button onclick='this.parentElement.parentElement.remove()'>DELETE</button>");
+            L.circleMarker(e.latlng, { radius: 12, color: 'blue' }).addTo(map).bindPopup("UNIT");
         });
     </script>
 </body>
