@@ -2,66 +2,47 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TACNET OPERATIONAL</title>
+    <title>TACNET COMMAND CENTER</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
         #map { height: 100vh; width: 100vw; }
-        .ui-panel {
-            position: absolute; top: 10px; left: 10px; z-index: 1000;
-            background: rgba(0, 0, 0, 0.9); padding: 12px; border-radius: 8px;
-            display: flex; flex-direction: column; gap: 10px; width: 220px;
-        }
-        button { padding: 12px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; background: #333; color: white; }
+        .ui-panel { position: absolute; top: 10px; left: 10px; z-index: 1000; background: rgba(0,0,0,0.85); padding: 15px; border-radius: 8px; border: 1px solid #5ab0e5; }
+        button { display: block; width: 100%; margin-bottom: 5px; padding: 8px; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="ui-panel">
-        <button id="cmd-btn" onclick="toggleCommand()">REQUEST COMMAND</button>
-        <button id="lock-btn" onclick="toggleMapLock()">LOCK MAP</button>
-        <button onclick="alert('Article Find Mode Active')">[ARTICLE FIND]</button>
-        <button onclick="triggerSOS()" style="background: red;">SOS EMERGENCY</button>
+        <h3 style="color:#5ab0e5; margin-top:0;">TACNET OPERATIONAL</h3>
+        <button onclick="toggleMapType()">TOGGLE SAT/TERR</button>
+        <button onclick="toggleRegridParcels()">TOGGLE PARCELS (REGRID)</button>
+        <button onclick="alert('Manual Asset Mode Active')" style="background:#5ab0e5;">PLACE ASSET</button>
+        <button onclick="alert('SOS SENT')" style="background:red; color:white; font-weight:bold;">SOS EMERGENCY</button>
     </div>
 
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        const map = L.map('map', {zoomControl: false}).setView([37.5857, -79.0361], 14);
+        const map = L.map('map').setView([37.5857, -79.0361], 14);
         
-        // Base Layers: Satellite + Parcel (Regrid)
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
-        L.tileLayer('https://tiles.arcgis.com/tiles/C804GZ6tB9r1v52z/arcgis/rest/services/US_Parcel_Boundaries/MapServer/tile/{z}/{y}/{x}', {opacity: 0.5}).addTo(map);
+        // Base Layers
+        const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+        const terr = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}');
+        
+        // Regrid-style Parcel Layer
+        const parcels = L.tileLayer('https://tiles.arcgis.com/tiles/C804GZ6tB9r1v52z/arcgis/rest/services/US_Parcel_Boundaries/MapServer/tile/{z}/{y}/{x}', {opacity: 0.5});
 
-        let isCommander = false;
-        let mapLocked = false;
-
-        function toggleCommand() {
-            isCommander = !isCommander;
-            document.getElementById('cmd-btn').innerText = isCommander ? "COMMAND ACTIVE" : "REQUEST COMMAND";
-            document.getElementById('cmd-btn').style.background = isCommander ? "red" : "#333";
+        function toggleMapType() {
+            if (map.hasLayer(sat)) { map.removeLayer(sat); terr.addTo(map); }
+            else { map.removeLayer(terr); sat.addTo(map); }
         }
 
-        function toggleMapLock() {
-            mapLocked = !mapLocked;
-            mapLocked ? map.dragging.disable() : map.dragging.enable();
-            document.getElementById('lock-btn').innerText = mapLocked ? "MAP LOCKED" : "LOCK MAP";
+        function toggleRegridParcels() {
+            if (map.hasLayer(parcels)) { map.removeLayer(parcels); }
+            else { parcels.addTo(map); }
         }
-
-        function triggerSOS() { alert("SOS SIGNAL BROADCAST TO ALL UNITS"); }
-
-        // Color-coded Ledger
-        const colorMap = {'LEO':'blue', 'K9':'cyan', 'VSP':'darkblue', 'FEDERAL':'gold', 'SAR':'red', 'CIVILIAN':'green', 'SUSPECT':'purple', 'VICTIM':'white', 'VEHICLE':'black', 'ARTICLE':'orange', 'BOAT':'gray', 'DRONE':'lightblue'};
-
-        map.on('click', function(e) {
-            if (!isCommander) return;
-            const type = prompt("Enter Unit Type (LEO, K9, SAR, SUSPECT, ARTICLE, etc.):").toUpperCase();
-            const color = colorMap[type] || 'blue';
-            L.circleMarker(e.latlng, { radius: 12, color: color, fillOpacity: 0.9 })
-             .addTo(map)
-             .bindPopup(type + "<br><button onclick='this.parentElement.parentElement.remove()'>DELETE</button>");
-        });
     </script>
 </body>
 </html>
