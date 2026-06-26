@@ -24,7 +24,25 @@
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
+    <script>// Keep track of markers in an array
+let allMarkers = [];
+
+// Update your map click function to save the markers
+map.on('click', function(e) {
+    if (!isCommander) return;
+    const type = prompt("Enter Unit Type:");
+    if (!type) return;
+    const color = colorMap[type.toUpperCase()] || 'blue';
+    
+    const marker = L.circleMarker(e.latlng, { radius: 12, color: color, fillOpacity: 0.9 }).addTo(map);
+    allMarkers.push(marker); // Save marker to our list
+});
+
+// The Purge Function
+function clearAllAssets() {
+    allMarkers.forEach(m => map.removeLayer(m));
+    allMarkers = [];
+}
         const map = L.map('map').setView([37.5857, -79.0361], 14);
         
         // Base Layers
