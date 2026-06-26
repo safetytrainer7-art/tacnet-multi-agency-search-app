@@ -7,8 +7,8 @@
     <style>
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; }
         #map { height: 100vh; width: 100vw; position: absolute; top: 0; left: 0; z-index: 1; }
-        .ui-panel { position: absolute; top: 10px; left: 10px; z-index: 1000; background: rgba(0,0,0,0.9); padding: 12px; border-radius: 8px; border: 1px solid #5ab0e5; width: 240px; }
-        button { display: block; width: 100%; margin-bottom: 5px; padding: 8px; cursor: pointer; border: 1px solid #444; color: white; background: #333; }
+        .ui-panel { position: absolute; top: 10px; left: 10px; z-index: 1000; background: rgba(0,0,0,0.9); padding: 12px; border-radius: 8px; border: 1px solid #5ab0e5; width: 250px; color: #fff; }
+        button { display: block; width: 100%; margin-bottom: 5px; padding: 8px; cursor: pointer; background: #333; color: white; border: 1px solid #555; }
         .search-row { display: flex; gap: 5px; margin-bottom: 10px; }
         .search-row input { flex: 1; padding: 8px; background: #222; border: 1px solid #555; color: white; }
     </style>
@@ -17,14 +17,14 @@
 
     <div class="ui-panel">
         <div class="search-row">
-            <input type="text" id="addr" placeholder="Address...">
-            <button onclick="goSearch()" style="width: 50px;">GO</button>
+            <input type="text" id="mapSearch" placeholder="Address / Phone Track...">
+            <button onclick="executeAddressSearch()" style="width: 50px;">GO</button>
         </div>
-        <button onclick="togglePen()">TOGGLE PEN (TRAP & TRACE)</button>
-        <button onclick="findMe()" style="color:#5ab0e5;">LIVE GPS (FIND ME)</button>
-        <button onclick="placeAssetMode()" style="background:#5ab0e5;">PLACE ASSET</button>
-        <button onclick="terminateSearch()" style="background:#8b0000;">TERMINATE SEARCH</button>
-        <button onclick="triggerSOS()" style="background:red; font-weight:bold;">SOS EMERGENCY</button>
+        <button onclick="togglePen()">PEN (TRAP & TRACE)</button>
+        <button onclick="snapFocusToUserGPS()" style="color:#5ab0e5;">LIVE GPS (FIND ME)</button>
+        <button onclick="clearMapAssets()" style="background:#8b0000;">PURGE ALL ASSETS</button>
+        <button onclick="triggerSOS()" style="background:red; font-weight:bold;">🚨 SOS EMERGENCY</button>
+        <button onclick="terminateSearch()" style="background:#444;">TERMINATE SEARCH</button>
     </div>
 
     <div id="map"></div>
@@ -35,19 +35,16 @@
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
 
         let isPenActive = false;
-        let isAssetMode = false;
+        let allMarkers = [];
 
-        function goSearch() { 
-            const addr = document.getElementById('addr').value;
-            alert("Searching for: " + addr); 
-        }
-
+        function executeAddressSearch() { alert("Searching: " + document.getElementById('mapSearch').value); }
+        
         function togglePen() { 
             isPenActive = !isPenActive; 
-            alert("Pen Mode: " + (isPenActive ? "ON" : "OFF")); 
+            alert("Trap & Trace Mode: " + (isPenActive ? "ON" : "OFF")); 
         }
 
-        function findMe() {
+        function snapFocusToUserGPS() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(pos => {
                     map.setView([pos.coords.latitude, pos.coords.longitude], 18);
@@ -55,20 +52,19 @@
             }
         }
 
-        function placeAssetMode() { 
-            isAssetMode = true; 
-            alert("Click map to drop asset"); 
-        }
-
         map.on('click', (e) => {
-            if (isAssetMode) {
-                L.circleMarker(e.latlng, {radius: 10, color: 'cyan'}).addTo(map);
-                isAssetMode = false;
+            if (!isPenActive) {
+                const type = prompt("Enter Asset Type:");
+                if (type) {
+                    const m = L.circleMarker(e.latlng, {radius: 12, color: 'cyan'}).addTo(map);
+                    allMarkers.push(m);
+                }
             }
         });
 
-        function terminateSearch() { if(confirm("Terminate All Operations?")) location.reload(); }
-        function triggerSOS() { alert("!!! SOS ALERT BROADCAST !!!"); }
+        function clearMapAssets() { allMarkers.forEach(m => map.removeLayer(m)); allMarkers = []; }
+        function terminateSearch() { if(confirm("Terminate Operation?")) location.reload(); }
+        function triggerSOS() { alert("!!! DISTRESS ALARM DEPLOYED !!!"); }
     </script>
 </body>
 </html>
