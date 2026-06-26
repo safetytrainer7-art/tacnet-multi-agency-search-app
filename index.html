@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width,
+initial-scale=1.0,
+maximum-scale=1.0,
+user-scalable=no">
+
+<title>TACNET</title>
+
+<link
+rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<script
+src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,Helvetica,sans-serif;
+}
+
+html,body{
+width:100%;
+height:100%;
+overflow:hidden;
+background:black;
+color:white;
+}
+
+/* MAIN */
+
+.container{
+display:flex;
+width:100vw;
+height:100vh;
+overflow:hidden;
+}
+
+/* LEFT */
+
+.left-panel{
+width:290px;
+background:#142518;
+border-right:2px solid rgba(255,0,0,0.45);
+padding:8px;
+overflow-y:auto;
+box-shadow:0 0 25px rgba(255,0,0,0.25);
+z-index:100;
+}
+
+/* HOME */
+
+.home-box{
+background:#1A2E1F;
+border:1px solid #39FF14;
+border-radius:12px;
+padding:10px;
+box-shadow:0 0 20px rgba(57,255,20,0.18);
+}
+
+.home-image{
+width:100%;
+border-radius:10px;
+border:2px solid #39FF14;
+box-shadow:0 0 20px rgba(57,255,20,0.35);
+}
+
+/* TITLE */
+
+.title{
+text-align:center;
+font-size:30px;
+font-weight:900;
+letter-spacing:5px;
+margin-top:8px;
+color:#FFD700;
+text-shadow:0 0 14px rgba(255,215,0,0.8);
+}
+
+.subtitle{
+text-align:center;
+font-size:9px;
+font-weight:900;
+letter-spacing:2px;
+margin-top:5px;
+line-height:1.4;
+color:#39FF14;
+text-transform:uppercase;
+}
+
+.agency{
+text-align:center;
+font-size:9px;
+font-weight:900;
+letter-spacing:2px;
+margin-top:5px;
+color:#ff4d4d;
+}
+
+.creator{
+text-align:center;
+font-size:8px;
+line-height:1.4;
+margin-top:10px;
+color:#ddd;
+text-transform:uppercase;
+}
+
+/* PANELS */
+
+.panel{
+margin-top:10px;
+background:#1A2E1F;
+border:1px solid #39FF14;
+border-radius:10px;
+padding:8px;
+}
+
+.panel-title{
+font-size:9px;
+font-weight:900;
+letter-spacing:2px;
+color:#FFD700;
+margin-bottom:8px;
+text-transform:uppercase;
+}
+
+/* SEARCHERS */
+
+.searcher{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:6px;
+margin-bottom:6px;
+background:#101712;
+border:1px solid #2C4C33;
+border-radius:8px;
+}
+
+.searcher-left{
+display:flex;
+align-items:center;
+gap:7px;
+}
+
+.dot{
+width:10px;
+height:10px;
+border-radius:50%;
+animation:pulse 2s infinite;
+}
+
+.remove-btn{
+padding:3px 7px;
+background:black;
+border:1px solid red;
+color:red;
+border-radius:5px;
+font-size:8px;
+cursor:pointer;
+}
+
+.control-row{
+display:flex;
+flex-wrap:wrap;
+gap:5px;
+}
+
+.control-btn{
+padding:7px 9px;
+background:#111;
+border:1px solid #39FF14;
+border-radius:7px;
+color:#39FF14;
+font-size:8px;
+font-weight:900;
+cursor:pointer;
+}
+
+/* MAP */
+
+.main-map{
+flex:1;
+position:relative;
+overflow:hidden;
+}
+
+#map{
+position:absolute;
+width:100%;
+height:100%;
+z-index:1;
+filter:
+brightness(0.8)
+contrast(1.15)
+saturate(0.85);
+}
+
+/* OVERLAYS */
+
+.red-overlay{
+position:absolute;
+width:100%;
+height:100%;
+background:rgba(255,0,0,0.08);
+pointer-events:none;
+z-index:5;
+box-shadow:inset 0 0 100px rgba(255,0,0,0.25);
+}
+
+.grid{
+position:absolute;
+width:100%;
+height:100%;
+background-image:
+linear-gradient(rgba(57,255,20,0.16) 1px, transparent 1px),
+linear-gradient(90deg, rgba(57,255,20,0.16) 1px, transparent 1px);
+background-size:50px 50px;
+pointer-events:none;
+z-index:6;
+}
+
+.nightvision{
+position:absolute;
+width:100%;
+height:100%;
+background:rgba(57,255,20,0.14);
+mix-blend-mode:screen;
+pointer-events:none;
+z-index:7;
+display:none;
+}
+
+/* TOPBAR */
+
+.topbar{
+position:absolute;
+top:0;
+left:0;
+right:0;
+min-height:58px;
+background:rgba(0,0,0,0.9);
+border-bottom:1px solid rgba(255,0,0,0.45);
+display:flex;
+align-items:center;
+gap:5px;
+padding:5px;
+z-index:1000;
+flex-wrap:wrap;
+}
+
+.top-title{
+font-size:18px;
+font-weight:900;
+letter-spacing:3px;
+color:#FFD700;
+}
+
+/* INPUT */
+
+.search-input{
+flex:1;
+min-width:150px;
+height:36px;
+background:black;
+border:2px solid #39FF14;
+border-radius:8px;
+padding:0 10px;
+color:white;
+font-size:12px;
+}
+
+/* BUTTONS */
+
+.go-btn,
+.mode-btn,
+.terminate-btn{
+height:36px;
+padding:0 10px;
+border-radius:8px;
+font-size:9px;
+font-weight:900;
+cursor:pointer;
+}
+
+.go-btn{
+background:#FFD700;
+border:none;
+color:black;
+min-width:58px;
+}
+
+.mode-btn{
+background:#111;
+border:1px solid #39FF14;
+color:#39FF14;
+}
+
+.terminate-btn{
+background:red;
+border:none;
+color:white;
+}
+
+/* LABEL */
+
+.map-label{
+position:absolute;
+top:70px;
+left:10px;
+padding:6px 10px;
+background:rgba(0,0,0,0.7);
+border:1px solid #39FF14;
+border-radius:8px;
+z-index:1000;
+font-size:8px;
+font-weight:900;
+letter-spacing:1px;
+color:#39FF14;
+}
+
+/* RADAR */
+
+.radar{
+position:absolute;
+bottom:14px;
+left:50%;
+transform:translateX(-50%);
+width:90px;
+height:90px;
+border:2px solid #39FF14;
+border-radius:50%;
+background:rgba(57,255,20,0.06);
+overflow:hidden;
+z-index:1000;
+box-shadow:0 0 22px rgba(57,255,20,0.5);
+}
+
+.scan{
+position:absolute;
+width:2px;
+height:45px;
+background:#39FF14;
+left:50%;
+top:50%;
+transform-origin:bottom;
+animation:spin 4s linear infinite;
+}
+
+/* SOS */
+
+.sos{
+position:absolute;
+bottom:12px;
+right:12px;
+padding:10px 12px;
+background:red;
+border:none;
+border-radius:10px;
+color:white;
+font-size:8px;
+font-weight:900;
+letter-spacing:1px;
+cursor:pointer;
+z-index:1000;
+box-shadow:0 0 20px rgba(255,0,0,0.75);
+}
+
+/* TIMESTAMPS */
+
+.timestamp-box{
+font-size:8px;
+line-height:1.4;
+max-height:130px;
+overflow:auto;
+}
+
+/* MOBILE */
+
+@media (max-width:900px){
+
+.container{
+flex-direction:column;
+}
+
+.left-panel{
+width:100%;
+height:32vh;
+border-right:none;
+border-bottom:2px solid rgba(255,0,0,0.45);
+}
+
+.main-map{
+height:68vh;
+}
+
+.top-title{
+width:100%;
+text-align:center;
+font-size:15px;
+}
+
+.search-input{
+width:100%;
+min-width:100%;
+height:32px;
+}
+
+.go-btn,
+.mode-btn,
+.terminate-btn{
+flex:1;
+height:32px;
+font-size:8px;
+padding:0 5px;
+}
+
+.map-label{
+top:98px;
+font-size:7px;
+}
+
+}
+
+/* ANIMATIONS */
+
+@keyframes spin{
+from{transform:rotate(0deg);}
+to{transform:rotate(360deg);}
+}
+
+@keyframes pulse{
+0%{transform:scale(1);}
+50%{transform:scale(1.2);}
+100%{transform:scale(1);}
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<!-- LEFT PANEL -->
+
+<div class="left-panel">
+
+<div class="home-box">
+
+<img src="PG1.png" class="home-image">
+
+<div class="title">TACNET</div>
+
+<div class="subtitle">
+MULTI-AGENCY TASK FORCE SEARCH APP
+</div>
+
+<div class="agency">
+FEDERAL • STATE • LOCAL
+</div>
+
+<div class="creator">
+BUILT BY LAW ENFORCEMENT FOR LAW ENFORCEMENT
+<br><br>
+APP CREATOR • EARL A. WOOD
+<br>
+DEPUTY SHERIFF RETIRED • VIRGINIA
+</div>
+
+</div>
+
+<!-- SEARCHERS -->
+
+<div class="panel">
+
+<div class="panel-title">
+ACTIVE SEARCHERS
+</div>
+
+<div id="searchers"></div>
+
+<div class="control-row">
+
+<button class="control-btn"
+onclick="setUnitType('LAW')">
+LAW
+</button>
+
+<button class="control-btn"
+onclick="setUnitType('K9')">
+K9
+</button>
+
+<button class="control-btn"
+onclick="setUnitType('SAR')">
+SAR
+</button>
+
+<button class="control-btn"
+onclick="setUnitType('TARGET')">
+TARGET
+</button>
+
+</div>
+
+</div>
+
+<!-- SYSTEMS -->
+
+<div class="panel">
+
+<div class="panel-title">
+TACTICAL SYSTEMS
+</div>
+
+<div class="control-row">
+
+<button class="control-btn"
+onclick="toggleNightVision()">
+NIGHT
+</button>
+
+<button class="control-btn"
+onclick="startRecording()">
+REC
+</button>
+
+<button class="control-btn"
+onclick="stopRecording()">
+STOP
+</button>
+
+<button class="control-btn"
+onclick="exportReport()">
+EXPORT
+</button>
+
+</div>
+
+</div>
+
+<!-- TIMESTAMPS -->
+
+<div class="panel">
+
+<div class="panel-title">
+TIMESTAMP LOG
+</div>
+
+<div id="timestamps"
+class="timestamp-box">
+</div>
+
+</div>
+
+</div>
+
+<!-- MAP SIDE -->
+
+<div class="main-map">
+
+<div id="map"></div>
+
+<div class="red-overlay"></div>
+
+<div class="grid"></div>
+
+<div id="nightvision"
+class="nightvision">
+</div>
+
+<!-- TOPBAR -->
+
+<div class="topbar">
+
+<div class="top-title">
+TACNET
+</div>
+
+<input
+id="address"
+class="search-input"
+placeholder="ENTER SEARCH ADDRESS"
+/>
+
+<button
+class="go-btn"
+onclick="searchAddress()">
+GO
+</button>
+
+<button
+class="mode-btn"
+onclick="setStreet()">
+STREET
+</button>
+
+<button
+class="mode-btn"
+onclick="setSatellite()">
+SAT
+</button>
+
+<button
+class="mode-btn"
+onclick="setTerrain()">
+TERRAIN
+</button>
+
+<button
+class="terminate-btn"
+onclick="terminateSearch()">
+END
+</button>
+
+</div>
+
+<!-- STATUS -->
+
+<div
+class="map-label"
+id="status">
+LIVE TACTICAL GPS MAP ACTIVE
+</div>
+
+<!-- RADAR -->
+
+<div class="radar">
+<div class="scan"></div>
+</div>
+
+<!-- SOS -->
+
+<button class="sos">
+OFFICER DOWN
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+/* MAP */
+
+const map =
+L.map('map')
+.setView([37.4316,-78.6569],8);
+
+/* MAP LAYERS */
+
+let streetLayer =
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{
+maxZoom:19
+}
+).addTo(map);
+
+let satelliteLayer =
+L.tileLayer(
+'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+{
+maxZoom:19
+}
+);
+
+let terrainLayer =
+L.tileLayer(
+'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+{
+maxZoom:17
+}
+);
+
+/* SEARCHERS */
+
+let searchers = [];
+
+let currentType = "LAW";
+
+/* COLORS */
+
+function getColor(type){
+
+if(type==="LAW")
+return "#2563EB";
+
+if(type==="K9")
+return "#39FF14";
+
+if(type==="SAR")
+return "#EF4444";
+
+if(type==="TARGET")
+return "#A855F7";
+
+return "#FFFFFF";
+
+}
+
+/* UNIT TYPE */
+
+function setUnitType(type){
+
+currentType = type;
+
+addTimestamp(
+"UNIT MODE: " + type
+);
+
+}
+
+/* MAP CLICK */
+
+map.on("click",function(e){
+
+const color =
+getColor(currentType);
+
+const marker =
+L.circleMarker(
+[e.latlng.lat,e.latlng.lng],
+{
+radius:8,
+color:color,
+fillColor:color,
+fillOpacity:1
+}
+).addTo(map);
+
+searchers.push(marker);
+
+renderSearchers();
+
+addTimestamp(
+currentType +
+" PLACED"
+);
+
+});
+
+/* SEARCHER PANEL */
+
+function renderSearchers(){
+
+const box =
+document.getElementById(
+"searchers"
+);
+
+box.innerHTML = "";
+
+searchers.forEach(
+(m,index)=>{
+
+const color =
+m.options.color;
+
+let label = "UNIT";
+
+if(color==="#2563EB")
+label="LAW";
+
+if(color==="#39FF14")
+label="K9";
+
+if(color==="#EF4444")
+label="SAR";
+
+if(color==="#A855F7")
+label="TARGET";
+
+box.innerHTML += `
+
+<div class="searcher">
+
+<div class="searcher-left">
+
+<div
+class="dot"
+style="background:${color}">
+</div>
+
+<div>${label}</div>
+
+</div>
+
+<button
+class="remove-btn"
+onclick="removeSearcher(${index})">
+X
+</button>
+
+</div>
+
+`;
+
+});
+
+}
+
+/* REMOVE */
+
+function removeSearcher(index){
+
+map.removeLayer(
+searchers[index]
+);
+
+searchers.splice(index,1);
+
+renderSearchers();
+
+addTimestamp(
+"SEARCHER REMOVED"
+);
+
+}
+
+/* NIGHT */
+
+let night = false;
+
+function toggleNightVision(){
+
+night = !night;
+
+document.getElementById(
+"nightvision"
+).style.display =
+night ? "block" : "none";
+
+addTimestamp(
+"NIGHT VISION TOGGLED"
+);
+
+}
+
+/* TIMESTAMPS */
+
+function addTimestamp(msg){
+
+const now =
+new Date();
+
+const line =
+now.toLocaleTimeString()
++ " - " +
+msg;
+
+document.getElementById(
+"timestamps"
+).innerHTML =
+line + "<br>" +
+document.getElementById(
+"timestamps"
+).innerHTML;
+
+}
+
+/* RECORDING */
+
+function startRecording(){
+
+addTimestamp(
+"RECORDING STARTED"
+);
+
+}
+
+function stopRecording(){
+
+addTimestamp(
+"RECORDING STOPPED"
+);
+
+}
+
+/* EXPORT */
+
+function exportReport(){
+
+let text =
+document.getElementById(
+"timestamps"
+).innerText;
+
+const blob =
+new Blob(
+[text],
+{
+type:"text/plain"
+}
+);
+
+const a =
+document.createElement("a");
+
+a.href =
+URL.createObjectURL(blob);
+
+a.download =
+"TACNET_REPORT.txt";
+
+a.click();
+
+addTimestamp(
+"REPORT EXPORTED"
+);
+
+}
+
+/* ADDRESS SEARCH */
+
+function searchAddress(){
+
+const address =
+document.getElementById(
+"address"
+).value;
+
+fetch(
+'https://nominatim.openstreetmap.org/search?format=json&q='
++
+encodeURIComponent(address)
+)
+
+.then(response=>response.json())
+
+.then(data=>{
+
+if(data.length>0){
+
+const lat =
+parseFloat(data[0].lat);
+
+const lon =
+parseFloat(data[0].lon);
+
+/* MOVE MAP */
+
+map.setView(
+[lat,lon],
+16
+);
+
+/* RED DOT */
+
+L.circleMarker(
+[lat,lon],
+{
+radius:8,
+color:'red',
+fillColor:'red',
+fillOpacity:1
+}
+).addTo(map);
+
+/* GREEN PERIMETER */
+
+L.circle(
+[lat,lon],
+{
+radius:300,
+color:'#39FF14',
+fillColor:'#39FF14',
+fillOpacity:0.12
+}
+).addTo(map);
+
+document.getElementById(
+"status"
+).innerHTML =
+"ACTIVE SEARCH LOCATION";
+
+addTimestamp(
+"ADDRESS SEARCHED"
+);
+
+}
+
+});
+
+}
+
+/* MAP MODES */
+
+function setStreet(){
+
+map.removeLayer(
+satelliteLayer
+);
+
+map.removeLayer(
+terrainLayer
+);
+
+streetLayer.addTo(map);
+
+addTimestamp(
+"MAP MODE: STREET"
+);
+
+}
+
+function setSatellite(){
+
+map.removeLayer(
+streetLayer
+);
+
+map.removeLayer(
+terrainLayer
+);
+
+satelliteLayer.addTo(map);
+
+addTimestamp(
+"MAP MODE: SATELLITE"
+);
+
+}
+
+function setTerrain(){
+
+map.removeLayer(
+streetLayer
+);
+
+map.removeLayer(
+satelliteLayer
+);
+
+terrainLayer.addTo(map);
+
+addTimestamp(
+"MAP MODE: TERRAIN"
+);
+
+}
+
+/* TERMINATE */
+
+function terminateSearch(){
+
+if(
+confirm(
+"TERMINATE SEARCH?"
+)
+){
+
+location.reload();
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
