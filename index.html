@@ -1,24 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>TacNet</title>
+    <title>TacNet | Tactical Command</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body, html { margin: 0; padding: 0; height: 100%; }
-        .bg {
+        /* Homepage container */
+        #home-screen {
             background-image: url('55555.png');
             background-size: cover;
-            height: 100%;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: flex-end;
             padding-bottom: 50px;
         }
+        /* Hidden map container that appears after login */
+        #map-screen { display: none; height: 100vh; }
+        #map { height: 100%; width: 100%; }
         button { padding: 20px 60px; font-size: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="bg">
-        <button onclick="alert('TacNet Loading...')">LOGIN</button>
+
+    <div id="home-screen">
+        <button onclick="startApp()">LOGIN</button>
     </div>
+
+    <div id="map-screen">
+        <div id="map"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        function startApp() {
+            document.getElementById('home-screen').style.display = 'none';
+            document.getElementById('map-screen').style.display = 'block';
+            // Initialize map after clicking
+            const map = L.map('map').setView([37.43, -79.17], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        }
+    </script>
 </body>
 </html>
