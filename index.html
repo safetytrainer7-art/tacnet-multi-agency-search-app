@@ -64,7 +64,15 @@
         const name = prompt("Enter Unit Name:");
         if (name) L.circleMarker(e.latlng, { radius: 10, color: 'blue' }).addTo(map).bindPopup(name);
     });
-</script>
+</// Add Parcel Layer (using a standard open-source GIS overlay)
+const parcelLayer = L.tileLayer('https://tiles.arcgis.com/tiles/C804GZ6tB9r1v52z/arcgis/rest/services/US_Parcel_Boundaries/MapServer/tile/{z}/{y}/{x}', {
+    opacity: 0.7,
+    attribution: 'Parcel Data'
+});
+
+// Add to your layer controller so you can toggle it
+baseMaps["Parcel Lines"] = parcelLayer;
+L.control.layers(baseMaps).addTo(map);>
     </script>// Add Search Control (Geocoding)
 const searchControl = L.Control.geocoder({
     defaultMarkGeocode: true,
