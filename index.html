@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>title>TacNet Command</title</title>TESTING REFRESH</title>
+    <title>TacNet Tactical</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
@@ -10,7 +10,7 @@
         .tactical-ui {
             position: absolute; top: 10px; left: 10px; z-index: 1000;
             background: rgba(0, 0, 0, 0.85); padding: 10px; border-radius: 6px;
-            display: flex; flex-direction: column; gap: 8px; width: 200px;
+            display: flex; flex-direction: column; gap: 8px; width: 220px;
         }
         button { padding: 10px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; background: #333; color: white; }
     </style>
@@ -21,7 +21,7 @@
         <button id="cmd-btn" onclick="toggleCommand()">REQUEST COMMAND</button>
         <button id="lock-btn" onclick="toggleMapLock()">LOCK MAP</button>
         <button onclick="alert('Article Find Mode Active')">[ARTICLE FIND]</button>
-        <button onclick="alert('SOS ACTIVATED')" style="background: red;">SOS EMERGENCY</button>
+        <button onclick="triggerSOS()" style="background: red;">SOS EMERGENCY</button>
     </div>
 
     <div id="map"></div>
@@ -29,7 +29,10 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         const map = L.map('map', {zoomControl: false}).setView([37.5857, -79.0361], 14);
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+        
+        // Base Layers: Satellite + Regrid-style Parcel Overlay
+        const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+        const parcels = L.tileLayer('https://tiles.arcgis.com/tiles/C804GZ6tB9r1v52z/arcgis/rest/services/US_Parcel_Boundaries/MapServer/tile/{z}/{y}/{x}', {opacity: 0.6}).addTo(map);
 
         let isCommander = false;
         let mapLocked = false;
@@ -46,17 +49,27 @@
             document.getElementById('lock-btn').innerText = mapLocked ? "MAP LOCKED" : "LOCK MAP";
         }
 
-        // Click to place specific colored unit
+        function triggerSOS() { 
+            alert("SOS EMERGENCY ALERT BROADCAST"); 
+        }
+
+        // Color-coded Unit Ledger
+        const colorMap = {
+            'LEO': 'blue', 'K9': 'cyan', 'VSP': 'darkblue', 'FEDERAL': 'gold',
+            'SAR': 'red', 'CIVILIAN': 'green', 'SUSPECT': 'purple', 'VICTIM': 'white',
+            'VEHICLE': 'black', 'ARTICLE': 'orange', 'BOAT': 'gray', 'DRONE': 'lightblue'
+        };
+
         map.on('click', function(e) {
             if (!isCommander) return;
-            const type = prompt("Unit Type (LEO, K9, SAR, SUSPECT, VICTIM, ARTICLE):");
-            let color = 'blue';
-            if (type.toUpperCase() === 'K9') color = 'cyan';
-            else if (type.toUpperCase() === 'SAR') color = 'red';
-            else if (type.toUpperCase() === 'SUSPECT') color = 'purple';
-            else if (type.toUpperCase() === 'ARTICLE') color = 'orange';
-
-            L.circleMarker(e.latlng, { radius: 12, color: color, fillOpacity: 0.9 }).addTo(map).bindPopup(type);
+            const input = prompt("Enter Unit Type (LEO, K9, VSP, FEDERAL, SAR, CIVILIAN, SUSPECT, VICTIM, VEHICLE, ARTICLE, BOAT, DRONE):");
+            if (!input) return;
+            const type = input.toUpperCase();
+            const color = colorMap[type] || 'blue';
+            
+            L.circleMarker(e.latlng, { radius: 12, color: color, fillOpacity: 0.9 })
+             .addTo(map)
+             .bindPopup(type + "<br><button onclick='this.parentElement.parentElement.remove()'>REMOVE</button>");
         });
     </script>
 </body>
