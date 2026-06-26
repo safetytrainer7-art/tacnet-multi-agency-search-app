@@ -7,6 +7,34 @@
 <body style="margin:0; background:black; display:flex; justify-content:center; align-items:center; height:100vh;">
 
     <img src="55555.png" alt="TacNet Homepage" style="width: 100%; height: auto; display: block;">
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        /* Your styles... */
+    </style>
+</head>
+<body>
 
+    <div id="map"></div>
+    <div class="tactical-ui">...</div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // PASTE YOUR JAVASCRIPT HERE
+        const map = L.map('map').setView([37.5857, -79.0361], 11);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        function logArticle() {
+            alert("Article Logged.");
+        }
+
+        function emergencyAlert() {
+            alert("Alert Sent.");
+        }
+    </script>
+</body>
+</html>
 </body>
 </html>
