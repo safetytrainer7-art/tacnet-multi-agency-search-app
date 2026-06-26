@@ -28,31 +28,43 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        const map = L.map('map').setView([37.5857, -79.0361], 11);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+      <script>
+    const map = L.map('map').setView([37.5857, -79.0361], 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-        let isCommander = false;
+    // Drawing Tools Setup
+    const drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
+    const drawControl = new L.Control.Draw({
+        edit: { featureGroup: drawnItems },
+        draw: { polyline: { color: 'red' }, polygon: false, marker: false, circle: false, rectangle: false }
+    });
+    map.addControl(drawControl);
 
-        function toggleCommand() {
-            isCommander = !isCommander;
-            const btn = document.getElementById('cmd-btn');
-            btn.innerText = isCommander ? "COMMAND ACTIVE" : "REQUEST COMMAND";
-            btn.style.background = isCommander ? "red" : "#5ab0e5";
-        }
+    map.on(L.Draw.Event.CREATED, function (e) { drawnItems.addLayer(e.layer); });
 
-        function createUnit(e) {
-            if (!isCommander) return;
-            const unitName = prompt("Enter Unit Name:");
-            if (!unitName) return;
-            L.circleMarker(e.latlng, { radius: 10, color: 'blue' })
-                .addTo(map)
-                .bindPopup(unitName + "<br><button onclick='this.parentElement.parentElement.remove()'>REMOVE UNIT</button>");
-        }
+    // Map Lock Logic
+    let mapLocked = false;
+    function toggleMapLock() {
+        mapLocked = !mapLocked;
+        map.dragging[mapLocked ? 'disable' : 'enable']();
+        document.getElementById('lock-btn').innerText = mapLocked ? "MAP LOCKED" : "LOCK MAP";
+    }
 
-        map.on('click', createUnit);
+    // Command Logic
+    let isCommander = false;
+    function toggleCommand() {
+        isCommander = !isCommander;
+        document.getElementById('cmd-btn').innerText = isCommander ? "COMMAND ACTIVE" : "REQUEST COMMAND";
+        document.getElementById('cmd-btn').style.background = isCommander ? "red" : "#5ab0e5";
+    }
 
-        function logArticle() { alert("Article Logged."); }
-        function emergencyAlert() { alert("EMERGENCY ALERT!"); }
+    map.on('click', function(e) {
+        if (!isCommander) return;
+        const name = prompt("Enter Unit Name:");
+        if (name) L.circleMarker(e.latlng, { radius: 10, color: 'blue' }).addTo(map).bindPopup(name);
+    });
+</script>
     </script>// Add Search Control (Geocoding)
 const searchControl = L.Control.geocoder({
     defaultMarkGeocode: true,
