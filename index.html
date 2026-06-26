@@ -2,47 +2,42 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TacNet Tactical</title>
+    <title>TacNet Command</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
         #map { height: 100vh; width: 100vw; }
-        /* Cleaned UI Panel */
         .tactical-ui {
-            position: absolute; top: 15px; left: 15px; z-index: 1000;
-            background: rgba(0, 0, 0, 0.9); padding: 15px; border-radius: 8px;
-            display: flex; flex-direction: column; gap: 12px; width: 220px;
+            position: absolute; top: 10px; left: 10px; z-index: 1000;
+            background: rgba(0, 0, 0, 0.85); padding: 10px; border-radius: 6px;
+            display: flex; flex-direction: column; gap: 8px; width: 200px;
         }
-        button { padding: 12px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; }
+        button { padding: 10px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; background: #333; color: white; }
     </style>
 </head>
 <body>
 
     <div class="tactical-ui">
-        <button id="cmd-btn" onclick="toggleCommand()" style="background:#5ab0e5;">REQUEST COMMAND</button>
+        <button id="cmd-btn" onclick="toggleCommand()">REQUEST COMMAND</button>
         <button id="lock-btn" onclick="toggleMapLock()">LOCK MAP</button>
-        <button onclick="logArticle()">[ARTICLE FIND]</button>
-        <button onclick="triggerSOS()" style="background:red; color:white;">SOS EMERGENCY</button>
+        <button onclick="alert('Article Find Mode Active')">[ARTICLE FIND]</button>
+        <button onclick="alert('SOS ACTIVATED')" style="background: red;">SOS EMERGENCY</button>
     </div>
 
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        const map = L.map('map', {zoomControl: false}).setView([37.5857, -79.0361], 13);
-        
-        // Base Layers
-        const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
-        const parcels = L.tileLayer('https://tiles.arcgis.com/tiles/C804GZ6tB9r1v52z/arcgis/rest/services/US_Parcel_Boundaries/MapServer/tile/{z}/{y}/{x}', {opacity: 0.5});
-        
-        // Simple Controls
+        const map = L.map('map', {zoomControl: false}).setView([37.5857, -79.0361], 14);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+
         let isCommander = false;
         let mapLocked = false;
 
         function toggleCommand() {
             isCommander = !isCommander;
             document.getElementById('cmd-btn').innerText = isCommander ? "COMMAND ACTIVE" : "REQUEST COMMAND";
-            document.getElementById('cmd-btn').style.background = isCommander ? "red" : "#5ab0e5";
+            document.getElementById('cmd-btn').style.background = isCommander ? "red" : "#333";
         }
 
         function toggleMapLock() {
@@ -51,13 +46,17 @@
             document.getElementById('lock-btn').innerText = mapLocked ? "MAP LOCKED" : "LOCK MAP";
         }
 
-        function triggerSOS() { alert("EMERGENCY SIGNAL BROADCAST"); }
-        function logArticle() { alert("Article Logged."); }
-
-        // Unit Placement (Only when Command Active)
+        // Click to place specific colored unit
         map.on('click', function(e) {
             if (!isCommander) return;
-            L.circleMarker(e.latlng, { radius: 12, color: 'blue' }).addTo(map).bindPopup("UNIT");
+            const type = prompt("Unit Type (LEO, K9, SAR, SUSPECT, VICTIM, ARTICLE):");
+            let color = 'blue';
+            if (type.toUpperCase() === 'K9') color = 'cyan';
+            else if (type.toUpperCase() === 'SAR') color = 'red';
+            else if (type.toUpperCase() === 'SUSPECT') color = 'purple';
+            else if (type.toUpperCase() === 'ARTICLE') color = 'orange';
+
+            L.circleMarker(e.latlng, { radius: 12, color: color, fillOpacity: 0.9 }).addTo(map).bindPopup(type);
         });
     </script>
 </body>
