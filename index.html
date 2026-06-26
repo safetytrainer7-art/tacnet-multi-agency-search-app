@@ -2,95 +2,86 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TacNet Tactical</title>
+    <title>TacNet Command</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
-<style>
-    body, html { margin: 0; padding: 0; height: 100%; }
-    #map { height: 100vh; width: 100vw; }
-    .tactical-ui {
-        position: absolute; top: 10px; left: 10px; z-index: 1000;
-        background: rgba(0, 20, 40, 0.9); padding: 15px; border: 2px solid #5ab0e5; border-radius: 8px;
-        display: flex; flex-direction: column; gap: 10px; color: white;
-    }
-</style>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+        #map { height: 100vh; width: 100vw; }
+        .tactical-ui {
+            position: absolute; top: 10px; left: 10px; z-index: 1000;
+            background: rgba(0, 0, 0, 0.85); padding: 12px; border: 2px solid #5ab0e5;
+            border-radius: 8px; display: flex; flex-direction: column; gap: 8px;
         }
+        button { cursor: pointer; padding: 8px; font-weight: bold; }
+        .sos { color: white; background: red; border: none; }
     </style>
 </head>
 <body>
 
     <div class="tactical-ui">
         <button id="cmd-btn" onclick="toggleCommand()">REQUEST COMMAND</button>
-        <button onclick="logArticle()">ARTICLE FIND</button>
-        <button onclick="emergencyAlert()" style="color: red;">EMERGENCY ALERT</button>
+        <button id="lock-btn" onclick="toggleMapLock()">LOCK MAP</button>
+        <button onclick="logArticle()">[ARTICLE FIND]</button>
+        <button class="sos" onclick="triggerSOS()">SOS EMERGENCY</button>
     </div>
 
     <div id="map"></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    
     <script>
-      <script>
-    const map = L.map('map').setView([37.5857, -79.0361], 11);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        const map = L.map('map').setView([37.5857, -79.0361], 13);
+        
+        // Base Layers
+        const street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
+        const parcels = L.tileLayer('https://tiles.arcgis.com/tiles/C804GZ6tB9r1v52z/arcgis/rest/services/US_Parcel_Boundaries/MapServer/tile/{z}/{y}/{x}', {opacity: 0.6});
+        
+        L.control.layers({"Street": street, "Satellite": sat, "Parcel View": parcels}).addTo(map);
 
-    // Drawing Tools Setup
-    const drawnItems = new L.FeatureGroup();
-    map.addLayer(drawnItems);
-    const drawControl = new L.Control.Draw({
-        edit: { featureGroup: drawnItems },
-        draw: { polyline: { color: 'red' }, polygon: false, marker: false, circle: false, rectangle: false }
-    });
-    map.addControl(drawControl);
+        // Drawing Tools
+        const drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+        const drawControl = new L.Control.Draw({ 
+            edit: { featureGroup: drawnItems }, 
+            draw: { polyline: { color: 'red' }, polygon: false, marker: false, circle: false, rectangle: false } 
+        });
+        map.addControl(drawControl);
+        map.on(L.Draw.Event.CREATED, function (e) { drawnItems.addLayer(e.layer); });
 
-    map.on(L.Draw.Event.CREATED, function (e) { drawnItems.addLayer(e.layer); });
+        // Logic
+        let isCommander = false;
+        let mapLocked = false;
 
-    // Map Lock Logic
-    let mapLocked = false;
-    function toggleMapLock() {
-        mapLocked = !mapLocked;
-        map.dragging[mapLocked ? 'disable' : 'enable']();
-        document.getElementById('lock-btn').innerText = mapLocked ? "MAP LOCKED" : "LOCK MAP";
-    }
+        function toggleCommand() {
+            isCommander = !isCommander;
+            document.getElementById('cmd-btn').innerText = isCommander ? "COMMAND ACTIVE" : "REQUEST COMMAND";
+        }
 
-    // Command Logic
-    let isCommander = false;
-    function toggleCommand() {
-        isCommander = !isCommander;
-        document.getElementById('cmd-btn').innerText = isCommander ? "COMMAND ACTIVE" : "REQUEST COMMAND";
-        document.getElementById('cmd-btn').style.background = isCommander ? "red" : "#5ab0e5";
-    }
+        function toggleMapLock() {
+            mapLocked = !mapLocked;
+            mapLocked ? map.dragging.disable() : map.dragging.enable();
+            document.getElementById('lock-btn').innerText = mapLocked ? "MAP LOCKED" : "LOCK MAP";
+        }
 
-    map.on('click', function(e) {
-        if (!isCommander) return;
-        const name = prompt("Enter Unit Name:");
-        if (name) L.circleMarker(e.latlng, { radius: 10, color: 'blue' }).addTo(map).bindPopup(name);
-    });
-</// Add Parcel Layer (using a standard open-source GIS overlay)
-const parcelLayer = L.tileLayer('https://tiles.arcgis.com/tiles/C804GZ6tB9r1v52z/arcgis/rest/services/US_Parcel_Boundaries/MapServer/tile/{z}/{y}/{x}', {
-    opacity: 0.7,
-    attribution: 'Parcel Data'
-});
+        function triggerSOS() {
+            if(confirm("ACTIVATE SOS BROADCAST?")) {
+                document.body.style.backgroundColor = "red";
+                alert("SOS SIGNAL SENT TO ALL UNITS");
+                setTimeout(() => { document.body.style.backgroundColor = "white"; }, 2000);
+            }
+        }
 
-// Add to your layer controller so you can toggle it
-baseMaps["Parcel Lines"] = parcelLayer;
-L.control.layers(baseMaps).addTo(map);>
-    </script>// Add Search Control (Geocoding)
-const searchControl = L.Control.geocoder({
-    defaultMarkGeocode: true,
-    placeholder: "Enter Address..."
-}).addTo(map);
+        function logArticle() { alert("Article Coordinates Logged."); }
 
-// Add Map Layer Selection (Satellite, Street, Terrain)
-const baseMaps = {
-    "Street": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'),
-    "Satellite": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'),
-    "Terrain": L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png')
-};
-L.control.layers(baseMaps).addTo(map);
-
-// Targeting Feature: Call this when address is found
-function placeTarget(latlng) {
-    L.circle(latlng, { radius: 100, color: 'lime', fillColor: 'lime' }).addTo(map);
-    L.marker(latlng).addTo(map).bindPopup("TARGET AREA");
-}
+        // Unit Placement
+        map.on('click', function(e) {
+            if (!isCommander) return;
+            const name = prompt("Unit ID (e.g. K9-1, LEO-A):");
+            if (name) L.circleMarker(e.latlng, { radius: 10, color: 'blue' }).addTo(map).bindPopup(name + "<br><button onclick='this.parentElement.parentElement.remove()'>DELETE</button>");
+        });
+    </script>
 </body>
 </html>
