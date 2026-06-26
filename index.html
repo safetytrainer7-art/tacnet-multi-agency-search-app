@@ -1,60 +1,33 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TacNet | Tactical Command</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
-        
-        #home-screen {
-            background-image: url('55555.png');
-            background-size: cover; /* Keeps image filling the screen */
-            background-position: center; /* Keeps it perfectly centered */
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            padding-bottom: 50px;
-        }
-        
-        #map-screen { display: none; height: 100vh; width: 100vw; }
-        #map { height: 100%; width: 100%; }
-        
-        button { 
-            padding: 20px 60px; 
-            font-size: 20px; 
-            cursor: pointer; 
-            background: rgba(0,0,0,0.5); 
-            color: white; 
-            border: 2px solid #5ab0e5; 
-        }
-    </style>
-</head>
-<body>
-
-    <div id="home-screen">
-        <button onclick="startApp()">LOGIN</button>
-    </div>
-
-    <div id="map-screen">
-        <div id="map"></div>
-    </div>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        function startApp() {
-            document.getElementById('home-screen').style.display = 'none';
-            document.getElementById('map-screen').style.display = 'block';
-            
-            // Map setup
-            const map = L.map('map').setView([37.43, -79.17], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-            
-            // This forces the map to resize correctly when it appears
-            window.dispatchEvent(new Event('resize'));
-        }
-    </script>
-</body>
-</html>
+<style>
+    body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+    
+    #home-screen {
+        background-image: url('55555.png');
+        /* Ensures the whole image stays visible */
+        background-size: contain; 
+        /* Keeps it centered on the phone screen */
+        background-position: center center; 
+        background-repeat: no-repeat;
+        /* Sets background to match your app's dark theme */
+        background-color: #020914; 
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        padding-bottom: 50px;
+    }
+    
+    #map-screen { display: none; height: 100vh; width: 100vw; }
+    #map { height: 100%; width: 100%; }
+    
+    button { 
+        padding: 15px 40px; 
+        font-size: 18px; 
+        cursor: pointer; 
+        background: rgba(0,0,0,0.5); 
+        color: white; 
+        border: 2px solid #5ab0e5; 
+        border-radius: 10px;
+    }
+</style>
