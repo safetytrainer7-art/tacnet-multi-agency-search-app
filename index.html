@@ -5,7 +5,12 @@
     <title>TACNET COMMAND CENTER</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #000; }
+        <style>
+    body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; }
+    #map { height: 100vh; width: 100vw; position: absolute; top: 0; left: 0; z-index: 1; }
+    .ui-panel { position: absolute; top: 10px; left: 10px; z-index: 1000; background: rgba(0,0,0,0.85); padding: 15px; border-radius: 8px; border: 1px solid #5ab0e5; }
+    button { display: block; width: 100%; margin-bottom: 5px; padding: 8px; cursor: pointer; }
+</style> }
         #map { height: 100vh; width: 100vw; }
         .ui-panel { position: absolute; top: 10px; left: 10px; z-index: 1000; background: rgba(0,0,0,0.85); padding: 15px; border-radius: 8px; border: 1px solid #5ab0e5; }
         button { display: block; width: 100%; margin-bottom: 5px; padding: 8px; cursor: pointer; }
