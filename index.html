@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map { height: 80vh; width: 100%; }
+        .unit-icon { border-radius: 50%; border: 2px solid white; }
+        .nvg-mode { filter: sepia(100%) hue-rotate(90deg) saturate(300%) brightness(70%); }
+    </style>
+</head>
+<body>
+
+    <div id="hud">
+        <button onclick="addUnit('LE', 'blue')">Add L/E</button>
+        <button onclick="addUnit('SAR', 'red')">Add SAR</button>
+        <button onclick="toggleNVG()">NVG LIGHT</button>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize Map
+        const map = L.map('map').setView([37.43, -79.17], 13); // Centered on Virginia area
+        
+        // Satellite View Layer (Free, no API key)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'TacNet OS'
+        }).addTo(map);
+
+        // Function to place units on map
+        function addUnit(type, color) {
+            let marker = L.circleMarker(map.getCenter(), {
+                color: color,
+                radius: 8,
+                fillOpacity: 1
+            }).addTo(map);
+            marker.bindPopup(type + " Unit Active");
+        }
+
+        function toggleNVG() {
+            document.getElementById('map').classList.toggle('nvg-mode');
+        }
+    </script>
+</body>
+</html>
