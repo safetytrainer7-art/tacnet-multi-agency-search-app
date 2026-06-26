@@ -7,17 +7,17 @@
     <style>
         body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
         #map { height: 100vh; width: 100vw; }
-        .tactical-ui {
+        .ui-panel {
             position: absolute; top: 10px; left: 10px; z-index: 1000;
-            background: rgba(0, 0, 0, 0.85); padding: 10px; border-radius: 6px;
-            display: flex; flex-direction: column; gap: 8px; width: 220px;
+            background: rgba(0, 0, 0, 0.9); padding: 12px; border-radius: 8px;
+            display: flex; flex-direction: column; gap: 10px; width: 220px;
         }
-        button { padding: 10px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; background: #333; color: white; }
+        button { padding: 12px; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; background: #333; color: white; }
     </style>
 </head>
 <body>
 
-    <div class="tactical-ui">
+    <div class="ui-panel">
         <button id="cmd-btn" onclick="toggleCommand()">REQUEST COMMAND</button>
         <button id="lock-btn" onclick="toggleMapLock()">LOCK MAP</button>
         <button onclick="alert('Article Find Mode Active')">[ARTICLE FIND]</button>
@@ -30,9 +30,9 @@
     <script>
         const map = L.map('map', {zoomControl: false}).setView([37.5857, -79.0361], 14);
         
-        // Base Layers: Satellite + Regrid-style Parcel Overlay
-        const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
-        const parcels = L.tileLayer('https://tiles.arcgis.com/tiles/C804GZ6tB9r1v52z/arcgis/rest/services/US_Parcel_Boundaries/MapServer/tile/{z}/{y}/{x}', {opacity: 0.6}).addTo(map);
+        // Base Layers: Satellite + Parcel (Regrid)
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+        L.tileLayer('https://tiles.arcgis.com/tiles/C804GZ6tB9r1v52z/arcgis/rest/services/US_Parcel_Boundaries/MapServer/tile/{z}/{y}/{x}', {opacity: 0.5}).addTo(map);
 
         let isCommander = false;
         let mapLocked = false;
@@ -49,27 +49,18 @@
             document.getElementById('lock-btn').innerText = mapLocked ? "MAP LOCKED" : "LOCK MAP";
         }
 
-        function triggerSOS() { 
-            alert("SOS EMERGENCY ALERT BROADCAST"); 
-        }
+        function triggerSOS() { alert("SOS SIGNAL BROADCAST TO ALL UNITS"); }
 
-        // Color-coded Unit Ledger
-        const colorMap = {
-            'LEO': 'blue', 'K9': 'cyan', 'VSP': 'darkblue', 'FEDERAL': 'gold',
-            'SAR': 'red', 'CIVILIAN': 'green', 'SUSPECT': 'purple', 'VICTIM': 'white',
-            'VEHICLE': 'black', 'ARTICLE': 'orange', 'BOAT': 'gray', 'DRONE': 'lightblue'
-        };
+        // Color-coded Ledger
+        const colorMap = {'LEO':'blue', 'K9':'cyan', 'VSP':'darkblue', 'FEDERAL':'gold', 'SAR':'red', 'CIVILIAN':'green', 'SUSPECT':'purple', 'VICTIM':'white', 'VEHICLE':'black', 'ARTICLE':'orange', 'BOAT':'gray', 'DRONE':'lightblue'};
 
         map.on('click', function(e) {
             if (!isCommander) return;
-            const input = prompt("Enter Unit Type (LEO, K9, VSP, FEDERAL, SAR, CIVILIAN, SUSPECT, VICTIM, VEHICLE, ARTICLE, BOAT, DRONE):");
-            if (!input) return;
-            const type = input.toUpperCase();
+            const type = prompt("Enter Unit Type (LEO, K9, SAR, SUSPECT, ARTICLE, etc.):").toUpperCase();
             const color = colorMap[type] || 'blue';
-            
             L.circleMarker(e.latlng, { radius: 12, color: color, fillOpacity: 0.9 })
              .addTo(map)
-             .bindPopup(type + "<br><button onclick='this.parentElement.parentElement.remove()'>REMOVE</button>");
+             .bindPopup(type + "<br><button onclick='this.parentElement.parentElement.remove()'>DELETE</button>");
         });
     </script>
 </body>
