@@ -19,21 +19,31 @@
 
     <div id="map"></div>
     <div class="tactical-ui">...</div>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // PASTE YOUR JAVASCRIPT HERE
         const map = L.map('map').setView([37.5857, -79.0361], 11);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-        function logArticle() {
-            alert("Article Logged.");
+        // Function to create a unit
+        function createUnit(e) {
+            const unitName = prompt("Enter Unit Name (e.g., K9-1, SAR-Boat):");
+            if (!unitName) return;
+
+            const marker = L.circleMarker(e.latlng, { radius: 10, color: 'blue' })
+                .addTo(map)
+                .bindPopup(unitName + "<br><button onclick='this.parentElement.parentElement.remove()'>REMOVE UNIT</button>");
+            
+            // Allow dragging for movement
+            marker.dragging = true; 
         }
 
-        function emergencyAlert() {
-            alert("Alert Sent.");
-        }
+        // Click map to place unit
+        map.on('click', createUnit);
+
+        function logArticle() { alert("Article Logged at current location."); }
+        function emergencyAlert() { alert("EMERGENCY ALERT BROADCAST TO ALL UNITS."); }
     </script>
+ 
 </body>
 </html>
 </body>
