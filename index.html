@@ -32,7 +32,13 @@
         const terr = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}');
         
         // Regrid-style Parcel Layer
-        const parcels = L.tileLayer('https://tiles.arcgis.com/tiles/C804GZ6tB9r1v52z/arcgis/rest/services/US_Parcel_Boundaries/MapServer/tile/{z}/{y}/{x}', {opacity: 0.5});
+        
+const parcels = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    opacity: 0.3,
+    attribution: '&copy; OpenStreetMap contributors'
+});
+// Note: If you specifically need Property/Parcel lines, 
+// the server often requires an API key.
 
         function toggleMapType() {
             if (map.hasLayer(sat)) { map.removeLayer(sat); terr.addTo(map); }
