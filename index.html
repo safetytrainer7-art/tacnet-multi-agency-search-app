@@ -5,63 +5,55 @@
     <title>TACNET COMMAND CENTER</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        <style>
-    body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; }
-    #map { height: 100vh; width: 100vw; position: absolute; top: 0; left: 0; z-index: 1; }
-    .ui-panel { position: absolute; top: 10px; left: 10px; z-index: 1000; background: rgba(0,0,0,0.85); padding: 15px; border-radius: 8px; border: 1px solid #5ab0e5; }
-    button { display: block; width: 100%; margin-bottom: 5px; padding: 8px; cursor: pointer; }
-</style> }
-        #map { height: 100vh; width: 100vw; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background: #000; }
+        #map { height: 100vh; width: 100vw; position: absolute; top: 0; left: 0; z-index: 1; }
         .ui-panel { position: absolute; top: 10px; left: 10px; z-index: 1000; background: rgba(0,0,0,0.85); padding: 15px; border-radius: 8px; border: 1px solid #5ab0e5; }
         button { display: block; width: 100%; margin-bottom: 5px; padding: 8px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="ui-panel"><button onclick="clearAllAssets()" style="background:#8b0000; color:white;">PURGE ALL ASSETS</button>
+    <div class="ui-panel">
+        <button onclick="clearAllAssets()" style="background:#8b0000; color:white;">PURGE ALL ASSETS</button>
         <h3 style="color:#5ab0e5; margin-top:0;">TACNET OPERATIONAL</h3>
         <button onclick="toggleMapType()">TOGGLE SAT/TERR</button>
-        <button onclick="toggleRegridParcels()">TOGGLE PARCELS (REGRID)</button>
-        <button onclick="alert('Manual Asset Mode Active')" style="background:#5ab0e5;">PLACE ASSET</button>
+        <button onclick="toggleRegridParcels()">TOGGLE OVERLAY</button>
+        <button onclick="enableAssetMode()" style="background:#5ab0e5;">PLACE ASSET</button>
         <button onclick="alert('SOS SENT')" style="background:red; color:white; font-weight:bold;">SOS EMERGENCY</button>
     </div>
 
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>// Keep track of markers in an array
-let allMarkers = [];
-
-// Update your map click function to save the markers
-map.on('click', function(e) {
-    if (!isCommander) return;
-    const type = prompt("Enter Unit Type:");
-    if (!type) return;
-    const color = colorMap[type.toUpperCase()] || 'blue';
-    
-    const marker = L.circleMarker(e.latlng, { radius: 12, color: color, fillOpacity: 0.9 }).addTo(map);
-    allMarkers.push(marker); // Save marker to our list
-});
-
-// The Purge Function
-function clearAllAssets() {
-    allMarkers.forEach(m => map.removeLayer(m));
-    allMarkers = [];
-}
+    <script>
         const map = L.map('map').setView([37.5857, -79.0361], 14);
         
         // Base Layers
         const sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
         const terr = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}');
-        
-        // Regrid-style Parcel Layer
-        
-const parcels = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    opacity: 0.3,
-    attribution: '&copy; OpenStreetMap contributors'
-});
-// Note: If you specifically need Property/Parcel lines, 
-// the server often requires an API key.
+        const overlay = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { opacity: 0.3 });
+
+        let allMarkers = [];
+        let assetMode = false;
+        const colorMap = {'K9': 'cyan', 'SAR': 'red', 'LEO': 'blue', 'SUSPECT': 'purple', 'ARTICLE': 'orange'};
+
+        function enableAssetMode() {
+            assetMode = !assetMode;
+            alert(assetMode ? "ASSET MODE ON: Click Map to Place" : "ASSET MODE OFF");
+        }
+
+        map.on('click', function(e) {
+            if (!assetMode) return;
+            const type = prompt("Enter Unit Type (K9, SAR, LEO, SUSPECT, ARTICLE):").toUpperCase();
+            if (!type) return;
+            const marker = L.circleMarker(e.latlng, { radius: 12, color: colorMap[type] || 'white', fillOpacity: 0.9 }).addTo(map);
+            allMarkers.push(marker);
+        });
+
+        function clearAllAssets() {
+            allMarkers.forEach(m => map.removeLayer(m));
+            allMarkers = [];
+        }
 
         function toggleMapType() {
             if (map.hasLayer(sat)) { map.removeLayer(sat); terr.addTo(map); }
@@ -69,8 +61,8 @@ const parcels = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
         }
 
         function toggleRegridParcels() {
-            if (map.hasLayer(parcels)) { map.removeLayer(parcels); }
-            else { parcels.addTo(map); }
+            if (map.hasLayer(overlay)) { map.removeLayer(overlay); }
+            else { overlay.addTo(map); }
         }
     </script>
 </body>
