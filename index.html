@@ -1,24 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
- <meta name="viewport" content="width=device-width, initial-scale=1.0">   <title>TacNet | Tactical Command</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TacNet | Tactical Command</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; }
-        /* Homepage container */
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+        
         #home-screen {
             background-image: url('55555.png');
-            background-size: cover;
+            background-size: cover; /* Keeps image filling the screen */
+            background-position: center; /* Keeps it perfectly centered */
             height: 100vh;
+            width: 100vw;
             display: flex;
             justify-content: center;
             align-items: flex-end;
             padding-bottom: 50px;
         }
-        /* Hidden map container that appears after login */
-        #map-screen { display: none; height: 100vh; }
+        
+        #map-screen { display: none; height: 100vh; width: 100vw; }
         #map { height: 100%; width: 100%; }
-        button { padding: 20px 60px; font-size: 20px; cursor: pointer; }
+        
+        button { 
+            padding: 20px 60px; 
+            font-size: 20px; 
+            cursor: pointer; 
+            background: rgba(0,0,0,0.5); 
+            color: white; 
+            border: 2px solid #5ab0e5; 
+        }
     </style>
 </head>
 <body>
@@ -36,9 +47,13 @@
         function startApp() {
             document.getElementById('home-screen').style.display = 'none';
             document.getElementById('map-screen').style.display = 'block';
-            // Initialize map after clicking
+            
+            // Map setup
             const map = L.map('map').setView([37.43, -79.17], 13);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            
+            // This forces the map to resize correctly when it appears
+            window.dispatchEvent(new Event('resize'));
         }
     </script>
 </body>
