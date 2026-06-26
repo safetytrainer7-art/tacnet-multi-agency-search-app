@@ -1,40 +1,27 @@
-<style>
-    /* This forces the app to ignore browser bars and fill the screen */
-    body, html { 
-        margin: 0; 
-        padding: 0; 
-        height: 100%; 
-        width: 100%; 
-        overflow: hidden; 
-        position: fixed; 
-    }
-    
-    #home-screen {
-        background-color: #020914; 
-        background-image: url('55555.png');
-        /* 'cover' will ensure the image hits both edges, even on a tall iPhone screen */
-        background-size: cover; 
-        background-position: center center; 
-        background-repeat: no-repeat;
-        height: 100vh;
-        width: 100vw;
-        display: flex;
-        justify-content: center;
-        align-items: flex-end;
-        padding-bottom: 80px; /* Adjusted to move the button up above the phone's bottom bar */
-    }
-    
-    #map-screen { display: none; height: 100vh; width: 100vw; }
-    #map { height: 100%; width: 100%; }
-    
-    button { 
-        padding: 20px 60px; 
-        font-size: 20px; 
-        background: rgba(0, 100, 200, 0.3); 
-        color: white; 
-        border: 2px solid #5ab0e5; 
-        border-radius: 10px;
-        z-index: 10;
-        font-weight: bold;
-    }
-</style>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TacNet</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #000; }
+        #home-screen {
+            width: 100vw;
+            height: 100vh;
+            /* This is the line that must point to your file */
+            background-image: url('55555.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="home-screen">
+        <h1 style="color:white;">If you see this, the image failed to load.</h1>
+    </div>
+</body>
+</html>
