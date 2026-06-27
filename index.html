@@ -36,36 +36,49 @@
     </div>
 
     <script src="https://cdn.appwrite.io/v1/sdk.min.js"></script>
-    <script>
-        const { Client, Account, Databases, ID } = Appwrite;
-        const client = new Client()
-            .setEndpoint('https://nyc.cloud.appwrite.io/v1') 
-            .setProject('6a38e834003e0cc64c31');
+    <script><script src="https://cdn.appwrite.io/v1/sdk.min.js"></script>
+<script>
+    const { Client, Account, Databases, ID } = Appwrite;
+    const client = new Client()
+        .setEndpoint('https://nyc.cloud.appwrite.io/v1') 
+        .setProject('6a38e834003e0cc64c31');
+    
+    const account = new Account(client);
+    const databases = new Databases(client);
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
         
-        const account = new Account(client);
-        const databases = new Databases(client);
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const name = document.getElementById('name').value;
+        const agency = document.getElementById('agency').value;
+        const isCommander = document.getElementById('isCommander').checked;
 
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('name').value;
-            const agency = document.getElementById('agency').value;
-            const isCommander = document.getElementById('isCommander').checked;
+        try {
+            // 1. Attempt to create the session
+            await account.createEmailPasswordSession(email, password);
+            console.log("Session created successfully");
 
-            try {
-                // Assuming session handled via email/pass
-                await account.createEmailPasswordSession(document.getElementById('email').value, document.getElementById('password').value);
-                
-                // Logging unit to tacnet_live_units
-                await databases.createDocument(
-                    'tacnet_telemetry_db,' 
-                    'tacnet_live_units', 
-                    ID.unique(), 
-                    { name, agency, role: isCommander ? 'COMMANDER' : 'SEARCHER' }
-                );
+            // 2. Log unit to tacnet_telemetry_db / tacnet_live_units
+            await databases.createDocument(
+                'tacnet_telemetry_db', 
+                'tacnet_live_units', 
+                ID.unique(), 
+                { name, agency, role: isCommander ? 'COMMANDER' : 'SEARCHER' }
+            );
 
-                document.getElementById('auth-portal').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-            } catch (err) { alert("Sign-in failed. Please verify credentials."); }
+            // 3. Switch view
+            document.getElementById('auth-portal').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            alert("Login successful. Welcome to TACNET.");
+            
+        } catch (err) {
+            console.error("Login Error:", err);
+            alert("Login failed: " + err.message);
+        }
+    });
+</script>
         });
     </script>
 </body>
