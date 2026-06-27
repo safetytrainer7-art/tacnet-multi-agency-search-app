@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
+        
+        #tacnet-ui { width: 100vw; height: 100vh; background: url('ui.jpg') no-repeat center center; background-size: cover; display: flex; }
+        
+        /* Emergency Pulse Effect */
+        @keyframes pulse {
+            0% { background-color: rgba(255, 0, 0, 0.5); }
+            50% { background-color: rgba(255, 0, 0, 0.2); }
+            100% { background-color: rgba(255, 0, 0, 0.5); }
+        }
+        .emergency-mode { animation: pulse 1s infinite; }
+
+        .sidebar { width: 250px; background: rgba(0,0,0,0.85); padding: 15px; border-right: 1px solid #444; }
+        .icon-row { display: flex; align-items: center; margin: 8px 0; padding: 5px; border-radius: 4px; box-shadow: 0 0 10px rgba(255,255,255,0.1); }
+        .dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 10px; }
+        
+        .blue { background: blue; box-shadow: 0 0 8px blue; }
+        .red { background: red; box-shadow: 0 0 8px red; }
+        .tools { margin-top: 20px; border-top: 1px solid #444; padding-top: 10px; }
+        button { width: 100%; margin: 5px 0; background: #222; color: white; border: 1px solid #555; padding: 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="tacnet-ui">
+    <div class="sidebar">
+        <h3>ASSETS</h3>
+        <div class="icon-row"><div class="dot blue"></div> Law Enforcement</div>
+        <div class="icon-row"><div class="dot red"></div> SAR</div>
+        <div class="tools">
+            <button onclick="triggerEmergency()">OFFICER DOWN</button>
+            <button onclick="location.reload()">CLEAR / RESET</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function triggerEmergency() {
+        document.getElementById('tacnet-ui').classList.toggle('emergency-mode');
+        alert("EMERGENCY ALERT SENT: 911 DISPATCH CONTACTED.");
+    }
+</script>
+
+</body></html
+>
