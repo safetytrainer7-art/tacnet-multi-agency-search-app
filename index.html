@@ -2,52 +2,40 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TACNET</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background-color: #000; }
         
         #page-one { 
             height: 100vh; width: 100vw; 
-            /* Scaled down to 60% of original size for mobile fit */
-            background: url('ttggg.jpg') no-repeat center center; 
-            background-size: 60% auto; 
-            background-color: #000; 
-            display: flex; align-items: center; justify-content: center; 
+            background-image: url('ttggg.jpg'); 
+            background-repeat: no-repeat;
+            background-position: center center;
+            /* This will ensure the image fits entirely within the screen */
+            background-size: contain; 
+            cursor: pointer;
         }
         
         #page-two { 
+            display: none;
             height: 100vh; width: 100vw; 
-            background: url('second_background_image.jpg') no-repeat center center; 
-            background-size: cover; 
-            display: none; padding: 20px; color: white;
-        }
-
-        .glass-panel { 
-            background: rgba(255, 255, 255, 0.1); 
-            backdrop-filter: blur(10px); 
-            border: 1px solid rgba(255, 255, 255, 0.2); 
-            padding: 15px; border-radius: 8px; 
+            background-image: url('second_background_image.jpg'); 
+            background-size: cover;
+            padding: 20px; color: white;
         }
     </style>
 </head>
 <body>
 
-    <!-- PAGE ONE: REDUCED IMAGE ONLY -->
-    <div id="page-one" onclick="transitionToDashboard()"></div>
+    <div id="page-one" onclick="document.getElementById('page-one').style.display='none'; document.getElementById('page-two').style.display='block';">
+    </div>
 
-    <!-- PAGE TWO: SEARCH AREA -->
     <div id="page-two">
-        <div class="glass-panel">
+        <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 10px;">
             <h2>TACTICAL SEARCH AREA</h2>
         </div>
     </div>
 
-    <script>
-        function transitionToDashboard() {
-            document.getElementById('page-one').style.display = 'none';
-            document.getElementById('page-two').style.display = 'block';
-        }
-    </script>
 </body>
 </html>
