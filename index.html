@@ -2,25 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TACNET | OPERATIONAL COMMAND</title>
-    <!-- CSS for the tactical interface -->
+    <title>TACNET</title>
     <style>
-        body { margin: 0; font-family: 'Share Tech Mono', monospace; color: #e9f1ff; }
-        /* Landing Page Background */
-        #auth-portal { height: 100vh; background: url('use this image.jpg') center center/cover; display: flex; align-items: center; justify-content: center; }
-        .signin-box { background: rgba(10, 26, 47, 0.9); border: 2px dashed #ff2a2a; padding: 40px; width: 350px; text-align: center; }
-        /* Dashboard Background */
-        #dashboard { height: 100vh; background: url('second_background_image.jpg') center center/cover; padding: 20px; }
-        .tac-panel { background: rgba(10, 22, 38, 0.85); border: 1px solid #3d6fa3; padding: 15px; margin: 10px; border-radius: 4px; }
-        h1, h2 { font-family: 'Stardos Stencil', serif; color: #fde08a; }
-        button { background: #1f7a35; color: white; border: none; padding: 12px; width: 100%; cursor: pointer; text-transform: uppercase; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Share Tech Mono', monospace; }
+        
+        /* PAGE 1: LOGIN (EARTH BACKDROP) */
+        #auth-portal { height: 100vh; background: url('use this image.jpg') center/cover no-repeat; display: flex; align-items: center; justify-content: center; }
+        .signin-card { background: #1a2a3a; border: 2px dashed #ff2a2a; padding: 40px; width: 350px; text-align: center; color: #e9f1ff; }
+        
+        /* PAGE 2: SEARCH AREA (SECOND IMAGE BACKGROUND) */
+        #dashboard { height: 100vh; background: url('second_background_image.jpg') center/cover no-repeat; padding: 20px; color: white; }
+        
+        /* GLASS OVERLAYS */
+        .glass-panel { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); padding: 15px; border-radius: 8px; margin-bottom: 10px; }
+        
+        input, button { display: block; width: 100%; margin: 10px 0; padding: 10px; }
+        .login-btn { background: #1f7a35; border: none; cursor: pointer; color: white; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-    <!-- PAGE 1: HOME/LOGIN -->
+    <!-- LOGIN PAGE -->
     <div id="auth-portal">
-        <div class="signin-box">
+        <div class="signin-card">
             <h1>TACNET</h1>
             <p>EARL WOOD · DEPUTY SHERIFF (RET.) · VIRGINIA</p>
             <form id="login-form">
@@ -29,24 +33,17 @@
                 <input type="email" id="email" placeholder="Email" required>
                 <input type="password" id="password" placeholder="Password" required>
                 <label><input type="checkbox" id="isCommander"> ASSUME CHARGE OF SEARCH</label>
-                <button type="submit">LOGIN TO TACNET</button>
+                <button type="submit" class="login-btn">LOGIN TO TACNET</button>
             </form>
         </div>
     </div>
 
-    <!-- PAGE 2: ACTIVE SEARCH AREA -->
+    <!-- DASHBOARD AREA -->
     <div id="dashboard" style="display:none;">
-        <header><h2>TACNET OPERATIONAL COMMAND — ACTIVE SEARCH</h2></header>
-        <div class="tac-panel">
-            <h4>TRAP AND TRACE: ACTIVE SCANNING</h4>
-            <button onclick="alert('Scanning for cell tower pings...')">INITIALIZE SCAN</button>
-        </div>
-        <div class="tac-panel">
-            <h4>RNG: AUTOMATIC SPACING</h4>
-            <div id="dist-display">DISTANCE: 0.0m</div>
-        </div>
-        <div id="map" style="height: 400px; background: rgba(0,0,0,0.5);">
-            <!-- Leaflet Map Container -->
+        <div class="glass-panel">
+            <h2>OPERATIONAL COMMAND</h2>
+            <div id="rng-tool" class="glass-panel">RNG (Automatic Spacing)</div>
+            <div id="trap-trace" class="glass-panel">Trap & Trace Active</div>
         </div>
     </div>
 
@@ -62,25 +59,23 @@
 
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const name = document.getElementById('name').value;
-            const agency = document.getElementById('agency').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const isCommander = document.getElementById('isCommander').checked;
-
             try {
-                await account.createEmailPasswordSession(email, password);
+                await account.createEmailPasswordSession(document.getElementById('email').value, document.getElementById('password').value);
+                
                 await databases.createDocument(
                     'tacnet_telemetry_db', 
                     'tacnet_live_units', 
                     ID.unique(), 
-                    { name: name, agency: agency, role: isCommander ? 'COMMANDER' : 'SEARCHER' }
+                    { 
+                        name: document.getElementById('name').value, 
+                        agency: document.getElementById('agency').value, 
+                        role: document.getElementById('isCommander').checked ? 'COMMANDER' : 'SEARCHER' 
+                    }
                 );
+
                 document.getElementById('auth-portal').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
-            } catch (err) {
-                alert("Login Error: " + err.message);
-            }
+            } catch (err) { alert("Login failed: " + err.message); }
         });
     </script>
 </body>
