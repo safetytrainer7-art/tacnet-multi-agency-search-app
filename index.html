@@ -5,36 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TACNET</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: #000; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
         
-        /* PAGE ONE: IMAGE DISPLAY */
         #page-one { 
             height: 100vh; width: 100vw; 
-            display: flex; align-items: center; justify-content: center; 
-            cursor: pointer; 
-        }
-        #page-one img { 
-            width: 90%; /* This keeps it within mobile screen boundaries */
-            height: auto; 
+            background: url('ttggg_2.jpg') no-repeat center center; 
+            background-size: cover; /* This makes the image fill the screen nicely */
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
         }
         
-        /* PAGE TWO: SEARCH AREA */
         #page-two { 
             display: none; height: 100vh; width: 100vw; 
-            background: url('second_background_image.jpg') center/cover no-repeat; 
-            padding: 20px; color: white; 
+            background: url('second_background_image.jpg') no-repeat center center; 
+            background-size: cover;
+            color: white; padding: 20px;
         }
     </style>
 </head>
 <body>
 
+    <!-- PAGE ONE: CLEAN BACKGROUND -->
     <div id="page-one" onclick="document.getElementById('page-one').style.display='none'; document.getElementById('page-two').style.display='block';">
-        <img src="ttggg.jpg" alt="TACNET Home">
     </div>
 
+    <!-- PAGE TWO: SEARCH AREA -->
     <div id="page-two">
-        <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 10px;">
-            <h2>TACTICAL SEARCH AREA</h2>
+        <div style="background: rgba(0,0,0,0.6); padding: 20px; border-radius: 10px;">
+            <h2>TACNET OPERATIONAL COMMAND</h2>
+            <p>SYSTEM READY</p>
         </div>
     </div>
 
