@@ -6,7 +6,15 @@
         body { margin: 0; background: #000; color: #fff; font-family: 'Share Tech Mono', monospace; overflow: hidden; }
         
         /* The UI background */
-        #tacnet-ui { width: 100vw; height: 100vh; background: url('ui.jpg') no-repeat center center; background-size: cover; display: flex; }
+       #tacnet-ui { 
+    width: 100vw; 
+    height: 100vh; 
+    background-image: url('ui.jpg'); /* Ensures it looks for the file named ui.jpg */
+    background-repeat: no-repeat; 
+    background-position: center; 
+    background-size: cover; 
+    display: flex; 
+}
 
         /* Emergency Pulse Effect */
         @keyframes pulse {
