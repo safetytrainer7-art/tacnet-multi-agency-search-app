@@ -2,68 +2,55 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TACNET</title>
     <style>
-        /* Force background images and layout */
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: sans-serif; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
         
         #page-one { 
             height: 100vh; width: 100vw; 
-            background: url('use this image.jpg') center/cover no-repeat fixed; 
+            /* Optimized for mobile screens */
+            background: url('ttggg.jpg') no-repeat center center; 
+            background-size: contain; 
+            background-color: #000; 
             display: flex; align-items: center; justify-content: center; 
         }
         
         #page-two { 
             height: 100vh; width: 100vw; 
-            background: url('second_background_image.jpg') center/cover no-repeat fixed; 
-            display: none; padding: 20px; 
+            background: url('second_background_image.jpg') no-repeat center center; 
+            background-size: cover; 
+            display: none; padding: 20px; color: white;
         }
 
-        .login-box { background: rgba(10, 26, 47, 0.9); border: 2px dashed #ff2a2a; padding: 40px; width: 350px; text-align: center; color: #e9f1ff; }
-        input, button { display: block; width: 100%; margin: 10px 0; padding: 12px; }
-        .glass-tool { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); padding: 15px; border-radius: 8px; margin-bottom: 10px; color: white; }
+        /* Glass Overlay Styling */
+        .glass-panel { 
+            background: rgba(255, 255, 255, 0.1); 
+            backdrop-filter: blur(10px); 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            padding: 15px; border-radius: 8px; 
+        }
     </style>
 </head>
 <body>
 
-    <!-- PAGE ONE: LOGIN (EARTH BACKDROP) -->
-    <div id="page-one">
-        <div class="login-box">
-            <h1>TACNET</h1>
-            <p>EARL WOOD · DEPUTY SHERIFF (RET.) · VIRGINIA</p>
-            <form id="master-login">
-                <input type="text" id="name" placeholder="Full Name" required>
-                <input type="text" id="agency" placeholder="Agency" required>
-                <input type="email" id="email" placeholder="Email" required>
-                <input type="password" id="password" placeholder="Password" required>
-                <label><input type="checkbox" id="isCommander"> ASSUME CHARGE OF SEARCH</label>
-                <button type="submit" style="background:#1f7a35; color:white; border:none;">LOGIN TO TACNET</button>
-            </form>
+    <!-- PAGE ONE: EARTH/SATELLITE BACKGROUND -->
+    <div id="page-one" onclick="transitionToDashboard()">
+        <!-- Content here will be minimal per your request -->
+    </div>
+
+    <!-- PAGE TWO: SEARCH AREA -->
+    <div id="page-two">
+        <div class="glass-panel">
+            <h2>TACTICAL SEARCH AREA</h2>
         </div>
     </div>
 
-    <!-- PAGE TWO: SEARCH AREA (SECOND IMAGE BACKGROUND) -->
-    <div id="page-two">
-        <div class="glass-tool"><h2>TACTICAL SEARCH AREA</h2></div>
-        <div class="glass-tool">Trap & Trace: Active | RNG Distance: 0.0m</div>
-    </div>
-
-    <script src="https://cdn.appwrite.io/v1/sdk.min.js"></script>
     <script>
-        const { Client, Account, Databases, ID } = Appwrite;
-        const client = new Client().setEndpoint('https://nyc.cloud.appwrite.io/v1').setProject('6a38e834003e0cc64c31');
-        
-        document.getElementById('master-login').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            try {
-                // Simplified Auth Logic
-                await new Account(client).createEmailPasswordSession(document.getElementById('email').value, document.getElementById('password').value);
-                
-                // Show Second Page
-                document.getElementById('page-one').style.display = 'none';
-                document.getElementById('page-two').style.display = 'block';
-            } catch (err) { alert("Login failed: " + err.message); }
-        });
+        function transitionToDashboard() {
+            document.getElementById('page-one').style.display = 'none';
+            document.getElementById('page-two').style.display = 'block';
+        }
     </script>
 </body>
 </html>
