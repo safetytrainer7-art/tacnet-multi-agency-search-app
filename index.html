@@ -2,66 +2,71 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TACNET | Operational Command</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <title>TACNET | OPERATIONAL COMMAND</title>
     <style>
-        body, html { margin: 0; height: 100%; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
-        #map { height: 100vh; width: 100%; z-index: 1; }
-        .ui-panel { position: absolute; top: 10px; left: 10px; z-index: 1000; background: rgba(0,0,0,0.8); padding: 15px; border: 1px solid #00aaff; width: 250px; }
-        .k9-panel { position: absolute; top: 10px; right: 10px; z-index: 1000; background: rgba(0,0,0,0.8); padding: 15px; border: 1px solid #ffff00; width: 220px; }
-        .btn { display: block; width: 100%; margin-bottom: 5px; padding: 8px; cursor: pointer; background: #001f3f; color: #fff; border: 1px solid #00aaff; }
-        .nvg-active { filter: sepia(1) hue-rotate(100deg) brightness(1.2); }
-        @media print { .no-print { display: none; } }
+        body { margin: 0; background: url('use this image.jpg') no-repeat center center fixed; background-size: cover; font-family: 'Share Tech Mono', monospace; color: #e9f1ff; }
+        .signin-card { width: 100%; max-width: 400px; background: rgba(10, 26, 47, 0.9); border: 2px dashed #ff2a2a; padding: 30px; margin: 100px auto; text-align: center; }
+        h1 { font-family: 'Stardos Stencil', serif; color: #fde08a; }
+        input, button { display: block; width: 100%; margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid #3d6fa3; color: white; }
+        button { background: #1f7a35; border: none; cursor: pointer; text-transform: uppercase; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div id="map"></div>
+    <!-- SIGN-IN PORTAL -->
+    <div id="auth-portal" class="signin-card">
+        <h1>TACNET</h1>
+        <p>EARL WOOD · DEPUTY SHERIFF (RET.) · VIRGINIA</p>
+        <form id="login-form">
+            <input type="text" id="name" placeholder="Full Name" required>
+            <input type="text" id="agency" placeholder="Agency" required>
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <label><input type="checkbox" id="isCommander"> ASSUME CHARGE OF SEARCH</label>
+            <button type="submit">LOGIN TO TACNET</button>
+        </form>
+    </div>
 
-<div class="ui-panel no-print">
-    <h3>TACNET ASSETS</h3>
-    <button class="btn" onclick="addMarker('blue', 'Law Enforcement')">Blue: LE</button>
-    <button class="btn" onclick="addMarker('cyan', 'Officer & K9')">Cyan: K9 Team</button>
-    <button class="btn" onclick="addMarker('red', 'SAR')">Red: SAR</button>
-    <button class="btn" onclick="toggleNVG()">TOGGLE NVG</button>
-    <button class="btn" style="background:#8b0000;" onclick="generateReport()">AUTO-GENERATE REPORT</button>
-</div>
+    <!-- TACTICAL DASHBOARD -->
+    <div id="dashboard" style="display:none; padding: 20px;">
+        <header><h2>TACNET OPERATIONAL COMMAND</h2></header>
+        <div id="tactical-tools">
+            <!-- Trap & Trace, Range Notifier (RNG), and K9 Protocols -->
+        </div>
+    </div>
 
-<div class="k9-panel no-print">
-    <h3>K9 FIRST AID</h3>
-    <button class="btn" onclick="speak('CPR in progress')">CPR</button>
-    <button class="btn" onclick="speak('Treating gunshot wound')">Gunshot</button>
-    <button class="btn" onclick="window.speechSynthesis.cancel()">STOP TALKING</button>
-    <button class="btn" onclick="window.speechSynthesis.speak(new SpeechSynthesisUtterance('Repeat last instruction'))">REPEAT</button>
-</div>
+    <script src="https://cdn.appwrite.io/v1/sdk.min.js"></script>
+    <script>
+        const { Client, Account, Databases, ID } = Appwrite;
+        const client = new Client()
+            .setEndpoint('https://nyc.cloud.appwrite.io/v1') 
+            .setProject('6a38e834003e0cc64c31');
+        
+        const account = new Account(client);
+        const databases = new Databases(client);
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-    const map = L.map('map').setView([37.4087, -79.1678], 15);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const agency = document.getElementById('agency').value;
+            const isCommander = document.getElementById('isCommander').checked;
 
-    function addMarker(color, name) {
-        L.circleMarker(map.getCenter(), {color: color, radius: 8}).addTo(map).bindPopup(name).openPopup();
-    }
+            try {
+                // Assuming session handled via email/pass
+                await account.createEmailPasswordSession(document.getElementById('email').value, document.getElementById('password').value);
+                
+                // Logging unit to tacnet_live_units
+                await databases.createDocument(
+                    'tacnet-search-app', 
+                    'tacnet_live_units', 
+                    ID.unique(), 
+                    { name, agency, role: isCommander ? 'COMMANDER' : 'SEARCHER' }
+                );
 
-    function toggleNVG() { document.getElementById('map').classList.toggle('nvg-active'); }
-
-    function speak(text) { window.speechSynthesis.speak(new SpeechSynthesisUtterance(text)); }
-
-    function generateReport() {
-        const reportWindow = window.open('', '_blank');
-        reportWindow.document.write(`
-            <html><body>
-            <h1>TACNET OFFICIAL SEARCH REPORT</h1>
-            <hr>
-            <h3>FEDERAL - STATE - LOCAL TASK FORCE</h3>
-            <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
-            <p><strong>Disposition:</strong> Search finalized via TACNET System v2.1</p>
-            <p><strong>Units Logged:</strong> See attached coordinate metadata.</p>
-            <br><button onclick="window.print()">PRINT/SAVE AS PDF</button>
-            </body></html>
-        `);
-    }
-</script>
+                document.getElementById('auth-portal').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+            } catch (err) { alert("Sign-in failed. Please verify credentials."); }
+        });
+    </script>
 </body>
 </html>
