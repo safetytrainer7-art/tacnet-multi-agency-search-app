@@ -1,19 +1,17 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>TACNET | OPERATIONAL COMMAND</title>
     <style>
-        body { margin: 0; background: url('use this image.jpg') no-repeat center center fixed; background-size: cover; font-family: 'Share Tech Mono', monospace; color: #e9f1ff; }
-        .signin-card { width: 100%; max-width: 400px; background: rgba(10, 26, 47, 0.9); border: 2px dashed #ff2a2a; padding: 30px; margin: 100px auto; text-align: center; }
-        h1 { font-family: 'Stardos Stencil', serif; color: #fde08a; }
-        input, button { display: block; width: 100%; margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid #3d6fa3; color: white; }
-        button { background: #1f7a35; border: none; cursor: pointer; text-transform: uppercase; font-weight: bold; }
+        body { margin: 0; background-color: #0a1a2f; color: #e9f1ff; font-family: sans-serif; }
+        .signin-card { width: 380px; background: #102641; border: 2px dashed #ff2a2a; padding: 30px; margin: 100px auto; text-align: center; }
+        input, button { display: block; width: 100%; margin: 10px 0; padding: 10px; }
+        button { background: #1f7a35; color: white; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
-
-    <!-- SIGN-IN PORTAL -->
     <div id="auth-portal" class="signin-card">
         <h1>TACNET</h1>
         <p>EARL WOOD · DEPUTY SHERIFF (RET.) · VIRGINIA</p>
@@ -27,58 +25,42 @@
         </form>
     </div>
 
-    <!-- TACTICAL DASHBOARD -->
     <div id="dashboard" style="display:none; padding: 20px;">
-        <header><h2>TACNET OPERATIONAL COMMAND</h2></header>
-        <div id="tactical-tools">
-            <!-- Trap & Trace, Range Notifier (RNG), and K9 Protocols -->
-        </div>
+        <h2>TACNET OPERATIONAL COMMAND - ACTIVE</h2>
     </div>
 
     <script src="https://cdn.appwrite.io/v1/sdk.min.js"></script>
-    <script><script src="https://cdn.appwrite.io/v1/sdk.min.js"></script>
-<script>
-    const { Client, Account, Databases, ID } = Appwrite;
-    const client = new Client()
-        .setEndpoint('https://nyc.cloud.appwrite.io/v1') 
-        .setProject('6a38e834003e0cc64c31');
-    
-    const account = new Account(client);
-    const databases = new Databases(client);
-
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
+    <script>
+        const { Client, Account, Databases, ID } = Appwrite;
+        const client = new Client()
+            .setEndpoint('https://nyc.cloud.appwrite.io/v1') 
+            .setProject('6a38e834003e0cc64c31');
         
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const name = document.getElementById('name').value;
-        const agency = document.getElementById('agency').value;
-        const isCommander = document.getElementById('isCommander').checked;
+        const account = new Account(client);
+        const databases = new Databases(client);
 
-        try {
-            // 1. Attempt to create the session
-            await account.createEmailPasswordSession(email, password);
-            console.log("Session created successfully");
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const agency = document.getElementById('agency').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const isCommander = document.getElementById('isCommander').checked;
 
-            // 2. Log unit to tacnet_telemetry_db / tacnet_live_units
-            await databases.createDocument(
-                'tacnet_telemetry_db', 
-                'tacnet_live_units', 
-                ID.unique(), 
-                { name, agency, role: isCommander ? 'COMMANDER' : 'SEARCHER' }
-            );
-
-            // 3. Switch view
-            document.getElementById('auth-portal').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-            alert("Login successful. Welcome to TACNET.");
-            
-        } catch (err) {
-            console.error("Login Error:", err);
-            alert("Login failed: " + err.message);
-        }
-    });
-</script>
+            try {
+                await account.createEmailPasswordSession(email, password);
+                await databases.createDocument(
+                    'tacnet_telemetry_db', 
+                    'tacnet_live_units', 
+                    ID.unique(), 
+                    { name: name, agency: agency, role: isCommander ? 'COMMANDER' : 'SEARCHER' }
+                );
+                document.getElementById('auth-portal').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+            } catch (err) {
+                console.error(err);
+                alert("Error: " + err.message);
+            }
         });
     </script>
 </body>
