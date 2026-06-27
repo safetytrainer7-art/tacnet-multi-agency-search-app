@@ -1,34 +1,87 @@
-<!-- TRAP AND TRACE MODULE -->
-<!-- TRAP AND TRACE MODULE -->
-<div id="trap-trace-panel" style="background: rgba(10, 22, 38, 0.82); border: 1px solid #39ff7a; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
-    <h4 style="color: #39ff7a; margin-top: 0;">TRAP AND TRACE: ACTIVE SCANNING</h4>
-    <div id="scan-status" style="font-family: 'Share Tech Mono', monospace; font-size: 12px; margin-bottom: 10px;">SYSTEM STATUS: STANDBY</div>
-    <button onclick="startScan()" style="background: #39ff7a; color: #0a1a2f; border: none; padding: 10px; width: 100%; cursor: pointer;">INITIALIZE TOWER PING SCAN</button>
-</div><!-- RANGE NOTIFIER (RNG) -->
-<div id="rng-panel" style="background: rgba(10, 22, 38, 0.82); border: 1px solid orange; padding: 15px; border-radius: 8px;">
-    <h4 style="color: orange; margin-top: 0;">RNG: AUTOMATIC SPACING</h4>
-    <div id="dist-display" style="font-size: 18px; font-weight: bold; color: white;">DISTANCE: 0.0m</div>
-    <div style="height: 4px; background: orange; width: 100%; margin-top: 8px;"></div>
-    <p style="font-size: 10px; color: #8fb0d3; margin-top: 5px;">AUTOMATIC DIMENSIONING ACTIVE</p>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TACNET | OPERATIONAL COMMAND</title>
+    <!-- CSS for the tactical interface -->
+    <style>
+        body { margin: 0; font-family: 'Share Tech Mono', monospace; color: #e9f1ff; }
+        /* Landing Page Background */
+        #auth-portal { height: 100vh; background: url('use this image.jpg') center center/cover; display: flex; align-items: center; justify-content: center; }
+        .signin-box { background: rgba(10, 26, 47, 0.9); border: 2px dashed #ff2a2a; padding: 40px; width: 350px; text-align: center; }
+        /* Dashboard Background */
+        #dashboard { height: 100vh; background: url('second_background_image.jpg') center center/cover; padding: 20px; }
+        .tac-panel { background: rgba(10, 22, 38, 0.85); border: 1px solid #3d6fa3; padding: 15px; margin: 10px; border-radius: 4px; }
+        h1, h2 { font-family: 'Stardos Stencil', serif; color: #fde08a; }
+        button { background: #1f7a35; color: white; border: none; padding: 12px; width: 100%; cursor: pointer; text-transform: uppercase; }
+    </style>
+</head>
+<body>
 
-<script>
-    function startScan() {
-        const status = document.getElementById('scan-status');
-        status.innerText = "SCANNING CELL TOWERS...";
-        status.style.color = "#39ff7a";
-        // Logic to link to Appwrite query will go here
-        setTimeout(() => { status.innerText = "STATUS: NO FUGITIVE SIGNALS DETECTED"; }, 2000);
-    }
-</script>
-</div>
+    <!-- PAGE 1: HOME/LOGIN -->
+    <div id="auth-portal">
+        <div class="signin-box">
+            <h1>TACNET</h1>
+            <p>EARL WOOD · DEPUTY SHERIFF (RET.) · VIRGINIA</p>
+            <form id="login-form">
+                <input type="text" id="name" placeholder="Full Name" required>
+                <input type="text" id="agency" placeholder="Agency" required>
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="password" id="password" placeholder="Password" required>
+                <label><input type="checkbox" id="isCommander"> ASSUME CHARGE OF SEARCH</label>
+                <button type="submit">LOGIN TO TACNET</button>
+            </form>
+        </div>
+    </div>
 
-<script>
-    function startScan() {
-        const status = document.getElementById('scan-status');
-        status.innerText = "SCANNING CELL TOWERS...";
-        status.style.color = "#39ff7a";
-        // Logic to link to Appwrite query will go here
-        setTimeout(() => { status.innerText = "STATUS: NO FUGITIVE SIGNALS DETECTED"; }, 2000);
-    }
-</script>
+    <!-- PAGE 2: ACTIVE SEARCH AREA -->
+    <div id="dashboard" style="display:none;">
+        <header><h2>TACNET OPERATIONAL COMMAND — ACTIVE SEARCH</h2></header>
+        <div class="tac-panel">
+            <h4>TRAP AND TRACE: ACTIVE SCANNING</h4>
+            <button onclick="alert('Scanning for cell tower pings...')">INITIALIZE SCAN</button>
+        </div>
+        <div class="tac-panel">
+            <h4>RNG: AUTOMATIC SPACING</h4>
+            <div id="dist-display">DISTANCE: 0.0m</div>
+        </div>
+        <div id="map" style="height: 400px; background: rgba(0,0,0,0.5);">
+            <!-- Leaflet Map Container -->
+        </div>
+    </div>
+
+    <script src="https://cdn.appwrite.io/v1/sdk.min.js"></script>
+    <script>
+        const { Client, Account, Databases, ID } = Appwrite;
+        const client = new Client()
+            .setEndpoint('https://nyc.cloud.appwrite.io/v1') 
+            .setProject('6a38e834003e0cc64c31');
+        
+        const account = new Account(client);
+        const databases = new Databases(client);
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const agency = document.getElementById('agency').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const isCommander = document.getElementById('isCommander').checked;
+
+            try {
+                await account.createEmailPasswordSession(email, password);
+                await databases.createDocument(
+                    'tacnet_telemetry_db', 
+                    'tacnet_live_units', 
+                    ID.unique(), 
+                    { name: name, agency: agency, role: isCommander ? 'COMMANDER' : 'SEARCHER' }
+                );
+                document.getElementById('auth-portal').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+            } catch (err) {
+                alert("Login Error: " + err.message);
+            }
+        });
+    </script>
+</body>
+</html>
