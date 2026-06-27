@@ -1,8 +1,20 @@
 <!-- TRAP AND TRACE MODULE -->
+<!-- TRAP AND TRACE MODULE -->
 <div id="trap-trace-panel" style="background: rgba(10, 22, 38, 0.82); border: 1px solid #39ff7a; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
     <h4 style="color: #39ff7a; margin-top: 0;">TRAP AND TRACE: ACTIVE SCANNING</h4>
     <div id="scan-status" style="font-family: 'Share Tech Mono', monospace; font-size: 12px; margin-bottom: 10px;">SYSTEM STATUS: STANDBY</div>
     <button onclick="startScan()" style="background: #39ff7a; color: #0a1a2f; border: none; padding: 10px; width: 100%; cursor: pointer;">INITIALIZE TOWER PING SCAN</button>
+</div>
+
+<script>
+    function startScan() {
+        const status = document.getElementById('scan-status');
+        status.innerText = "SCANNING CELL TOWERS...";
+        status.style.color = "#39ff7a";
+        // Logic to link to Appwrite query will go here
+        setTimeout(() => { status.innerText = "STATUS: NO FUGITIVE SIGNALS DETECTED"; }, 2000);
+    }
+</script>
 </div>
 
 <script>
