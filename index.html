@@ -5,30 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TACNET</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background-color: #000; }
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: #000; }
         
+        /* PAGE ONE: IMAGE DISPLAY */
         #page-one { 
             height: 100vh; width: 100vw; 
-            background-image: url('ttggg.jpg'); 
-            background-repeat: no-repeat;
-            background-position: center center;
-            /* This will ensure the image fits entirely within the screen */
-            background-size: contain; 
-            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; 
+        }
+        #page-one img { 
+            width: 90%; /* This keeps it within mobile screen boundaries */
+            height: auto; 
         }
         
+        /* PAGE TWO: SEARCH AREA */
         #page-two { 
-            display: none;
-            height: 100vh; width: 100vw; 
-            background-image: url('second_background_image.jpg'); 
-            background-size: cover;
-            padding: 20px; color: white;
+            display: none; height: 100vh; width: 100vw; 
+            background: url('second_background_image.jpg') center/cover no-repeat; 
+            padding: 20px; color: white; 
         }
     </style>
 </head>
 <body>
 
     <div id="page-one" onclick="document.getElementById('page-one').style.display='none'; document.getElementById('page-two').style.display='block';">
+        <img src="ttggg.jpg" alt="TACNET Home">
     </div>
 
     <div id="page-two">
