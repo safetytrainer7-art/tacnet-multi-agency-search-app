@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>TACNET - Full Incident Command</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', 'Impact', sans-serif; background: #0a1f3e; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        .header { background: linear-gradient(145deg, #1a3f7a, #042253); padding: 8px 12px; border-bottom: 3px solid #d42e12; text-align: center; flex-shrink: 0; }
+        .title { font-size: 34px; letter-spacing: 4px; font-weight: 900; color: #e0aa3c; text-shadow: 2px 2px 0 #3a280d; display: inline-block; border: 2px solid #d42e12; border-radius: 12px; padding: 2px 16px; }
+        .sub { font-size: 10px; color: #ffdd88; margin-top: 4px; }
+        .badge { font-size: 9px; color: #adc6ff; margin-top: 4px; }
+        
+        .toolbar { background: #01122cd9; backdrop-filter: blur(8px); padding: 8px 10px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; border-bottom: 1px solid #d42e12; flex-shrink: 0; }
+        .toolbar button, .toolbar select { background: #000000aa; border: 1px solid #efb73e; color: #f5cb5c; padding: 8px 14px; border-radius: 30px; font-weight: bold; font-size: 12px; cursor: pointer; }
+        .toolbar button:active { transform: scale(0.96); }
+        .toolbar button.active { background: #cc0000; border-color: #ff8888; }
+        .toolbar input { background: #000; border: 1px solid gold; color: #f5cb5c; border-radius: 20px; padding: 8px 12px; font-size: 12px; width: 180px; }
+        .toolbar .emergency { background: #ff0000; color: white; animation: pulse 1s infinite; border-color: white; font-weight: bold; }
+        
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); background: #cc0000; } 100% { transform: scale(1); } }
+        
+        .map-container { flex: 1; position: relative; background: #001133; }
+        #map { height: 100%; width: 100%; }
+        .status { position: absolute; bottom: 10px; right: 10px; background: black; color: #0f0; padding: 6px 12px; border-radius: 8px; font-size: 11px; z-index: 1000; font-family: monospace; font-weight: bold; }
+        
+        .night-vision { filter: brightness(1.1) contrast(1.2) hue-rotate(85deg) saturate(2); }
+        .drawing-cursor { cursor: crosshair !important; }
+        
+        .panel { position: fixed; top: 50%; right: 10px; transform: translateY(-50%); background: #01122ce6; backdrop-filter: blur(8px); border: 2px solid #d42e12; border-radius: 16px; padding: 12px; z-index: 2000; width: 280px; display: none; flex-direction: column; gap: 8px; color: #f5cb5c; max-height: 80vh; overflow-y: auto; }
+        .panel h4 { margin-bottom: 8px; border-bottom: 1px solid gold; text-align: center; }
+        .panel button { background: #000; border: 1px solid gold; color: #f5cb5c; padding: 8px; border-radius: 20px; margin: 4px 0; cursor: pointer; }
+        .close-panel { background: #8b0000 !important; }
+        .event-item { background: #00000066; padding: 6px; margin: 4px 0; border-radius: 8px; font-size: 11px; cursor: pointer; }
+        .event-item:hover { background: #0066ff; }
+        
+        @media (max-width: 700px) { .title { font-size: 24px; } .toolbar button { padding: 6px 10px; font-size: 10px; } .panel { width: 260px; right: 5px; } }
+    </style>
+</head>
+<body>
+
+<div id="mainApp" style="display:flex; flex-direction:column; height:100vh;">
+    <div class="header">
+        <span class="title">TACNET</span>
+        <div class="sub">MULTI-AGENCY-TASK-FORCE-SEARCH-APP</div>
+        <div class="badge">⚡ CREATOR: DEPUTY EARL WOOD (RET.) VIRGINIA | INCIDENT COMMAND</div>
+    </div>
+    <div class="toolbar">
+        <button id="lockMapBtn">🔒 LOCK</button>
+        <button id="unlockMapBtn">🔓 UNLOCK</button>
+        <button id="nightVisionBtn">🌙 NIGHT VISION</button>
+        <button id="streetViewBtn">🗺️ STREET</button>
+        <button id="terrainViewBtn">⛰️ TERRAIN</button>
+        <button id="satelliteViewBtn">🛰️ SAT</button>
+        <button id="penBtn" style="background:#ff6600;">✏️ PEN</button>
+        <button id="placeSearcherBtn" style="background:#0066ff;">➕ PLACE SEARCHER</button>
+        <button id="startSearchBtn" style="background:#00aa44;">▶ START SEARCH</button>
+        <button id="terminateSearchBtn" style="background:#8b0000;">⛔ TERMINATE</button>
+        <button id="officerDownBtn" class="emergency">🚨 OFFICER DOWN</button>
+        <button id="viewReportBtn" style="background:#ff8800;">📄 REPORT</button>
+        <button id="playbackBtn" style="background:#44aaff;">▶ PLAYBACK</button>
+        <input type="text" id="addressSearch" placeholder="ENTER ADDRESS">
+        <button id="goAddress">🔍 SEARCH</button>
+        <button id="clearDrawingsBtn" style="background:#8b0000;">🗑️ CLEAR</button>
+    </div>
+    <div class="map-container">
+        <div id="map"></div>
+        <div class="status" id="mapStatus">✅ READY | SEARCH NOT STARTED</div>
+    </div>
+</div>
+
+<!-- Playback Panel -->
+<div id="playbackPanel" class="panel">
+    <h4>📼 SEARCH PLAYBACK</h4>
+    <div id="playbackEvents" style="max-height:400px; overflow-y:auto;"></div>
+    <button id="closePlayback" class="close-panel">CLOSE</button>
+</div>
+
+<!-- Report Panel -->
+<div id="reportPanel" class="panel">
+    <h4>📄 FINAL REPORT</h4>
+    <button id="generateReportBtn">📄 GENERATE PDF</button>
+    <button id="emailReportBtn">📧 EMAIL REPORT</button>
+    <button id="printReportBtn">🖨️ PRINT</button>
+    <button id="closeReport" class="close-panel">CLOSE</button>
+</div>
+
+<!-- Officer Down Alert Panel -->
+<div id="emergencyPanel" class="panel" style="background:#cc0000; border-color:white;">
+    <h4 style="color:white;">🚨 OFFICER DOWN 🚨</h4>
+    <div id="emergencyInfo" style="color:white; font-size:12px;"></div>
+    <button id="resetEmergencyBtn" style="background:black; color:white;">✅ RESET EMERGENCY</button>
+    <button id="closeEmergency" class="close-panel" style="background:black;">CLOSE</button>
+</div>
+
+<script>
+    // ========== MAP INITIALIZATION ==========
+    let map, streetLayer, terrainLayer, satelliteLayer;
+    let currentPerimeter = null;
+    let freehandGroup;
+    let penActive = false;
+    let isDrawing = false;
+    let currentPolyline = null;
+    let manualMarkers = [];
+    let drawnItems;
+    
+    // ========== SEARCH RECORDING ==========
+    let searchActive = false;
+    let searchStartTime = null;
+    let searchEvents = [];
+    let officerDownActive = false;
+    let officerDownLocation = null;
+    let officerDownName = null;
+    let emergencyMarker = null;
+    
+    // Helper functions
+    function addEvent(type, description, lat = null, lng = null, details = null) {
+        if (!searchActive) return;
+        const event = {
+            id: Date.now() + Math.random(),
+            timestamp: new Date().toISOString(),
+            timeFormatted: new Date().toLocaleTimeString(),
+            dateFormatted: new Date().toLocaleDateString(),
+            type: type,
+            description: description,
+            lat: lat,
+            lng: lng,
+            details: details
+        };
+        searchEvents.push(event);
+        console.log("Event recorded:", event);
+        updatePlaybackList();
+    }
+    
+    function formatDuration(ms) {
+        const seconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
+    }
+    
+    function updatePlaybackList() {
+        const container = document.getElementById('playbackEvents');
+        if (!container) return;
+        if (searchEvents.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:20px;">No events recorded yet</div>';
+            return;
+        }
+        let html = '';
+        searchEvents.slice().reverse().forEach(ev => {
+            html += `<div class="event-item" onclick="zoomToEvent(${ev.lat || 'null'}, ${ev.lng || 'null'})">
+                        <strong>${ev.timeFormatted}</strong><br>
+                        <span style="color:#ffcc66;">${ev.type}</span><br>
+                        <small>${ev.description.substring(0, 60)}</small>
+                     </div>`;
+        });
+        container.innerHTML = html;
+    }
+    
+    window.zoomToEvent = function(lat, lng) {
+        if (lat && lng && map) {
+            map.setView([lat, lng], 16);
+            const marker = L.circleMarker([lat, lng], { radius: 20, color: '#ff6600', fillColor: '#ff6600', fillOpacity: 0.5 }).addTo(map);
+            setTimeout(() => map.removeLayer(marker), 3000);
+        }
+    };
+    
+    function disableAllInputs(disabled) {
+        const btns = ['placeSearcherBtn', 'penBtn', 'clearDrawingsBtn', 'goAddress', 'addressSearch', 'officerDownBtn'];
+        btns.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.disabled = disabled;
+        });
+    }
+    
+    // ========== MAP SETUP ==========
+    function initMap() {
+        map = L.map('map').setView([37.4316, -78.6569], 13);
+        
+        streetLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '© OSM', maxZoom: 19 });
+        terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { attribution: '© OpenTopoMap', maxZoom: 17 });
+        satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '© Esri', maxZoom: 19 });
+        satelliteLayer.addTo(map);
+        
+        document.getElementById('streetViewBtn').onclick = () => { map.removeLayer(terrainLayer); map.removeLayer(satelliteLayer); streetLayer.addTo(map); };
+        document.getElementById('terrainViewBtn').onclick = () => { map.removeLayer(streetLayer); map.removeLayer(satelliteLayer); terrainLayer.addTo(map); };
+        document.getElementById('satelliteViewBtn').onclick = () => { map.removeLayer(streetLayer); map.removeLayer(terrainLayer); satelliteLayer.addTo(map); };
+        
+        // Place Searcher
+        function addManualSearcher(type, lat, lng, name) {
+            const colorMap = { law:'#0066ff', k9:'#44aaff', sar:'#cc0000', civilian:'#00aa44', suspect:'#9900cc', drone:'#888888', article:'#ff8800' };
+            const letterMap = { law:'L', k9:'K9', sar:'S', civilian:'C', suspect:'SUS', drone:'D', article:'A' };
+            const color = colorMap[type] || '#0066ff';
+            const letter = letterMap[type] || '?';
+            
+            const manualIcon = L.divIcon({ 
+                html: `<div style="background:${color}; width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:3px solid white; box-shadow:0 2px 8px black; font-weight:bold; font-size:${type === 'k9' ? '14px' : '20px'}; color:white;">${letter}</div>`,
+                iconSize: [42,42],
+                popupAnchor: [0,-21]
+            });
+            
+            const markerId = 'manual_' + Date.now() + '_' + Math.random();
+            const marker = L.marker([lat, lng], { icon: manualIcon, draggable: true })
+                .bindPopup(`<div style="font-size:16px; font-weight:bold; min-width:160px; text-align:center;"><div style="margin-bottom:8px;">${name}</div><div style="color:#888; margin-bottom:12px;">${type.toUpperCase()}</div><button class="removeManualBtn" data-id="${markerId}" style="background:#cc0000; color:white; border:none; padding:6px 16px; border-radius:20px; cursor:pointer; font-size:14px;">REMOVE</button></div>`);
+            marker.addTo(map);
+            marker._manualId = markerId;
+            manualMarkers.push(marker);
+            
+            addEvent('SEARCHER_PLACED', `Added ${name} (${type}) at ${lat.toFixed(5)}, ${lng.toFixed(5)}`, lat, lng, { name, type });
+            
+            marker.on('popupopen', function() {
+                setTimeout(() => {
+                    const btn = document.querySelector(`.removeManualBtn[data-id="${markerId}"]`);
+                    if(btn) {
+                        btn.onclick = () => {
+                            map.removeLayer(marker);
+                            manualMarkers = manualMarkers.filter(m => m !== marker);
+                            addEvent('SEARCHER_REMOVED', `Removed ${name} (${type})`, lat, lng);
+                            updatePlaybackList();
+                        };
+                    }
+                }, 100);
+            });
+        }
+        
+        document.getElementById('placeSearcherBtn').onclick = () => {
+            if (!searchActive) { alert("⚠️ START SEARCH first"); return; }
+            const center = map.getCenter();
+            const type = prompt('SELECT TYPE:\nlaw\nk9\nsar\ncivilian\nsuspect\ndrone\narticle');
+            if (!type) return;
+            const validTypes = ['law', 'k9', 'sar', 'civilian', 'suspect', 'drone', 'article'];
+            if (!validTypes.includes(type.toLowerCase())) {
+                alert('Invalid. Use: law, k9, sar, civilian, suspect, drone, article');
+                return;
+            }
+            const name = prompt('ENTER NAME / CALLSIGN');
+            if (name && name.trim()) {
+                addManualSearcher(type.toLowerCase(), center.lat, center.lng, name.trim());
+                updatePlaybackList();
+            }
+        };
+        
+        // Pen Drawing
+        freehandGroup = L.featureGroup().addTo(map);
+        
+        function startDrawing(e) { if (!penActive) return; map.dragging.disable(); isDrawing = true; currentPolyline = L.polyline([e.latlng], { color: '#ff3300', weight: 5, lineCap: 'round', lineJoin: 'round' }).addTo(freehandGroup); }
+        function draw(e) { if (!isDrawing || !penActive) return; let points = currentPolyline.getLatLngs(); points.push(e.latlng); currentPolyline.setLatLngs(points); }
+        function stopDrawing() { if (!isDrawing) return; isDrawing = false; if (currentPolyline && currentPolyline.getLatLngs().length < 2) { freehandGroup.removeLayer(currentPolyline); } currentPolyline = null; if (!penActive && !document.getElementById('mapStatus').innerHTML.includes('LOCKED')) { map.dragging.enable(); } }
+        
+        map.on('mousedown', startDrawing);
+        map.on('mousemove', draw);
+        map.on('mouseup', stopDrawing);
+        map.on('touchstart', startDrawing);
+        map.on('touchmove', draw);
+        map.on('touchend', stopDrawing);
+        
+        document.getElementById('penBtn').onclick = () => { 
+            penActive = !penActive; 
+            document.getElementById('penBtn').classList.toggle('active', penActive); 
+            map.getContainer().classList.toggle('drawing-cursor', penActive); 
+            if (!penActive && !document.getElementById('mapStatus').innerHTML.includes('LOCKED')) { map.dragging.enable(); map.touchZoom.enable(); map.scrollWheelZoom.enable(); } 
+            else if (penActive) { map.dragging.disable(); map.touchZoom.disable(); map.scrollWheelZoom.disable(); } 
+        };
+        
+        // Shape Drawing
+        drawnItems = new L.FeatureGroup(); 
+        map.addLayer(drawnItems);
+        let drawControl = new L.Control.Draw({ edit: { featureGroup: drawnItems }, draw: { polygon: true, polyline: true, rectangle: true, circle: true, marker: false } });
+        map.addControl(drawControl);
+        map.on(L.Draw.Event.CREATED, (e) => { drawnItems.addLayer(e.layer); addEvent('SHAPE_DRAWN', `Drew ${e.layerType} on map`); updatePlaybackList(); });
+        
+        // Clear
+        document.getElementById('clearDrawingsBtn').onclick = () => { 
+            if (confirm('Clear ALL drawings and markers?')) { 
+                freehandGroup.clearLayers(); 
+                drawnItems.clearLayers(); 
+                manualMarkers.forEach(m => map.removeLayer(m)); 
+                manualMarkers = [];
+                if (currentPerimeter) {
+                    if (currentPerimeter.square) map.removeLayer(currentPerimeter.square);
+                    if (currentPerimeter.lines) currentPerimeter.lines.forEach(l => map.removeLayer(l));
+                    currentPerimeter = null;
+                }
+                if(searchActive) addEvent('CLEARED', 'Cleared all drawings and markers');
+                updatePlaybackList();
+            } 
+        };
+        
+        // Lock/Unlock
+        document.getElementById('lockMapBtn').onclick = () => { map.dragging.disable(); map.touchZoom.disable(); map.scrollWheelZoom.disable(); map.doubleClickZoom.disable(); document.getElementById('mapStatus').innerHTML = '🔒 MAP: LOCKED'; };
+        document.getElementById('unlockMapBtn').onclick = () => { if (!penActive) { map.dragging.enable(); map.touchZoom.enable(); map.scrollWheelZoom.enable(); map.doubleClickZoom.enable(); } document.getElementById('mapStatus').innerHTML = '🔓 MAP: UNLOCKED'; };
+        
+        // Night Vision
+        let nvActive = false;
+        document.getElementById('nightVisionBtn').onclick = () => { nvActive = !nvActive; document.getElementById('map').classList.toggle('night-vision', nvActive); };
+        
+        // Address Search + Perimeter
+        function createGridPerimeter(lat, lng, sizeMeters = 200) {
+            if (currentPerimeter) {
+                if (currentPerimeter.square) map.removeLayer(currentPerimeter.square);
+                if (currentPerimeter.lines) currentPerimeter.lines.forEach(l => map.removeLayer(l));
+            }
+            const halfDeg = (sizeMeters / 111320) / 2;
+            const bounds = [[lat - halfDeg, lng - halfDeg], [lat + halfDeg, lng + halfDeg]];
+            const square = L.rectangle(bounds, { color: '#00ff88', weight: 4, fillColor: '#00ff8822', fillOpacity: 0.3 });
+            square.addTo(map);
+            const lines = [];
+            for (let i = 1; i <= 3; i++) {
+                let offset = (halfDeg * i) / 2;
+                lines.push(L.polyline([[lat - halfDeg, lng - halfDeg + offset], [lat + halfDeg, lng - halfDeg + offset]], { color: '#00ff88', weight: 2, opacity: 0.7 }).addTo(map));
+                lines.push(L.polyline([[lat - halfDeg + offset, lng - halfDeg], [lat - halfDeg + offset, lng + halfDeg]], { color: '#00ff88', weight: 2, opacity: 0.7 }).addTo(map));
+            }
+            currentPerimeter = { square, lines, size: sizeMeters, center: [lat, lng] };
+            
+            if (!document.getElementById('periSlider')) {
+                let slider = document.createElement('input');
+                slider.id = 'periSlider';
+                slider.type = 'range';
+                slider.min = 50;
+                slider.max = 800;
+                slider.value = sizeMeters;
+                slider.style.cssText = 'position:absolute; bottom:60px; left:10px; z-index:1000; width:150px; background:#000; border:1px solid gold; border-radius:20px;';
+                document.querySelector('.map-container').appendChild(slider);
+                let label = document.createElement('span');
+                label.innerText = '📐 PERIMETER (m)';
+                label.style.cssText = 'position:absolute; bottom:85px; left:10px; color:#0f0; font-size:10px; z-index:1000; font-weight:bold;';
+                document.querySelector('.map-container').appendChild(label);
+                slider.addEventListener('input', (e) => {
+                    if (currentPerimeter) {
+                        let newSize = parseInt(e.target.value);
+                        let half = (newSize / 111320) / 2;
+                        currentPerimeter.square.setBounds([[currentPerimeter.center[0] - half, currentPerimeter.center[1] - half], [currentPerimeter.center[0] + half, currentPerimeter.center[1] + half]]);
+                        currentPerimeter.lines.forEach(l => map.removeLayer(l));
+                        let newLines = [];
+                        for (let i = 1; i <= 3; i++) {
+                            let off = (half * i) / 2;
+                            newLines.push(L.polyline([[currentPerimeter.center[0] - half, currentPerimeter.center[1] - half + off], [currentPerimeter.center[0] + half, currentPerimeter.center[1] - half + off]], { color: '#00ff88', weight: 2, opacity: 0.7 }).addTo(map));
+                            newLines.push(L.polyline([[currentPerimeter.center[0] - half + off, currentPerimeter.center[1] - half], [currentPerimeter.center[0] - half + off, currentPerimeter.center[1] + half]], { color: '#00ff88', weight: 2, opacity: 0.7 }).addTo(map));
+                        }
+                        currentPerimeter.lines = newLines;
+                    }
+                });
+            }
+        }
+        
+        document.getElementById('goAddress').onclick = async () => {
+            let addr = document.getElementById('addressSearch').value;
+            if (!addr) return;
+            try {
+                let res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}&limit=1`);
+                let data = await res.json();
+                if (data.length) {
+                    let lat = parseFloat(data[0].lat);
+                    let lon = parseFloat(data[0].lon);
+                    map.setView([lat, lon], 17);
+                    let redDot = L.circleMarker([lat, lon], { radius: 16, color: '#ff0000', fillColor: '#ff0000', fillOpacity: 0.8 }).addTo(map);
+                    redDot.bindPopup('<b>📍 SEARCHED ADDRESS</b>').openPopup();
+                    setTimeout(() => map.removeLayer(redDot), 5000);
+                    createGridPerimeter(lat, lon, 200);
+                    if(searchActive) addEvent('ADDRESS_SEARCH', `Searched address: ${addr}`, lat, lon, { address: addr });
+                    updatePlaybackList();
+                } else alert('Address not found');
+            } catch(e) { alert('Search error'); }
+        };
+        
+        // ========== START SEARCH ==========
+        document.getElementById('startSearchBtn').onclick = () => {
+            if (searchActive) { alert("Search already active"); return; }
+            searchActive = true;
+            searchStartTime = new Date();
+            searchEvents = [];
+            officerDownActive = false;
+            if (emergencyMarker) map.removeLayer(emergencyMarker);
+            addEvent('SEARCH_STARTED', `Search initiated at ${searchStartTime.toLocaleString()}`);
+            document.getElementById('mapStatus').innerHTML = '🔴 SEARCH ACTIVE - RECORDING';
+            document.getElementById('startSearchBtn').style.background = '#00aa44';
+            disableAllInputs(false);
+            updatePlaybackList();
+            alert("✅ SEARCH STARTED - All actions are being recorded");
+        };
+        
+        // ========== TERMINATE SEARCH ==========
+        document.getElementById('terminateSearchBtn').onclick = () => {
+            if (!searchActive) { alert("No active search to terminate"); return; }
+            if (confirm("⚠️ TERMINATE SEARCH? This will stop recording and lock all inputs. Final report will be generated.")) {
+                const duration = formatDuration(new Date() - searchStartTime);
+                addEvent('SEARCH_TERMINATED', `Search terminated. Duration: ${duration}`);
+                searchActive = false;
+                document.getElementById('mapStatus').innerHTML = '⛔ SEARCH TERMINATED - REPORT READY';
+                disableAllInputs(true);
+                updatePlaybackList();
+                alert("⛔ SEARCH TERMINATED. Click REPORT to generate final report.");
+            }
+        };
+        
+        // ========== OFFICER DOWN ==========
+        document.getElementById('officerDownBtn').onclick = () => {
+            if (!searchActive) { alert("Start search first"); return; }
+            const center = map.getCenter();
+            const name = prompt("🚨 OFFICER DOWN! Enter officer's name/callsign:");
+            if (!name) return;
+            officerDownActive = true;
+            officerDownLocation = center;
+            officerDownName = name;
+            
+            const emergencyIcon = L.divIcon({ html: '<div style="background:#ff0000; width:50px; height:50px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:4px solid white; box-shadow:0 0 20px red; animation: pulse 0.5s infinite; font-weight:bold; font-size:24px; color:white;">🚨</div>', iconSize: [50,50] });
+            emergencyMarker = L.marker([center.lat, center.lng], { icon: emergencyIcon }).addTo(map).bindPopup(`🚨 EMERGENCY: ${name} DOWN at this location 🚨`).openPopup();
+            
+            addEvent('OFFICER_DOWN', `🚨 OFFICER DOWN: ${name} at ${center.lat.toFixed(5)}, ${center.lng.toFixed(5)}`, center.lat, center.lng, { officer: name });
+            updatePlaybackList();
+            
+            document.getElementById('emergencyInfo').innerHTML = `<strong>${name}</strong> is DOWN at:<br>Lat: ${center.lat.toFixed(5)}<br>Lng: ${center.lng.toFixed(5)}<br>TIME: ${new Date().toLocaleTimeString()}`;
+            document.getElementById('emergencyPanel').style.display = 'flex';
+            
+            document.getElementById('map').style.border = '5px solid red';
+            setTimeout(() => { document.getElementById('map').style.border = 'none'; }, 3000);
+        };
+        
+        document.getElementById('resetEmergencyBtn').onclick = () => {
+            if (emergencyMarker) map.removeLayer(emergencyMarker);
+            officerDownActive = false;
+            document.getElementById('emergencyPanel').style.display = 'none';
+            addEvent('EMERGENCY_RESET', `Emergency reset for ${officerDownName || 'unknown'}`);
+            updatePlaybackList();
+            alert("✅ Emergency reset. Officer marked safe.");
+        };
+        
+        document.getElementById('closeEmergency').onclick = () => { document.getElementById('emergencyPanel').style.display = 'none'; };
+        
+        // ========== PLAYBACK ==========
+        document.getElementById('playbackBtn').onclick = () => {
+            updatePlaybackList();
+            document.getElementById('playbackPanel').style.display = 'flex';
+        };
+        document.getElementById('closePlayback').onclick = () => { document.getElementById('playbackPanel').style.display = 'none'; };
+        
+        // ========== REPORT GENERATION ==========
+        document.getElementById('viewReportBtn').onclick = () => {
+            document.getElementById('reportPanel').style.display = 'flex';
+        };
+        document.getElementById('closeReport').onclick = () => { document.getElementById('reportPanel').style.display = 'none'; };
+        
+        document.getElementById('generateReportBtn').onclick = async () => {
+            if (searchEvents.length === 0 && !searchStartTime) {
+                alert("No search data to report");
+                return;
+            }
+            
+            const duration = searchStartTime ? formatDuration(new Date() - searchStartTime) : "Unknown";
+            const startTimeStr = searchStartTime ? searchStartTime.toLocaleString() : "Unknown";
+            const endTimeStr = new Date().toLocaleString();
+            
+            let eventsHtml = '';
+            searchEvents.forEach((ev, idx) => {
+                eventsHtml += `
+                    <tr style="border-bottom:1px solid #ccc;">
+                        <td style="padding:8px; border:1px solid #ddd;">${idx+1}</td>
+                        <td style="padding:8px; border:1px solid #ddd;">${ev.timeFormatted}</td>
+                        <td style="padding:8px; border:1px solid #ddd;"><strong>${ev.type}</strong></td>
+                        <td style="padding:8px; border:1px solid #ddd;">${ev.description}</td>
+                    </tr>
+                `;
+            });
+            
+            const reportHtml = `
+                <div id="reportContent" style="font-family:'Times New Roman',serif; max-width:1000px; margin:0 auto;">
+                    <div style="background:#0a1f3e; color:#e0aa3c; padding:30px; text-align:center; border-bottom:4px solid #d42e12;">
+                        <h1 style="margin:0; font-size:42px; letter-spacing:4px;">TACNET</h1>
+                        <p style="margin:5px 0; font-size:14px;">MULTI-AGENCY TASK FORCE SEARCH APP</p>
+                        <p style="margin:5px 0; font-size:12px;">OFFICIAL SEARCH INCIDENT REPORT</p>
+                        <p style="margin:15px 0 0; font-size:11px;">CREATOR: DEPUTY EARL WOOD (RET.) VIRGINIA</p>
+                    </div>
+                    <div style="padding:30px;">
+                        <h2 style="color:#0a1f3e; border-bottom:2px solid #d42e12; padding-bottom:10px;">INCIDENT SUMMARY</h2>
+                        <table style="width:100%; border-collapse:collapse; margin:20px 0;">
+                            <tr><td style="padding:10px; border:1px solid #ccc;"><strong>Search Started:</strong></td><td style="padding:10px; border:1px solid #ccc;">${startTimeStr}</td></tr>
+                            <tr><td style="padding:10px; border:1px solid #ccc;"><strong>Search Terminated:</strong></td><td style="padding:10px; border:1px solid #ccc;">${endTimeStr}</td></tr>
+                            <tr><td style="padding:10px; border:1px solid #ccc;"><strong>Total Duration:</strong></td><td style="padding:10px; border:1px solid #ccc;">${duration}</td></tr>
+                            <tr><td style="padding:10px; border:1px solid #ccc;"><strong>Total Events Recorded:</strong></td><td style="padding:10px; border:1px solid #ccc;">${searchEvents.length}</td></tr>
+                            <tr><td style="padding:10px; border:1px solid #ccc;"><strong>Officer Down Incident:</strong></td><td style="padding:10px; border:1px solid #ccc; color:${officerDownActive ? 'red' : 'green'}; font-weight:bold;">${officerDownActive ? 'YES - ' + officerDownName : 'NO'}</td></tr>
+                        </table>
+                        
+                        <h2 style="color:#0a1f3e; border-bottom:2px solid #d42e12; padding-bottom:10px; margin-top:30px;">FULL INCIDENT TIMELINE</h2>
+                        <table style="width:100%; border-collapse:collapse; margin-top:15px;">
+                            <thead>
+                                <tr style="background:#0a1f3e; color:white;">
+                                    <th style="padding:10px; border:1px solid #ccc;">#</th>
+                                    <th style="padding:10px; border:1px solid #ccc;">TIME</th>
+                                    <th style="padding:10px; border:1px solid #ccc;">EVENT TYPE</th>
+                                    <th style="padding:10px; border:1px solid #ccc;">DESCRIPTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${eventsHtml || '<tr><td colspan="4" style="padding:20px; text-align:center;">No events recorded</td></tr>'}
+                            </tbody>
+                        </table>
+                        
+                        <div style="margin-top:40px; padding:20px; background:#f5f5f5; text-align:center; font-size:11px;">
+                            <p>This report is an official record of the TACNET search operation.</p>
+                            <p>Report Generated: ${new Date().toLocaleString()}</p>
+                            <p>© TACNET - Law Enforcement Use Only</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = reportHtml;
+            document.body.appendChild(tempDiv);
+            const element = document.getElementById('reportContent');
+            if (element) {
+                html2pdf().from(element).set({ margin: 0.5, filename: `TACNET_Report_${new Date().toISOString().slice(0,19)}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } }).save();
+            }
+            document.body.removeChild(tempDiv);
+            alert("✅ PDF Report generated and downloaded");
+        };
+        
+        document.getElementById('emailReportBtn').onclick = () => {
+            alert("📧 To email report:\n1. Generate PDF first\n2. Attach the PDF to your email client\n3. Send to your command staff");
+            window.location.href = "mailto:?subject=TACNET Search Incident Report&body=Please find attached the official TACNET search incident report.";
+        };
+        
+        document.getElementById('printReportBtn').onclick = () => {
+            alert("🖨️ Generate PDF first, then open and print");
+        };
+        
+        updatePlaybackList();
+    }
+    
+    initMap();
+</script>
+</body>
+</html>
