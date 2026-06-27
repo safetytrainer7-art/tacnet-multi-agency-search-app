@@ -1,60 +1,14 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TACNET | OPERATIONAL</title>
+    <title>TACNET</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; background: #000; font-family: sans-serif; }
-        
-        /* PAGE 1: LANDING PAGE */
-        #landing-page { 
-            height: 100vh; width: 100vw; 
-            background: url('IMAGE FOR TAC.png2.jpg') no-repeat center center; 
-            background-size: contain; 
-            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-            padding-bottom: 50px; cursor: pointer;
-        }
-        .tap-prompt { color: #fde08a; font-size: 20px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; text-shadow: 2px 2px 4px #000; }
-        
-        /* PAGE 2: LOGIN PAGE */
-        #login-page { 
-            display: none; height: 100vh; width: 100vw; 
-            background: #0a1a2f; display: flex; align-items: center; justify-content: center; 
-        }
-        .login-box { background: #102641; border: 1px solid #39ff7a; padding: 30px; width: 300px; color: white; }
-        input, button { width: 100%; margin: 10px 0; padding: 10px; }
-        button { background: #1f7a35; color: white; border: none; cursor: pointer; }
+        body { margin: 0; background-color: #000; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        img { max-width: 100%; height: auto; }
     </style>
 </head>
 <body>
-
-    <!-- PAGE 1 -->
-    <div id="landing-page" onclick="document.getElementById('landing-page').style.display='none'; document.getElementById('login-page').style.display='flex';">
-        <div class="tap-prompt">TAP ANYWHERE TO ACCESS LOGIN</div>
-    </div>
-
-    <!-- PAGE 2: LOGIN -->
-    <div id="login-page">
-        <div class="login-box">
-            <h3>OPERATIONAL AUTHENTICATION</h3>
-            <form id="auth-form">
-                <input type="text" placeholder="Full Name" required>
-                <input type="text" placeholder="Agency" required>
-                <input type="email" placeholder="Email" required>
-                <input type="password" placeholder="Password" required>
-                <button type="submit">LOGIN TO TACNET</button>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        document.getElementById('auth-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            alert("Redirecting to TACNET Dashboard...");
-            // We will hook this to the dashboard transition next
-        });
-    </script>
+    <img src="IMAGE FOR TAC.png2.jpg" onclick="alert('Proceeding to Login...')">
 </body>
 </html>
