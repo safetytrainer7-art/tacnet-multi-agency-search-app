@@ -1,34 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>TACNET | OPERATIONAL COMMAND</title>
-    <style>
-        body { margin: 0; background-color: #0a1a2f; color: #e9f1ff; font-family: sans-serif; }
-        .signin-card { width: 380px; background: #102641; border: 2px dashed #ff2a2a; padding: 30px; margin: 100px auto; text-align: center; }
-        button { background: #1f7a35; color: white; border: none; padding: 15px; width: 100%; cursor: pointer; margin-top: 10px; }
-    </style>
-</head>
-<body>
-    <!-- Auth Portal -->
-    <div id="auth-portal" class="signin-card">
-        <h1>TACNET</h1>
-        <p>EARL WOOD · DEPUTY SHERIFF (RET.) · VIRGINIA</p>
-        <button onclick="forceAccess()">FORCE ACCESS TO DASHBOARD</button>
-    </div>
+<!-- TRAP AND TRACE MODULE -->
+<div id="trap-trace-panel" style="background: rgba(10, 22, 38, 0.82); border: 1px solid #39ff7a; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
+    <h4 style="color: #39ff7a; margin-top: 0;">TRAP AND TRACE: ACTIVE SCANNING</h4>
+    <div id="scan-status" style="font-family: 'Share Tech Mono', monospace; font-size: 12px; margin-bottom: 10px;">SYSTEM STATUS: STANDBY</div>
+    <button onclick="startScan()" style="background: #39ff7a; color: #0a1a2f; border: none; padding: 10px; width: 100%; cursor: pointer;">INITIALIZE TOWER PING SCAN</button>
+</div>
 
-    <!-- Dashboard -->
-    <div id="dashboard" style="display:none; padding: 20px;">
-        <h2>TACNET OPERATIONAL COMMAND — LIVE</h2>
-        <p>Database Connected: tacnet_telemetry_db</p>
-    </div>
-
-    <script>
-        function forceAccess() {
-            document.getElementById('auth-portal').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
-            console.log("Dashboard unlocked for testing.");
-        }
-    </script>
-</body>
-</html>
+<script>
+    function startScan() {
+        const status = document.getElementById('scan-status');
+        status.innerText = "SCANNING CELL TOWERS...";
+        status.style.color = "#39ff7a";
+        // Logic to link to Appwrite query will go here
+        setTimeout(() => { status.innerText = "STATUS: NO FUGITIVE SIGNALS DETECTED"; }, 2000);
+    }
+</script>
