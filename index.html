@@ -4,25 +4,42 @@
     <meta charset="UTF-8">
     <title>TACNET</title>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Share Tech Mono', monospace; }
+        /* Force these images to take up the full screen */
+        body, html { margin: 0; padding: 0; height: 100%; width: 100%; }
         
-        /* PAGE 1: LOGIN (EARTH BACKDROP) */
-        #auth-portal { height: 100vh; background: url('use this image.jpg') center/cover no-repeat; display: flex; align-items: center; justify-content: center; }
-        .signin-card { background: #1a2a3a; border: 2px dashed #ff2a2a; padding: 40px; width: 350px; text-align: center; color: #e9f1ff; }
+        #auth-portal { 
+            height: 100vh; 
+            width: 100vw;
+            background: url('use this image.jpg') no-repeat center center fixed; 
+            background-size: cover; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
         
-        /* PAGE 2: SEARCH AREA (SECOND IMAGE BACKGROUND) */
-        #dashboard { height: 100vh; background: url('second_background_image.jpg') center/cover no-repeat; padding: 20px; color: white; }
+        /* The Card Styling from your image */
+        .signin-card { 
+            background: #1a2a3a; 
+            border: 2px dashed #ff2a2a; 
+            padding: 40px; 
+            width: 350px; 
+            text-align: center; 
+            color: #e9f1ff; 
+        }
         
-        /* GLASS OVERLAYS */
-        .glass-panel { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); padding: 15px; border-radius: 8px; margin-bottom: 10px; }
-        
-        input, button { display: block; width: 100%; margin: 10px 0; padding: 10px; }
-        .login-btn { background: #1f7a35; border: none; cursor: pointer; color: white; text-transform: uppercase; }
+        /* Internal Dashboard */
+        #dashboard { 
+            height: 100vh; 
+            width: 100vw;
+            background: url('second_background_image.jpg') no-repeat center center fixed; 
+            background-size: cover; 
+            display: none; 
+            padding: 20px; 
+        }
     </style>
 </head>
 <body>
 
-    <!-- LOGIN PAGE -->
     <div id="auth-portal">
         <div class="signin-card">
             <h1>TACNET</h1>
@@ -33,18 +50,14 @@
                 <input type="email" id="email" placeholder="Email" required>
                 <input type="password" id="password" placeholder="Password" required>
                 <label><input type="checkbox" id="isCommander"> ASSUME CHARGE OF SEARCH</label>
-                <button type="submit" class="login-btn">LOGIN TO TACNET</button>
+                <button type="submit" style="background:#1f7a35; color:white; border:none; padding:10px; width:100%;">LOGIN TO TACNET</button>
             </form>
         </div>
     </div>
 
-    <!-- DASHBOARD AREA -->
-    <div id="dashboard" style="display:none;">
-        <div class="glass-panel">
-            <h2>OPERATIONAL COMMAND</h2>
-            <div id="rng-tool" class="glass-panel">RNG (Automatic Spacing)</div>
-            <div id="trap-trace" class="glass-panel">Trap & Trace Active</div>
-        </div>
+    <div id="dashboard">
+        <h2>TACTICAL SEARCH AREA</h2>
+        <!-- Tactical tools will overlay here -->
     </div>
 
     <script src="https://cdn.appwrite.io/v1/sdk.min.js"></script>
@@ -60,22 +73,18 @@
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             try {
-                await account.createEmailPasswordSession(document.getElementById('email').value, document.getElementById('password').value);
-                
-                await databases.createDocument(
-                    'tacnet_telemetry_db', 
-                    'tacnet_live_units', 
-                    ID.unique(), 
-                    { 
-                        name: document.getElementById('name').value, 
-                        agency: document.getElementById('agency').value, 
-                        role: document.getElementById('isCommander').checked ? 'COMMANDER' : 'SEARCHER' 
-                    }
+                // Perform Appwrite Login
+                await account.createEmailPasswordSession(
+                    document.getElementById('email').value, 
+                    document.getElementById('password').value
                 );
-
+                
+                // Switch to the search area
                 document.getElementById('auth-portal').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
-            } catch (err) { alert("Login failed: " + err.message); }
+            } catch (err) {
+                alert("Login failed: " + err.message);
+            }
         });
     </script>
 </body>
