@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
+        
+        /* Main UI Container */
+        #tacnet-ui { width: 100vw; height: 100vh; background: url('ui.jpg') no-repeat center center; background-size: cover; display: flex; }
+
+        /* Tactical Sidebar */
+        .sidebar { width: 250px; background: rgba(0,0,0,0.8); padding: 15px; border-right: 1px solid #444; }
+        
+        /* Icon Styling with Backlighting */
+        .icon-row { display: flex; align-items: center; margin: 8px 0; padding: 5px; border-radius: 4px; box-shadow: 0 0 10px rgba(255,255,255,0.1); }
+        .dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 10px; }
+        
+        /* Colors */
+        .blue { background: blue; box-shadow: 0 0 8px blue; }
+        .lightblue { background: #87CEEB; box-shadow: 0 0 8px #87CEEB; }
+        .red { background: red; box-shadow: 0 0 8px red; }
+        .green { background: green; box-shadow: 0 0 8px green; }
+        .purple { background: purple; box-shadow: 0 0 8px purple; }
+        .gray { background: gray; box-shadow: 0 0 8px gray; }
+        .orange { background: orange; box-shadow: 0 0 8px orange; }
+        .yellow { background: yellow; box-shadow: 0 0 8px yellow; }
+        .blackblue { background: #00008B; box-shadow: 0 0 8px #00008B; }
+        .white { background: white; box-shadow: 0 0 8px white; }
+        .black { background: black; border: 1px solid white; box-shadow: 0 0 8px white; }
+        .cmd-post { background: red; border-top: 5px solid black; }
+
+        /* Tool buttons */
+        .tools { margin-top: 20px; border-top: 1px solid #444; padding-top: 10px; }
+        button { width: 100%; margin: 5px 0; background: #222; color: white; border: 1px solid #555; padding: 8px; cursor: pointer; }
+        button:hover { background: #444; }
+    </style>
+</head>
+<body>
+
+<div id="tacnet-ui">
+    <div class="sidebar">
+        <h3>ASSETS</h3>
+        <div class="icon-row"><div class="dot blue"></div> Law Enforcement</div>
+        <div class="icon-row"><div class="dot lightblue"></div> LE + K9</div>
+        <div class="icon-row"><div class="dot red"></div> SAR</div>
+        <div class="icon-row"><div class="dot green"></div> Civilian</div>
+        <div class="icon-row"><div class="dot purple"></div> Suspect</div>
+        <div class="icon-row"><div class="dot gray"></div> Drone</div>
+        <div class="icon-row"><div class="dot orange"></div> Article Find</div>
+        <div class="icon-row"><div class="dot yellow"></div> Boat</div>
+        <div class="icon-row"><div class="dot blackblue"></div> Submerged Boat</div>
+        <div class="icon-row"><div class="dot white"></div> Victim</div>
+        <div class="icon-row"><div class="dot black"></div> Vehicle</div>
+        <div class="icon-row"><div class="dot orange"></div> Heli-pad</div>
+        <div class="icon-row"><div class="dot cmd-post"></div> Command Post</div>
+
+        <div class="tools">
+            <button onclick="alert('Pen Active')">PEN</button>
+            <button onclick="alert('Eraser Active')">ERASER</button>
+            <button onclick="alert('OFFICER DOWN - RESET REQUIRED')">OFFICER DOWN</button>
+            <button onclick="alert('Report Ready')">PRE-EDIT REPORT</button>
+            <button onclick="location.reload()">CLEAR / RESET</button>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
