@@ -57,7 +57,7 @@
                 
                 // Logging unit to tacnet_live_units
                 await databases.createDocument(
-                    'tacnet-search-app', 
+                    'tacnet_telemetry_db,' 
                     'tacnet_live_units', 
                     ID.unique(), 
                     { name, agency, role: isCommander ? 'COMMANDER' : 'SEARCHER' }
