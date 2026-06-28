@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TACNET MISSION CONTROL</title>
+    <style>
+        body { margin: 0; background: #050505; color: #00ff41; font-family: 'Courier New', monospace; height: 100vh; overflow: hidden; display: flex; }
+        
+        /* Left Mission Panel */
+        .left-panel { width: 320px; background: #111; border-right: 2px solid #00ff41; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+        
+        /* Tactical Map Area */
+        .map-area { flex: 1; background: url('ui.jpg') center/cover; border: 2px solid #00ff41; margin: 10px; position: relative; }
+        
+        /* Bottom Timeline */
+        .timeline { position: absolute; bottom: 20px; left: 350px; right: 30px; background: #111; padding: 15px; border: 2px solid #00ff41; border-radius: 10px; text-align: center; }
+        
+        h2 { font-size: 18px; margin: 0; }
+        .status-box { border: 1px solid #00ff41; padding: 10px; }
+        button { background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="left-panel">
+    <h2>FIELD OPERATIONS SYSTEM</h2>
+    <div class="status-box">
+        SYSTEM STATUS: <strong>READY</strong><br>
+        UNITS ACTIVE: 3
+    </div>
+    <div class="status-box">
+        MISSION ID: AC-2405-071
+    </div>
+    <button onclick="alert('Access Token Input')">VERIFY ACCESS</button>
+</div>
+
+<div class="map-area">
+    <!-- Map overlay placeholder -->
+</div>
+
+<div class="timeline">
+    <strong>MISSION TIMELINE</strong>
+    <div style="margin: 10px 0;">[ PLAYBACK CONTROLS ]</div>
+    <div>FRAME 19 OF 30</div>
+</div>
+
+</body>
+</html>
