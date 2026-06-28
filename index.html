@@ -7,21 +7,27 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body { margin: 0; background: #050505; color: #00ff41; font-family: 'Courier New', monospace; height: 100vh; overflow: hidden; display: flex; }
-        .left-panel { width: 320px; background: #111; border-right: 2px solid #00ff41; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .left-panel { width: 320px; background: #111; border-right: 2px solid #00ff41; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
         .map-area { flex: 1; position: relative; border: 2px solid #00ff41; margin: 10px; }
         #map { height: 100%; width: 100%; }
-        .tool-btn { background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 10px; cursor: pointer; text-transform: uppercase; font-weight: bold; }
+        .tool-btn { background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 10px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 12px; }
         .tool-btn:hover { background: #00ff41; color: #000; }
+        .section-title { color: #fff; font-size: 14px; margin-top: 15px; border-bottom: 1px solid #00ff41; padding-bottom: 5px; }
     </style>
 </head>
 <body>
 
 <div class="left-panel">
     <h2>FIELD OPERATIONS</h2>
+    
+    <div class="section-title">MAP LAYERS</div>
     <button class="tool-btn" onclick="setLayer('satellite')">🛰️ SATELLITE</button>
     <button class="tool-btn" onclick="setLayer('street')">🗺️ STREET</button>
-    <button class="tool-btn" onclick="setLayer('terrain')">⛰️ TERRAIN</button>
-    <hr style="width:100%; border:0; border-top:1px solid #333; margin:10px 0;">
+    
+    <div class="section-title">TACTICAL TOOLS</div>
+    <button class="tool-btn" onclick="alert('Measure Tool Active')">📏 MEASURE TOOL</button>
+    <button class="tool-btn" onclick="alert('Trap & Trace Active')">📡 TRAP & TRACE</button>
+    <button class="tool-btn" onclick="alert('Marker Placed')">📍 ADD SEARCHER</button>
     <button class="tool-btn" onclick="findMe()">🎯 FIND MY POSITION</button>
 </div>
 
@@ -31,27 +37,17 @@
 
 <script>
     var map = L.map('map').setView([37.5, -79.2], 12);
-    
     var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
-    var street = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png');
-    var terrain = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png');
-    
     satellite.addTo(map);
 
     function setLayer(type) {
-        map.removeLayer(satellite); map.removeLayer(street); map.removeLayer(terrain);
-        if(type === 'satellite') satellite.addTo(map);
-        if(type === 'street') street.addTo(map);
-        if(type === 'terrain') terrain.addTo(map);
+        if(type === 'satellite') { map.removeLayer(street); satellite.addTo(map); }
+        if(type === 'street') { map.removeLayer(satellite); street.addTo(map); }
     }
+    var street = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png');
 
-    function findMe() {
-        map.locate({setView: true, maxZoom: 16});
-    }
-    
-    map.on('locationfound', function(e) {
-        L.marker(e.latlng).addTo(map).bindPopup("YOU ARE HERE").openPopup();
-    });
+    function findMe() { map.locate({setView: true, maxZoom: 16}); }
+    map.on('locationfound', function(e) { L.marker(e.latlng).addTo(map).bindPopup("YOU ARE HERE").openPopup(); });
 </script>
 
 </body>
