@@ -48,7 +48,13 @@
                 }
             }
         });
-    }
+    // Initialize Appwrite
+const { Client, Databases } = Appwrite;
+const client = new Client()
+    .setEndpoint('https://cloud.appwrite.io/v1') // Your Appwrite Endpoint
+    .setProject('YOUR_PROJECT_ID'); // Put your actual Project ID here
+
+const databases = new Databases(client);}
 </script>
 
 </body>
