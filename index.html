@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TACNET COMMAND - MEASURE</title>
+    <title>TACNET COMMAND</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -32,16 +32,20 @@
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
 
     var points = [];
-    var polyline = L.polyline([], {color: 'red'}).addTo(map);
+    var polyline = L.polyline([], {color: 'red', weight: 4}).addTo(map);
+    var measureActive = false;
 
     function activateMeasure() {
-        alert("MEASURE MODE ON: Click on the map to start measuring distance.");
-        map.on('click', function(e) {
+        measureActive = true;
+    }
+
+    map.on('click', function(e) {
+        if (measureActive) {
             points.push(e.latlng);
             polyline.setLatLngs(points);
             L.circleMarker(e.latlng, {radius: 5, color: 'red'}).addTo(map);
-        });
-    }
+        }
+    });
 </script>
 
 </body>
