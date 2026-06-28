@@ -2,64 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TACNET - SAFETY OPERATIONS</title>
+    <title>TACNET LIVE TRACKING</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body { margin: 0; background: #000; color: #00ff41; font-family: 'Courier New', monospace; height: 100vh; display: flex; }
-        .left-panel { width: 320px; background: #111; border-right: 2px solid #00ff41; padding: 20px; }
-        .map-area { flex: 1; border: 2px solid #00ff41; margin: 10px; position: relative; }
         #map { height: 100%; width: 100%; }
-        .safety-monitor { background: #200; border: 2px solid #ff0000; padding: 15px; margin-bottom: 20px; color: #fff; font-weight: bold; text-align: center; }
-        .tool-btn { display: block; width: 100%; background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 12px; margin-bottom: 8px; cursor: pointer; text-transform: uppercase; font-weight: bold; }
     </style>
 </head>
 <body>
-
-<div class="left-panel">
-    <h2>TACNET SAFETY</h2>
-    <div class="safety-monitor" id="safety-dist">DISTANCE: --- m</div>
-    <div style="font-size: 11px; margin-bottom: 10px; color: #ccc;">* AUTOMATIC SPACING MONITOR *</div>
-    
-    <button class="tool-btn" onclick="startSafetyMeasure()">START SPACING MONITOR</button>
-    <button class="tool-btn" onclick="location.reload()">RESET SAFETY</button>
-</div>
-
-<div class="map-area"><div id="map"></div></div>
+<div id="map"></div>
 
 <script>
+    // 1. Initialize Map
     var map = L.map('map').setView([37.5, -79.2], 15);
-    // Tree Top Height / High-Res View
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
 
-    var markers = [];
-    
-    function startSafetyMeasure() {
-        alert("SAFETY MONITOR ACTIVE: Click two officer positions to calculate real-time distance.");
-        map.on('click', function(e) {
-            if (markers.length < 2) {
-                var m = L.circleMarker(e.latlng, {radius: 8, color: 'yellow', fillOpacity: 1}).addTo(map);
-                markers.push(e.latlng);
-                
-                if (markers.length === 2) {
-                    var d = map.distance(markers[0], markers[1]);
-                    document.getElementById('safety-dist').innerText = "DISTANCE: " + Math.round(d) + " m";
-                    L.polyline(markers, {color: 'yellow', dashArray: '5, 10'}).addTo(map);
-                }
-            }
-        });
-    // Initialize Appwrite
-const { Client, Databases } = Appwrite;
-const client = new Client()
-    .setEndpoint('https://cloud.appwrite.io/v1') // Your Appwrite Endpoint
-    .setProject('YOUR_PROJECT_ID'); // Put your actual Project ID here
+    // 2. The Live GPS Tracker
+    // This watches the phone's GPS and places a marker automatically
+    var userMarker = L.circleMarker([0, 0], {radius: 8, color: 'cyan', fillOpacity: 1}).addTo(map);
 
-const databases = new Databases(client);}
-</script><script>
-    // This is where all the code lives that makes the map work.
-    var map = L.map('map').setView([37.5, -79.2], 12);
-    // ... all the other code we wrote ...
+    function onLocationFound(e) {
+        userMarker.setLatLng(e.latlng);
+        map.setView(e.latlng, 17); // Keeps the map centered on the officer
+    }
+
+    // 3. Start the Live Watch
+    map.locate({watch: true, setView: true, maxZoom: 17});
+    map.on('locationfound', onLocationFound);
+    map.on('locationerror', function(e) { alert("GPS DISABLED: Please allow location access on your phone."); });
 </script>
-
 </body>
 </html>
