@@ -3,19 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <title>TACNET MISSION CONTROL</title>
-    <!-- Map Library -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body { margin: 0; background: #050505; color: #00ff41; font-family: 'Courier New', monospace; height: 100vh; overflow: hidden; display: flex; }
-        
-        /* Left Mission Panel */
-        .left-panel { width: 320px; background: #111; border-right: 2px solid #00ff41; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        
-        /* Tactical Map Area */
+        .left-panel { width: 320px; background: #111; border-right: 2px solid #00ff41; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
         .map-area { flex: 1; position: relative; border: 2px solid #00ff41; margin: 10px; }
         #map { height: 100%; width: 100%; }
-        
         .tool-btn { background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 10px; cursor: pointer; text-transform: uppercase; font-weight: bold; }
         .tool-btn:hover { background: #00ff41; color: #000; }
     </style>
@@ -24,14 +18,9 @@
 
 <div class="left-panel">
     <h2>FIELD OPERATIONS</h2>
-    <button class="tool-btn" onclick="alert('Drawing Mode')">✏️ PEN</button>
-    <button class="tool-btn" onclick="alert('Eraser Mode')">🧽 ERASER</button>
-    <button class="tool-btn" style="color:red; border-color:red;" onclick="alert('EMERGENCY')">🚨 OFFICER DOWN</button>
-    <div style="margin-top:20px; border-top:1px solid #333; padding-top:10px;">
-        <strong>UNIT STATUS</strong>
-        <div>K9-01: ACTIVE</div>
-        <div>PATROL-3: ACTIVE</div>
-    </div>
+    <button class="tool-btn" onclick="setLayer('satellite')">🛰️ SATELLITE</button>
+    <button class="tool-btn" onclick="setLayer('street')">🗺️ STREET</button>
+    <button class="tool-btn" onclick="setLayer('terrain')">⛰️ TERRAIN</button>
 </div>
 
 <div class="map-area">
@@ -39,11 +28,23 @@
 </div>
 
 <script>
-    // Initialize the map
-    var map = L.map('map').setView([37.5, -79.2], 12); // Centered near Lynchburg/Amherst
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'TACNET Mapping'
-    }).addTo(map);
+    var map = L.map('map').setView([37.5, -79.2], 12);
+    
+    // Define your layers
+    var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
+    var street = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png');
+    var terrain = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png');
+    
+    satellite.addTo(map); // Default view
+
+    function setLayer(type) {
+        map.removeLayer(satellite);
+        map.removeLayer(street);
+        map.removeLayer(terrain);
+        if(type === 'satellite') satellite.addTo(map);
+        if(type === 'street') street.addTo(map);
+        if(type === 'terrain') terrain.addTo(map);
+    }
 </script>
 
 </body>
