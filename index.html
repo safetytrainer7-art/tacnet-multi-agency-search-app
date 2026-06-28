@@ -1,1629 +1,191 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>TACNET — Multi-Agency Task Force Search App</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TACNET LIVE DEMO</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
-:root{
-  --bg:#060e07;--bg2:#0b1a0d;--panel:#0f2012;--panel2:#132716;
-  --border:#1e4024;--border2:#2a5530;
-  --gold:#FFD700;--neon:#39FF14;--red:#FF2020;
-  --text:#ffffff;--dim:#7aaa7e;
-  --radius:12px;--rsm:7px;
+body { margin:0; font-family:Arial; }
+
+#map { height:100vh; }
+
+.topbar{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  background:#111;
+  color:white;
+  display:flex;
+  justify-content:space-between;
+  padding:8px;
+  z-index:999;
 }
 
-/* ══════════════════════════════════════════
-   UNIVERSAL SPACE BACKDROP & GLASS THEME
-══════════════════════════════════════════ */
-#space-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: #020617;
+button{
+  padding:6px;
+  margin-left:5px;
+  background:#0f0;
+  border:none;
 }
 
-.card, .opanel, .repwrap, #side {
-  background: rgba(10, 24, 12, 0.65) !important;
-  backdrop-filter: blur(12px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
-  border: 1.5px solid rgba(42, 85, 48, 0.5) !important;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+.dot{
+  width:14px;
+  height:14px;
+  border-radius:50%;
+  box-shadow:0 0 10px;
 }
 
-#shell, #s-land, #s-dash, #body {
-  background: transparent !important;
-}
+.me{ background:cyan; }
+.unit{ background:blue; }
 
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;overflow:hidden;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;}
-
-/* iOS safe area */
-@supports(padding:max(0px)){
-  #shell{
-    padding-left:env(safe-area-inset-left);
-    padding-right:env(safe-area-inset-right);
-  }
-  #ov-sos{bottom:calc(6px + env(safe-area-inset-bottom));}
-  #ov-leg{bottom:calc(60px + env(safe-area-inset-bottom)) !important;}
-  #ov-mob{bottom:calc(6px + env(safe-area-inset-bottom));}
-}
-::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
-
-/* APP SHELL — red pinstripe border */
-#shell{position:fixed;inset:0;border:2.5px solid var(--red);border-radius:var(--radius);overflow:hidden;box-shadow:0 0 0 1px rgba(255,32,32,.15),0 0 40px rgba(0,0,0,.9);display:flex;flex-direction:column;}
-
-/* SCREENS */
-.scr{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden;}
-.scr.on{display:flex;}
-
-/* ═══ LANDING ═══ */
-#s-land{background:transparent;overflow-y:auto;align-items:center;justify-content:flex-start;padding:20px 16px 32px;}
-.wrap{width:100%;max-width:860px;margin:auto;display:grid;grid-template-columns:1fr;gap:14px;}
-@media(min-width:720px){.wrap{grid-template-columns:55fr 45fr;}}
-
-.card{padding:26px;position:relative;overflow:hidden;}
-.card::before{content:'';position:absolute;inset:0;border-radius:var(--radius);border:1px solid var(--red);opacity:.3;pointer-events:none;}
-.card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--red),var(--gold),var(--red),transparent);opacity:.7;}
-
-/* TACNET logo text */
-.logo-t1 {
-  font-family: 'Black Ops One', cursive;
-  font-size: clamp(50px, 9vw, 78px);
-  line-height: .9;
-  background: linear-gradient(135deg, rgba(255,215,0,0.9), rgba(255,255,255,0.2), rgba(255,215,0,0.9));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: 2px;
-}
-.logo-t2{font-family:'Black Ops One',cursive;font-size:clamp(11px,2vw,16px);color:var(--gold);letter-spacing:2px;margin-top:3px;line-height:1.3;}
-.logo-t3{font-size:12px;color:var(--red);letter-spacing:2px;font-weight:700;margin-top:2px;text-transform:uppercase;}
-.logo-t4{font-family:'Share Tech Mono',monospace;font-size:9.5px;color:var(--dim);letter-spacing:.8px;margin-top:7px;line-height:1.9;}
-
-.pulse{width:8px;height:8px;border-radius:50%;background:var(--neon);box-shadow:0 0 8px var(--neon);animation:blink 2s infinite;flex-shrink:0;}
-@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
-
-/* Form elements */
-.tabs{display:flex;background:var(--bg);border:1.5px solid var(--border2);border-radius:var(--rsm);overflow:hidden;margin-bottom:16px;}
-.tab{flex:1;padding:9px 4px;border:none;background:transparent;color:var(--dim);font-family:'Black Ops One',cursive;font-size:11px;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:all .2s;}
-.tab.on{background:var(--gold);color:#1a1200;}
-.field{display:flex;flex-direction:column;gap:3px;margin-bottom:10px;}
-.field label{font-family:'Share Tech Mono',monospace;font-size:9.5px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;}
-.field input,.field select{background:var(--bg2);border:1.5px solid var(--border2);color:#fff;padding:8px 10px;border-radius:var(--rsm);font-family:'Share Tech Mono',monospace;font-size:13px;outline:none;width:100%;}
-.field input:focus,.field select:focus{border-color:var(--neon);}
-.field input::placeholder{color:var(--dim);}
-.rp-row{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;}
-.rp{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--rsm);cursor:pointer;transition:all .2s;}
-.rp .d{width:10px;height:10px;border-radius:50%;border:2px solid rgba(255,255,255,.4);}
-.rp span{font-size:7.5px;font-family:'Share Tech Mono',monospace;color:#fff;text-align:center;}
-.rp.sel{border-color:var(--gold);background:rgba(255,215,0,.08);}
-.go-btn{width:100%;padding:12px;border:none;border-radius:var(--rsm);background:linear-gradient(135deg,#c9a840,#FFD700,#c9a840);color:#1a1200;font-family:'Black Ops One',cursive;font-size:14px;letter-spacing:2px;cursor:pointer;margin-top:12px;box-shadow:0 4px 20px rgba(255,215,0,.3);transition:all .2s;}
-.go-btn:hover{transform:translateY(-1px);}
-.go-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
-hr.div{border:none;border-top:1px solid var(--border);margin:8px 0;}
-
-/* ═══ DASHBOARD ═══ */
-#s-dash{background:transparent;}
-
-/* Header */
-#hdr{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--panel);border-bottom:2px solid var(--red);flex-shrink:0;flex-wrap:wrap;position:relative;}
-#hdr::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.3;}
-.hlogo{font-family:'Black Ops One',cursive;font-size:20px;background:linear-gradient(135deg,#fff8a0,#FFD700,#c9a840);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;line-height:1;}
-.hsub{font-family:'Share Tech Mono',monospace;font-size:8.5px;color:#fff;letter-spacing:1.5px;line-height:1.5;}
-.hright{margin-left:auto;display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
-
-/* Address bar */
-#addr-bar{display:none;align-items:center;gap:4px;flex:1;max-width:400px;}
-#addr-bar input{flex:1;background:var(--bg2);border:1.5px solid var(--border2);color:#fff;padding:5px 9px;border-radius:var(--rsm);font-family:'Share Tech Mono',monospace;font-size:11px;outline:none;}
-#addr-bar input:focus{border-color:var(--neon);}
-#addr-bar input::placeholder{color:var(--dim);}
-#perim-adj{display:none;align-items:center;gap:3px;}
-
-/* Body */
-#body{display:flex;flex:1;min-height:0;overflow:hidden;}
-
-/* Side panel */
-#side{width:275px;min-width:230px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;}
-@media(max-width:768px){#side{display:none;}}
-.sscroll{flex:1;overflow-y:auto;padding:9px;}
-.ssec{background:var(--panel2);border:1px solid var(--border);border-radius:var(--rsm);padding:9px;margin-bottom:7px;position:relative;}
-.ssec::before{content:'';position:absolute;left:0;top:5px;bottom:5px;width:2px;background:var(--red);border-radius:2px;opacity:.5;}
-.stitle{font-family:'Black Ops One',cursive;font-size:10px;letter-spacing:2px;color:var(--gold);margin-bottom:7px;}
-.orow{display:flex;align-items:center;gap:6px;padding:5px 6px;background:var(--bg2);border-radius:var(--rsm);margin-bottom:3px;border:1px solid var(--border);}
-.oname{font-weight:600;font-size:12px;color:#fff;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.arty{display:flex;align-items:center;gap:6px;padding:5px 6px;background:var(--bg2);border-radius:var(--rsm);margin-bottom:3px;border-left:3px solid var(--gold);}
-.pbar{height:6px;background:var(--bg);border:1px solid var(--border);border-radius:3px;overflow:hidden;margin:4px 0;}
-.pfill{height:100%;background:var(--neon);border-radius:3px;transition:width .5s;}
-.sstat{font-family:'Share Tech Mono',monospace;font-size:10px;color:#fff;}
-
-/* Map */
-#mapw{flex:1;position:relative;min-width:0;}
-#map{width:100%;height:100%;}
-
-/* Canvas for freehand */
-#fcanvas{position:absolute;inset:0;z-index:550;display:none;cursor:crosshair;pointer-events:none;}
-#fcanvas.active{pointer-events:auto;}
-
-/* Overlays — desktop */
-.ov{position:absolute;z-index:500;}
-#ov-tl{top:10px;left:10px;}
-#ov-tr{top:10px;right:10px;width:200px;}
-#ov-leg{top:50%;left:10px;transform:translateY(-50%);}
-#ov-sos{bottom:16px;right:14px;}
-#ov-mob{bottom:16px;left:14px;display:none;}
-
-/* ── MOBILE LAYOUT (phones) ── */
-@media(max-width:768px){
-  #side{display:none;}
-  #hdr{padding:5px 8px;gap:5px;}
-  .hlogo{font-size:16px;}
-  .hsub{display:none;}
-  #addr-bar{max-width:100%;flex:1;}
-  #addr-bar input{font-size:10px;padding:4px 7px;}
-  .hright{gap:3px;}
-  .hright .btn{padding:4px 6px;}
-  .hright .btn span{display:none;}
-  #mapw{position:relative;}
-  #ov-tl{top:6px;left:6px;padding:6px !important;}
-  .cmp{width:48px !important;height:48px !important;}
-  .cl{font-size:7px !important;}
-  .cneedle{height:16px !important;}
-  #wind-txt{font-size:7.5px !important;}
-  #gps-txt{font-size:7.5px !important;}
-  #ov-tr{top:6px;right:6px;width:auto !important;max-width:160px;}
-  #ov-tr .btn{font-size:9px !important;padding:5px 7px !important;}
-  #ov-tr #hint{font-size:7.5px !important;}
-  #ov-leg{
-    top:auto !important;bottom:60px !important;
-    left:0 !important;right:0 !important;
-    transform:none !important;
-    width:100% !important;
-    border-radius:0 !important;
-    border-left:none !important;border-right:none !important;
-  }
-  #ov-leg > div:first-child{margin-bottom:4px;}
-  #leg-list{
-    display:flex !important;
-    flex-direction:row !important;
-    flex-wrap:nowrap !important;
-    overflow-x:auto !important;
-    gap:5px !important;
-    padding-bottom:2px;
-  }
-  .legi{
-    flex-direction:column !important;
-    gap:3px !important;
-    padding:5px 8px !important;
-    flex-shrink:0 !important;
-    min-width:54px !important;
-    align-items:center !important;
-    justify-content:center !important;
-  }
-  .leglbl{font-size:8px !important;text-align:center !important;white-space:normal !important;line-height:1.2 !important;}
-  #ov-leg .leg-hint{display:none;}
-  #ov-sos{bottom:6px;right:8px;}
-  .sosbtn{font-size:10px !important;padding:8px 12px !important;letter-spacing:1px !important;}
-  #ov-mob{display:block;bottom:6px;left:8px;}
-  #ov-mob .opanel{padding:4px 8px !important;}
-  #mob-txt{font-size:8px !important;}
-  #perim-adj .btn{padding:3px 7px !important;font-size:13px !important;}
-}
-
-.opanel{position:relative;}
-.opanel::before{content:'';position:absolute;inset:0;border-radius:var(--rsm);border:1px solid var(--red);opacity:.2;pointer-events:none;}
-
-/* Buttons */
-.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:var(--rsm);font-family:'Black Ops One',cursive;letter-spacing:1px;font-size:11px;cursor:pointer;border:1.5px solid var(--border2);background:transparent;color:#fff;transition:all .18s;white-space:nowrap;text-transform:uppercase;user-select:none;}
-.btn:hover{background:var(--border2);}
-.btn:active{transform:translateY(1px);}
-.btn:disabled{opacity:.4;cursor:not-allowed;}
-.bfull{width:100%;justify-content:center;}
-.bgold{border-color:var(--gold);color:var(--gold);background:rgba(255,215,0,.07);}
-.bgold:hover,.bgold.on{background:var(--gold);color:#1a1200;}
-.bneon{border-color:var(--neon);color:var(--neon);background:rgba(57,255,20,.07);}
-.bneon:hover,.bneon.on{background:var(--neon);color:#000;}
-.bred{border-color:var(--red);color:#fff;background:rgba(255,32,32,.15);}
-.bred:hover,.bred.on{background:var(--red);}
-.bwarn{border-color:#F59E0B;color:#F59E0B;background:rgba(245,158,11,.08);}
-.bwarn:hover{background:#F59E0B;color:#1a0f00;}
-.bsm{padding:5px 8px;font-size:10px;}
-
-/* SOS */
-.sosbtn{display:flex;align-items:center;justify-content:center;gap:7px;padding:12px 20px;border-radius:var(--rsm);border:2px solid var(--red);background:#330000;color:#fff;font-family:'Black Ops One',cursive;font-size:13px;letter-spacing:3px;cursor:pointer;animation:sospulse 1.6s ease-in-out infinite;text-transform:uppercase;}
-@media(max-width:768px){#ov-tr .btn span{display:inline !important;}}
-@keyframes sospulse{0%,100%{box-shadow:0 0 0 2px rgba(255,32,32,.3),0 0 20px rgba(255,32,32,.2);}50%{box-shadow:0 0 0 6px rgba(255,32,32,.4),0 0 40px rgba(255,32,32,.5);}}
-
-/* Compass */
-.cmp{width:68px;height:68px;border-radius:50%;border:2px solid var(--gold);background:radial-gradient(circle,#182d1c,#0b1a0d 70%);position:relative;box-shadow:0 0 0 3px rgba(255,215,0,.1);flex-shrink:0;}
-.cl{position:absolute;font-family:'Black Ops One',cursive;font-size:9px;line-height:1;}
-.cl.N{top:3px;left:50%;transform:translateX(-50%);color:var(--gold);}
-.cl.S{bottom:3px;left:50%;transform:translateX(-50%);color:#fff;}
-.cl.E{right:3px;top:50%;transform:translateY(-50%);color:#fff;}
-.cl.W{left:3px;top:50%;transform:translateY(-50%);color:#fff;}
-.cneedle{position:absolute;left:50%;top:50%;width:3px;height:24px;background:linear-gradient(to bottom,var(--red) 50%,#fff 50%);transform-origin:50% 100%;transform:translate(-50%,-100%) rotate(0deg);transition:transform .35s ease-out;border-radius:2px 2px 0 0;}
-.cpivot{position:absolute;left:50%;top:50%;width:6px;height:6px;border-radius:50%;background:var(--gold);transform:translate(-50%,-50%);}
-.wflag{width:19px;height:11px;background:var(--neon);clip-path:polygon(0 0,100% 0,80% 50%,100% 100%,0 100%);animation:wv 1.5s ease-in-out infinite alternate;transform-origin:left center;}
-@keyframes wv{from{transform:skewY(-4deg);}to{transform:skewY(4deg);}}
-
-/* Map markers */
-.odot{width:20px;height:20px;border-radius:50%;border:2.5px solid rgba(255,255,255,.85);animation:mpulse 2.2s infinite ease-out;}
-@keyframes mpulse{0%,100%{box-shadow:0 0 0 0 currentColor;}70%{box-shadow:0 0 0 8px transparent;}}
-.sdot2{width:30px;height:30px;border-radius:50%;background:var(--red);border:3px solid #fff;display:flex;align-items:center;justify-content:center;font-family:'Black Ops One',cursive;font-size:8px;color:#fff;animation:sblink .6s infinite alternate;}
-@keyframes sblink{from{box-shadow:0 0 8px rgba(255,32,32,.4);}to{box-shadow:0 0 22px rgba(255,32,32,1);}}
-.apin{width:24px;height:24px;border-radius:50%;background:var(--panel);border:2px solid #F97316;display:flex;align-items:center;justify-content:center;font-size:11px;}
-.lpin{width:22px;height:22px;border-radius:50%;background:var(--panel);border:2px solid #FF8C00;display:flex;align-items:center;justify-content:center;font-size:10px;}
-.adrdot{width:13px;height:13px;border-radius:50%;background:var(--red);border:2.5px solid #fff;box-shadow:0 0 10px rgba(255,32,32,.8);animation:sblink .8s infinite alternate;}
-.pupin{width:20px;height:20px;border-radius:50%;border:2.5px solid #fff;cursor:pointer;}
-
-/* Legend */
-.legi{display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:var(--rsm);cursor:pointer;transition:background .15s;border:1px solid transparent;margin-bottom:2px;}
-.legi:hover{background:rgba(255,255,255,.06);border-color:var(--border2);}
-.legi.active{background:rgba(255,215,0,.1);border-color:var(--gold);}
-.legdot{width:11px;height:11px;border-radius:50%;border:2px solid rgba(255,255,255,.5);flex-shrink:0;}
-.leglbl{font-family:'Share Tech Mono',monospace;font-size:9.5px;color:#fff;white-space:nowrap;}
-
-/* Leaflet */
-.leaflet-container{background:#0a140b!important;}
-.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--panel)!important;color:#fff!important;border:1px solid var(--border2);border-radius:var(--rsm)!important;}
-.leaflet-popup-content{font-family:'Rajdhani',sans-serif!important;color:#fff!important;}
-.leaflet-control-zoom a{background:var(--panel)!important;color:var(--gold)!important;border-color:var(--border2)!important;border-radius:var(--rsm)!important;}
-.leaflet-control-attribution{background:rgba(10,20,11,.7)!important;color:var(--dim)!important;font-size:9px!important;}
-
-/* Night vision */
-.nv{filter:hue-rotate(55deg) saturate(200%) brightness(1.08) contrast(1.1);}
-.nvov{position:fixed;inset:0;pointer-events:none;z-index:9000;background:radial-gradient(circle at 50% 50%,rgba(57,255,20,0) 35%,rgba(0,0,0,.5) 100%);}
-.nvov::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(to bottom,rgba(0,0,0,.12) 0,rgba(0,0,0,.12) 1px,transparent 1px,transparent 3px);}
-.nvov::after{content:'';position:absolute;inset:0;background:rgba(57,255,20,.12);mix-blend-mode:screen;}
-
-/* Toast */
-.tst{position:fixed;bottom:65px;left:50%;transform:translateX(-50%);padding:8px 16px;border-radius:var(--rsm);z-index:10000;font-family:'Share Tech Mono',monospace;font-size:11px;pointer-events:none;animation:tin .2s ease,tout .3s ease 2.6s forwards;white-space:nowrap;}
-.tst.ok{background:#082010;border:1.5px solid var(--neon);color:var(--neon);}
-.tst.er{background:#200808;border:1.5px solid var(--red);color:#ff8080;}
-.tst.in{background:#081020;border:1.5px solid #4488ff;color:#88aaff;}
-@keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(8px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
-@keyframes tout{from{opacity:1;}to{opacity:0;}}
-
-/* Terminated */
-#s-term{display:none;position:fixed;inset:0;z-index:9990;background:rgba(4,10,5,.97);align-items:center;justify-content:center;flex-direction:column;gap:14px;}
-#s-term.on{display:flex;}
-
-/* Report */
-#s-rep{display:none;position:fixed;inset:0;z-index:9995;overflow-y:auto;padding:18px;}
-#s-rep.on{display:block;}
-.repwrap{max-width:900px;margin:0 auto;padding:30px;position:relative;}
-.repwrap::before{content:'';position:absolute;inset:0;border-radius:var(--radius);border:1.5px solid var(--red);opacity:.28;pointer-events:none;}
-
-/* Token */
-#s-tok{display:none;position:fixed;inset:0;z-index:9996;background:rgba(4,10,5,.96);align-items:center;justify-content:center;}
-#s-tok.on{display:flex;}
-.tokwrap{background:var(--panel);border:2px solid var(--border2);border-radius:var(--radius);padding:26px;max-width:350px;width:90%;position:relative;}
-.tokwrap::before{content:'';position:absolute;inset:0;border-radius:var(--radius);border:1.5px solid var(--red);opacity:.28;pointer-events:none;}
-.tokval{font-family:'Black Ops One',cursive;font-size:28px;color:var(--gold);letter-spacing:6px;text-align:center;padding:13px;background:var(--bg);border:1.5px dashed var(--gold);border-radius:var(--rsm);margin:10px 0;}
-.codebadge{display:inline-block;padding:3px 10px;background:var(--bg);border:1.5px dashed var(--gold);color:var(--gold);font-family:'Black Ops One',cursive;letter-spacing:4px;font-size:13px;border-radius:var(--rsm);}
-
-@media print{
-  body{background:#fff!important;color:#000!important;}
-  #s-rep{position:static;background:#fff;}
-  .repwrap{background:#fff;border:2px solid #333;color:#000;}
-  .noprint{display:none!important;}
-}
+.safe{ box-shadow:0 0 10px lime; }
+.caution{ box-shadow:0 0 15px yellow; }
+.danger{ box-shadow:0 0 20px red; }
 </style>
 </head>
+
 <body>
-<div id="shell">
 
-<!-- ══════════════════════════════════════════
-     LANDING
-══════════════════════════════════════════ -->
-<div id="s-land" class="scr on">
-  <div class="wrap">
-
-    <!-- HERO -->
-    <div class="card">
-      <div style="display:flex;align-items:center;gap:7px;margin-bottom:14px;">
-        <div class="pulse"></div>
-        <span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--neon);letter-spacing:2px;">OPERATIONAL STATUS · ONLINE · LIVE GPS</span>
-      </div>
-
-      <div class="logo-t1">TACNET</div>
-      <div class="logo-t2">Multi-Agency Task Force Search App</div>
-      <div class="logo-t3">Federal · State · Local</div>
-      <div class="logo-t4">
-        USA's First Multi-Agency App<br>
-        Built by Law Enforcement · For Law Enforcement<br>
-        App Created by Earl A. Wood — Deputy Sheriff, Retired, Virginia
-      </div>
-
-      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:9px;">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        <span style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#fff;letter-spacing:1px;line-height:1.8;">Dedicated to Amherst County Sheriff's Dept · Virginia<br>First Agency — Full Complimentary Access · 10-4</span>
-      </div>
-    </div>
-
-    <!-- FORM -->
-    <div class="card" style="padding:20px;">
-      <div class="tabs">
-        <button class="tab" id="tb-join" onclick="setMode('join')">Join Operation</button>
-        <button class="tab on" id="tb-create" onclick="setMode('create')">Create Operation</button>
-      </div>
-
-      <div id="f-create">
-        <div class="field"><label>Operation Name</label><input id="i-op" placeholder="e.g. OP WOODLAND RIDGE"></div>
-        <div class="field"><label>Location / Address</label><input id="i-loc" placeholder="e.g. 100 Court St, Amherst VA"></div>
-      </div>
-      <div id="f-join" style="display:none;">
-        <div class="field"><label>Session Code</label><input id="i-code" maxlength="6" placeholder="6-CHAR CODE" style="font-size:19px;letter-spacing:5px;text-transform:uppercase;"></div>
-      </div>
-
-      <hr class="div">
-      <div class="field"><label>Your Name</label><input id="i-name" placeholder="Last Name, First"></div>
-      <div class="field"><label>Agency</label><input id="i-agency" placeholder="e.g. Amherst Co. Sheriff / VSP / FBI"></div>
-      <div class="field">
-        <label>Your Role</label>
-        <div class="rp-row">
-          <div class="rp sel" data-r="law_enforcement" onclick="pickRole(this)"><span class="d" style="background:#2563EB;"></span><span>LE</span></div>
-          <div class="rp" data-r="k9" onclick="pickRole(this)"><span class="d" style="background:#38BDF8;"></span><span>K9</span></div>
-          <div class="rp" data-r="sar" onclick="pickRole(this)"><span class="d" style="background:#EF4444;"></span><span>SAR</span></div>
-          <div class="rp" data-r="civilian" onclick="pickRole(this)"><span class="d" style="background:#22C55E;"></span><span>CIV</span></div>
-          <div class="rp" data-r="wanted_person" onclick="pickRole(this)"><span class="d" style="background:#A855F7;"></span><span>TGT</span></div>
-        </div>
-      </div>
-      <button class="go-btn" id="gobtn" onclick="handleSubmit()">Deploy Operation ▶</button>
-      <div style="font-family:'Share Tech Mono',monospace;font-size:8.5px;color:var(--dim);text-align:center;margin-top:9px;line-height:1.7;">For authorized law enforcement use only.</div>
-    </div>
-
+<div class="topbar">
+  <div id="info">TACNET READY</div>
+  <div>
+    <button onclick="emergency()">🚨</button>
+    <button onclick="terminate()">STOP</button>
+    <button onclick="exportPDF()">📄</button>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     DASHBOARD
-══════════════════════════════════════════ -->
-<div id="s-dash" class="scr">
-  <div id="nv-ov" style="display:none;" class="nvov"></div>
-
-  <!-- HEADER -->
-  <div id="hdr">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
-    <div>
-      <div class="hlogo">TACNET</div>
-      <div class="hsub" id="hdrsub">FEDERAL · STATE · LOCAL</div>
-    </div>
-
-    <!-- Address search with +/- perimeter control -->
-    <div id="addr-bar">
-      <input id="addr-in" placeholder="Search address / location..." onkeydown="if(event.key==='Enter')doAddr()">
-      <button class="btn bsm" onclick="doAddr()">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      </button>
-      <div id="perim-adj" style="display:none;align-items:center;gap:2px;">
-        <button class="btn bsm bneon" onclick="adjPerim(-1)" title="Shrink perimeter" style="padding:4px 8px;font-size:15px;line-height:1;">−</button>
-        <button class="btn bsm bneon" onclick="adjPerim(1)"  title="Expand perimeter" style="padding:4px 8px;font-size:15px;line-height:1;">+</button>
-        <button class="btn bsm" onclick="clearAddr()" title="Clear" style="padding:4px 7px;font-size:11px;">✕</button>
-      </div>
-    </div>
-
-    <div class="hright">
-      <button class="btn bsm bgold" onclick="goLanding()">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-        <span style="font-size:9px;">BACK</span>
-      </button>
-      <button class="btn bsm" id="btn-tok" onclick="showTok()">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        <span style="font-size:9px;">TOKEN</span>
-      </button>
-      <button class="btn bsm" id="btn-nv" onclick="toggleNV()">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        <span style="font-size:9px;">NV</span>
-      </button>
-      <button class="btn bsm bwarn" onclick="doTerminate()">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-        <span style="font-size:9px;">TERMINATE</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- BODY -->
-  <div id="body">
-
-    <!-- SIDE PANEL -->
-    <div id="side">
-      <div class="sscroll">
-        <div class="ssec">
-          <div class="stitle">Operation</div>
-          <div id="sp-name" style="font-family:'Black Ops One',cursive;font-size:14px;color:var(--gold);margin-bottom:5px;">—</div>
-          <div style="display:flex;align-items:center;gap:77px;margin-bottom:5px;">
-            <span class="sstat">CODE:</span>
-            <span class="codebadge" id="sp-code">——</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:5px;">
-            <div class="pulse" style="width:6px;height:6px;"></div>
-            <span class="sstat" id="sp-status">ACTIVE</span>
-          </div>
-        </div>
-
-        <!-- SEARCHERS AND OFFICERS ONLINE PANEL -->
-        <div class="ssec">
-          <div class="stitle">Searchers / Officers</div>
-          <div id="sp-offs" style="margin-bottom: 8px;"><div class="sstat">No personnel loaded.</div></div>
-          <button class="btn bfull bneon bsm" onclick="promptAddManualSearcher()">+ Add Manual Searcher</button>
-        </div>
-
-        <div class="ssec">
-          <div class="stitle">Grid Coverage</div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
-            <span class="sstat">Cleared</span>
-            <span class="sstat" style="color:var(--neon);" id="sp-pct">0%</span>
-          </div>
-          <div class="pbar"><div class="pfill" id="sp-bar" style="width:0%;"></div></div>
-          <div class="sstat" id="sp-cells" style="margin-top:2px;">0 / 0 sectors</div>
-        </div>
-
-        <div class="ssec">
-          <div class="stitle">Evidence / Articles</div>
-          <div id="sp-arts"></div>
-          <div class="sstat" id="sp-noart">None logged.</div>
-        </div>
-
-        <div class="ssec">
-          <div class="stitle">Last Known Position</div>
-          <div id="sp-lkp" class="sstat">Not set.</div>
-        </div>
-
-        <div class="ssec" id="sp-sos-sec" style="display:none;">
-          <div class="stitle" style="color:var(--red);">⚠ SOS Events</div>
-          <div id="sp-sos-list"></div>
-        </div>
-
-        <div style="font-family:'Share Tech Mono',monospace;font-size:7.5px;color:var(--dim);text-align:center;margin-top:5px;line-height:1.9;letter-spacing:.5px;">
-          TACNET · BUILT BY EARL A. WOOD<br>DEPUTY SHERIFF (RET.) · VIRGINIA<br>AMHERST CO. SHERIFF'S DEPT · 10-4
-        </div>
-      </div>
-    </div>
-
-    <!-- MAP AREA -->
-    <div id="mapw">
-      <div id="map"></div>
-      <canvas id="fcanvas"></canvas>
-
-      <!-- Compass + Wind (top left) -->
-      <div class="ov opanel" id="ov-tl" style="padding:9px;display:flex;align-items:center;gap:10px;">
-        <div class="cmp">
-          <span class="cl N">N</span><span class="cl S">S</span>
-          <span class="cl E">E</span><span class="cl W">W</span>
-          <div class="cneedle" id="cneedle"></div>
-          <div class="cpivot"></div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:5px;">
-          <div style="display:flex;align-items:flex-end;gap:4px;">
-            <div style="width:2px;height:26px;background:var(--gold);border-radius:1px;"></div>
-            <div class="wflag"></div>
-          </div>
-          <div style="font-family:'Share Tech Mono',monospace;font-size:8.5px;color:#fff;" id="wind-txt">WIND 8mph NNW</div>
-          <div style="font-family:'Share Tech Mono',monospace;font-size:8.5px;color:#fff;" id="gps-txt">GPS: acquiring...</div>
-        </div>
-      </div>
-
-      <!-- UNIT LEGEND — place units on map (top right area, scrollable) -->
-      <div class="ov opanel" id="ov-leg" style="padding:9px;max-height:70vh;overflow-y:auto;">
-        <div id="leg-title" style="font-family:'Black Ops One',cursive;font-size:9px;letter-spacing:2px;color:var(--gold);margin-bottom:4px;">PLACE UNITS ON MAP</div>
-        <div id="leg-list"></div>
-        <div style="font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--dim);margin-top:5px;line-height:1.6;">Tap type · tap map<br>to place. Drag dot<br>to track movement.</div>
-      </div>
-
-      <!-- Tactical Tools (top right) -->
-      <div class="ov opanel" id="ov-tr" style="padding:9px;">
-        <div style="font-family:'Black Ops One',cursive;font-size:9px;letter-spacing:2px;color:var(--gold);margin-bottom:6px;">TACTICAL TOOLS</div>
-        <div style="display:flex;flex-direction:column;gap:5px;">
-
-          <button class="btn bfull" id="btn-perim" onclick="togglePerim()">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-            Draw Perimeter
-          </button>
-
-          <button class="btn bfull" id="btn-lkp" onclick="togglePlace('lkp')">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            Set LKP
-          </button>
-
-          <button class="btn bfull" id="btn-free" onclick="toggleFree()">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            Freehand / Draw
-          </button>
-
-          <button class="btn bfull" id="btn-clrfree" onclick="clearFree()" style="display:none;font-size:9px;">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-            Clear Drawing
-          </button>
-
-          <hr class="div">
-          <div style="font-family:'Share Tech Mono',monospace;font-size:8.5px;color:#fff;line-height:1.6;" id="hint">Tap legend → tap map to place named unit. Drag any manual unit to update coordinates.</div>
-        </div>
-      </div>
-
-      <!-- SOS Button -->
-      <div class="ov" id="ov-sos">
-        <button class="sosbtn" onclick="doSOS()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          Officer Down — SOS
-        </button>
-      </div>
-
-      <!-- Mobile status -->
-      <div class="ov opanel" id="ov-mob" style="padding:6px 9px;">
-        <div style="font-family:'Share Tech Mono',monospace;font-size:8.5px;color:#fff;" id="mob-txt">0 units · 0 articles</div>
-      </div>
-    </div><!-- /mapw -->
-  </div><!-- /body -->
-</div><!-- /s-dash -->
-</div><!-- /shell -->
-
-<!-- TERMINATED -->
-<div id="s-term">
-  <div style="text-align:center;max-width:460px;padding:18px;">
-    <div style="font-family:'Black Ops One',cursive;font-size:32px;background:linear-gradient(135deg,#ff6060,var(--red));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:7px;">OPERATION TERMINATED</div>
-    <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#fff;line-height:1.9;margin-bottom:18px;" id="term-info">—</div>
-    <div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap;">
-      <button class="btn bgold" onclick="viewRep()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        View Final Report
-      </button>
-      <button class="btn" onclick="startFresh()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.55"/></svg>
-        New Operation
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- REPORT -->
-<div id="s-rep">
-  <div class="repwrap">
-    <div class="noprint" style="display:flex;gap:7px;margin-bottom:18px;flex-wrap:wrap;">
-      <button class="btn bgold" onclick="window.print()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-        Print / Save PDF
-      </button>
-      <button class="btn bneon" onclick="emailRep()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        Email Report
-      </button>
-      <button class="btn" onclick="closeRep()">Close</button>
-    </div>
-    <div id="rep-content"></div>
-  </div>
-</div>
-
-<!-- TOKEN -->
-<div id="s-tok">
-  <div class="tokwrap">
-    <div style="font-family:'Black Ops One',cursive;font-size:15px;color:var(--gold);margin-bottom:7px;letter-spacing:2px;">Generate Access Token</div>
-    <div style="font-family:'Share Tech Mono',monospace;font-size:9.5px;color:#fff;margin-bottom:11px;line-height:1.7;">Issue an expiring token for assisting federal/state agencies.</div>
-    <div class="field" style="margin-bottom:9px;">
-      <label>Token Duration</label>
-      <select id="tok-dur" style="background:var(--bg2);border:1.5px solid var(--border2);color:#fff;padding:7px 10px;border-radius:var(--rsm);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
-        <option value="30">30 Minutes</option>
-        <option value="60">1 Hour</option>
-        <option value="120">2 Hours</option>
-        <option value="240">4 Hours</option>
-        <option value="480">8 Hours (Full Shift)</option>
-        <option value="1440">24 Hours</option>
-      </select>
-    </div>
-    <button class="btn bgold bfull" onclick="genTok()" style="margin-bottom:11px;">Generate Token</button>
-    <div id="tok-disp" style="display:none;">
-      <div class="tokval" id="tok-val">——</div>
-      <div style="font-family:'Share Tech Mono',monospace;font-size:12px;text-align:center;color:var(--neon);margin-bottom:7px;" id="tok-timer">—</div>
-      <div style="font-family:'Share Tech Mono',monospace;font-size:8.5px;color:#fff;text-align:center;line-height:1.7;">Share with incoming agency. Expires automatically.</div>
-    </div>
-    <hr class="div">
-    <button class="btn bfull" onclick="closeTok()">Close</button>
-  </div>
-</div>
+<div id="map"></div>
 
 <script>
-/* ================================================================
-   CONSTANTS
-================================================================ */
-const RCOLS={law_enforcement:'#2563EB',k9:'#38BDF8',sar:'#EF4444',civilian:'#22C55E',wanted_person:'#A855F7',drone:'#9CA3AF'};
-const RLBLS={law_enforcement:'Law Enforcement',k9:'K9 Unit',sar:'Search & Rescue',civilian:'Civilian',wanted_person:'Wanted / Target',drone:'Drone'};
-const AICONS={hat:'🎩',jacket:'🧥',weapon:'⚠️',shoe:'👟',phone:'📱',bag:'🎒',blood:'🩸',vehicle:'🚗',other:'📦'};
 
-const UNIT_TYPES=[
-  {id:'law_enforcement',lbl:'Law Enforcement',col:'#2563EB'},
-  {id:'k9',             lbl:'K9 Unit',         col:'#38BDF8'},
-  {id:'sar',            lbl:'Search & Rescue', col:'#EF4444'},
-  {id:'civilian',       lbl:'Civilian',         col:'#22C55E'},
-  {id:'wanted_person',  lbl:'Suspect / Target', col:'#A855F7'},
-  {id:'drone',          lbl:'Drone',            col:'#9CA3AF'},
-  {id:'article_find',   lbl:'Article Find',     col:'#F97316'},
+let user = {
+  name: prompt("Enter Name"),
+  role: prompt("Role (officer/commander)")
+};
+
+document.getElementById("info").innerText =
+user.name + " | " + user.role;
+
+let isCommander = user.role === "commander";
+
+let map = L.map('map').setView([37.5, -79.2], 13);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+let markers = {};
+let units = {};
+let events = [];
+
+// FAKE TEAM (DEMO PURPOSE)
+let fake = [
+  {id:"K9-1",lat:37.501,lng:-79.21},
+  {id:"PATROL-2",lat:37.504,lng:-79.19},
+  {id:"SAR-3",lat:37.499,lng:-79.22}
 ];
 
-/* ================================================================
-   STATE
-================================================================ */
-const S={
-  mode:'create',role:'law_enforcement',
-  code:null,offId:null,offName:null,offRole:null,offAgency:null,
-  session:null,startTime:null,
-  map:null,
-  selfPos:null,geoId:null,_cen:false,
-  perimLayer:null,drawPrev:null,gridLayers:[],
-  lkpMark:null,lkpCircle:null,
-  adrMark:null,adrPerim:null,adrGrid:[],adrOff:0.0006,adrN:4,
-  artMarks:[],offMarks:{},sosMarks:[],
-  placed:[],
-  drawingPerim:false,drawPts:[],drawDown:false,
-  placeMode:null,placeType:null,
-  nvOn:false,hasCompass:false,compassSim:null,
-  windSpd:8,windDir:'NNW',
-  pollId:null,
-  repData:null,
-  tokExpiry:null,tokTimerId:null,
-  freeOn:false,freeDrawing:false,fctx:null,
-  pendingManualSearcher:null
-};
-
-/* ================================================================
-   UTILS
-================================================================ */
-function gc(n=6){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';return Array.from({length:n},()=>c[Math.floor(Math.random()*c.length)]).join('');}
-function now(){return new Date().toISOString();}
-function ft(iso){return iso?new Date(iso).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';}
-function fdt(iso){return iso?new Date(iso).toLocaleString([],{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—';}
-function toast(m,t='ok',d=2900){const e=document.createElement('div');e.className=`tst ${t}`;e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),d+400);}
-
-/* ================================================================
-   LOCAL DB
-================================================================ */
-const KEY='tacnet_v4';
-const dbl=()=>{try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):{};}catch{return{};}};
-const dbs=db=>{try{localStorage.setItem(KEY,JSON.stringify(db));}catch{}};
-const getS=c=>{const db=dbl();return db[c]||null;};
-const savS=s=>{const db=dbl();db[s.code]=s;dbs(db);};
-
-function createSess(name,addr,by){
-  const s={code:gc(),name,addr,created_by:by,status:'active',
-    perimeter:[],grid_size:4,cleared:[],lkp:null,
-    articles:[],officers:{},sos_events:[],
-    created_at:now(),terminated_at:null,timeline:[]};
-  savS(s);return s;
-}
-function joinSess(code,name,role,agency){
-  let s=getS(code);
-  if(!s)throw new Error('Operation not found: '+code);
-  if(s.status==='terminated')throw new Error('Operation already terminated.');
-  const id='o'+Math.random().toString(36).slice(2,9);
-  s.officers[id]={id,name,role,agency,color:RCOLS[role]||'#fff',lat:null,lng:null,joined_at:now(),last_seen:now(),sos:false};
-  s.timeline.push({type:'join',time:now(),officer:name,role,agency});
-  savS(s);return id;
-}
-function updPos(code,id,lat,lng){const s=getS(code);if(!s||!s.officers[id])return;s.officers[id].lat=lat;s.officers[id].lng=lng;s.officers[id].last_seen=now();savS(s);}
-function setPerim(code,pts){const s=getS(code);if(!s)return;s.perimeter=pts;s.cleared=[];s.timeline.push({type:'perimeter',time:now(),by:S.offName,pts:pts.length});savS(s);}
-function setLKP(code,lat,lng){const s=getS(code);if(!s)return;s.lkp={lat,lng,time:now(),by:S.offName};s.timeline.push({type:'lkp',time:now(),lat,lng,by:S.offName});savS(s);}
-function addArt(code,label,lat,lng,by){const s=getS(code);if(!s)return;s.articles.push({id:'a'+Date.now(),label,lat,lng,by,time:now()});s.timeline.push({type:'article',time:now(),label,lat,lng,by});savS(s);}
-function clearCell(code,idx,by){const s=getS(code);if(!s)return;if(!s.cleared.includes(idx)){s.cleared.push(idx);s.timeline.push({type:'clear',time:now(),cell:idx+1,by});savS(s);}}
-function trigSOS(code,id,lat,lng,name){const s=getS(code);if(!s)return;if(s.officers[id])s.officers[id].sos=true;s.sos_events.push({id,name,lat,lng,time:now()});s.timeline.push({type:'sos',time:now(),officer:name,lat,lng});savS(s);}
-function termSess(code){const s=getS(code);if(!s)return;s.status='terminated';s.terminated_at=now();s.timeline.push({type:'terminate',time:now(),by:S.offName});savS(s);}
-
-/* ================================================================
-   LANDING FORM
-================================================================ */
-function setMode(m){
-  S.mode=m;
-  document.getElementById('tb-create').classList.toggle('on',m==='create');
-  document.getElementById('tb-join').classList.toggle('on',m==='join');
-  document.getElementById('f-create').style.display=m==='create'?'':'none';
-  document.getElementById('f-join').style.display=m==='join'?'':'none';
-  document.getElementById('gobtn').textContent=m==='create'?'Deploy Operation ▶':'Join Operation ▶';
-}
-function pickRole(el){document.querySelectorAll('.rp').forEach(r=>r.classList.remove('sel'));el.classList.add('sel');S.role=el.dataset.r;}
-
-function handleSubmit(){
-  const name=document.getElementById('i-name').value.trim();
-  const agency=document.getElementById('i-agency').value.trim();
-  if(!name){toast('Officer name required','er');return;}
-  if(!agency){toast('Agency required','er');return;}
-  const btn=document.getElementById('gobtn');
-  btn.disabled=true;btn.textContent='STAND BY…';
-  try{
-    if(S.mode==='create'){
-      const op=document.getElementById('i-op').value.trim();
-      if(!op){toast('Operation name required','er');btn.disabled=false;btn.textContent='Deploy Operation ▶';return;}
-      const sess=createSess(op,document.getElementById('i-loc').value.trim(),name);
-      const id=joinSess(sess.code,name,S.role,agency);
-      launch(sess.code,id,name,S.role,agency);
-    } else {
-      const code=document.getElementById('i-code').value.trim().toUpperCase();
-      if(!code){toast('Session code required','er');btn.disabled=false;btn.textContent='Join Operation ▶';return;}
-      const id=joinSess(code,name,S.role,agency);
-      launch(code,id,name,S.role,agency);
-    }
-  }catch(e){toast(e.message,'er');btn.disabled=false;btn.textContent=S.mode==='create'?'Deploy Operation ▶':'Join Operation ▶';}
+function icon(cls){
+  return L.divIcon({
+    className:"",
+    html:`<div class="dot ${cls}"></div>`
+  });
 }
 
-/* ================================================================
-   LAUNCH DASHBOARD
-================================================================ */
-function launch(code,id,name,role,agency){
-  S.code=code;S.offId=id;S.offName=name;S.offRole=role;S.offAgency=agency;S.startTime=now();
-  document.getElementById('hdrsub').textContent=`FEDERAL · STATE · LOCAL — OP ${code} · ${RLBLS[role]||role} · ${name}`;
-  document.getElementById('addr-bar').style.display='flex';
-  document.getElementById('s-land').classList.remove('on');
-  document.getElementById('s-dash').classList.add('on');
-  initMap();
-  buildLegend();
-  startGeo();
-  startCompass();
-  startPoll();
-  document.getElementById('gobtn').disabled=false;
-  document.getElementById('gobtn').textContent='Deploy Operation ▶';
-}
+// LOAD FAKE UNITS
+fake.forEach(u=>{
+  units[u.id]=u;
+  markers[u.id]=L.marker([u.lat,u.lng],{icon:icon("unit")}).addTo(map);
+});
 
-function goLanding(){
-  stopGeo();stopPoll();
-  if(S.compassSim){clearInterval(S.compassSim);S.compassSim=null;}
-  if(S.map){S.map.remove();S.map=null;}
-  cleanState();
-  document.getElementById('s-dash').classList.remove('on');
-  document.getElementById('s-land').classList.add('on');
-  document.getElementById('s-term').classList.remove('on');
-}
+// YOUR GPS
+navigator.geolocation.watchPosition(p=>{
+  let lat=p.coords.latitude;
+  let lng=p.coords.longitude;
 
-function cleanState(){
-  S.selfPos=null;S.perimLayer=null;S.drawPrev=null;S.gridLayers=[];
-  S.lkpMark=null;S.lkpCircle=null;S.adrMark=null;S.adrPerim=null;S.adrGrid=[];
-  S.artMarks=[];S.offMarks={};S.sosMarks=[];S.placed=[];
-  S.drawingPerim=false;S.drawPts=[];S.drawDown=false;S.placeMode=null;S.placeType=null;
-  S.session=null;S._cen=false;S.freeOn=false;
-  const pa=document.getElementById('perim-adj');if(pa)pa.style.display='none';
-  const cf=document.getElementById('btn-clrfree');if(cf)cf.style.display='none';
-}
-
-/* ================================================================
-   MAP INIT
-================================================================ */
-function initMap(){
-  S.map=L.map('map',{center:[37.5836,-79.0517],zoom:16,zoomControl:true});
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    {attribution:'© Esri · TACNET',maxZoom:19}).addTo(S.map);
-  S.map.on('click',onMapClick);
-  setupPerimDraw();
-  setupFreeCanvas();
-  setTimeout(()=>S.map.invalidateSize(),200);
-  renderSession();
-}
-
-/* ================================================================
-   MAP CLICK
-================================================================ */
-function onMapClick(e){
-  if(S.drawingPerim||S.freeOn)return;
-  const ll=e.latlng;
-  if(S.placeMode==='lkp'){
-    setLKP(S.code,ll.lat,ll.lng);
-    toast('LKP set','ok');setPlaceUI(null);renderSession();
-  } else if(S.placeMode==='unit'&&S.placeType){
-    dropUnit(S.placeType,ll.lat,ll.lng);
-    setPlaceUI(null);
-  } else if(S.placeMode==='manual_searcher'&&S.pendingManualSearcher){
-    const { name, role, agency } = S.pendingManualSearcher;
-    const ut = UNIT_TYPES.find(u => u.id === role) || UNIT_TYPES[2];
-    const mId = 'man_' + gc(4);
-    
-    const sess = getS(S.code);
-    if(sess){
-      sess.officers[mId] = {
-        id: mId,
-        name: name,
-        role: role,
-        agency: agency,
-        color: ut.col,
-        lat: ll.lat,
-        lng: ll.lng,
-        joined_at: now(),
-        last_seen: now(),
-        sos: false,
-        is_manual: true
-      };
-      sess.timeline.push({
-        type: 'unit_placed',
-        time: now(),
-        unit: `${name} (${ut.lbl})`,
-        lat: ll.lat,
-        lng: ll.lng,
-        by: S.offName
-      });
-      savS(sess);
-    }
-    toast(`${name} deployed to map`,'ok');
-    S.pendingManualSearcher = null;
-    setPlaceUI(null);
-    renderSession();
+  if(!markers.me){
+    markers.me=L.marker([lat,lng],{icon:icon("me")}).addTo(map);
+  } else {
+    markers.me.setLatLng([lat,lng]);
   }
+
+  events.push({
+    type:"GPS",
+    id:user.name,
+    lat,lng,
+    time:Date.now()
+  });
+});
+
+// SAFETY LAYER
+function updateSafety(){
+
+  let ids=Object.keys(units);
+
+  ids.forEach(i=>{
+    let min=9999;
+
+    ids.forEach(j=>{
+      if(i===j) return;
+
+      let a=units[i],b=units[j];
+      let d=Math.hypot(a.lat-b.lat,a.lng-b.lng)*111000;
+
+      if(d<min)min=d;
+    });
+
+    let el=markers[i].getElement();
+    if(!el) return;
+
+    el.classList.remove("safe","caution","danger");
+
+    if(min<10) el.classList.add("danger");
+    else if(min<25) el.classList.add("caution");
+    else el.classList.add("safe");
+  });
 }
 
-/* ================================================================
-   LEGEND — place units on map
-================================================================ */
-function buildLegend(){
-  document.getElementById('leg-list').innerHTML=UNIT_TYPES.map(u=>`
-    <div class="legi" id="leg-${u.id}" onclick="pickUnit('${u.id}')">
-      <span class="legdot" style="background:${u.col};"></span>
-      <span class="leglbl">${u.lbl}</span>
-    </div>`).join('');
+setInterval(updateSafety,2000);
+
+// EMERGENCY
+function emergency(){
+  alert("EMERGENCY TRIGGERED");
+  events.push({type:"EMERGENCY",id:user.name,time:Date.now()});
 }
 
-function pickUnit(id){
-  const already=(S.placeMode==='unit'&&S.placeType===id);
-  setPlaceUI(null);
-  if(!already){
-    S.placeMode='unit';S.placeType=id;
-    document.getElementById('leg-'+id).classList.add('active');
-    const ut=UNIT_TYPES.find(u=>u.id===id);
-    
-    if(id === 'article_find') {
-      setHint('Tap the map to place an Article Find location.');
-      toast('Tap map to mark Article','in');
-    } else {
-      setHint('Tap the map to deploy and name a ' + ut.lbl + ' searcher.');
-      toast('Tap map to place ' + ut.lbl,'in');
-    }
-  }
-}
-
-function dropUnit(typeId,lat,lng){
-  const ut=UNIT_TYPES.find(u=>u.id===typeId);if(!ut)return;
-  
-  // EVIDENCE / ARTICLE PLACEMENT FLOW
-  if (typeId === 'article_find') {
-    const labelType = prompt("Enter Evidence Type Marker:\n(Options: weapon, phone, bag, shoe, jacket, blood, vehicle, other)", "other").trim().toLowerCase();
-    if (!labelType || !AICONS[labelType]) {
-      toast("Invalid type selection. Marker dropped.","er");
-      return;
-    }
-    addArt(S.code, labelType, lat, lng, S.offName);
-    toast('Evidence marked successfully','ok');
-    renderSession();
+// TERMINATE (COMMANDER ONLY)
+function terminate(){
+  if(!isCommander){
+    alert("DENIED");
     return;
   }
-  
-  // NAMED SEARCH UNIT PLACEMENT FLOW
-  const uName = prompt(`Enter Callsign / Name for this ${ut.lbl} marker:`, ut.lbl);
-  if (uName === null) return; // Abort if they hit cancel
-  
-  const mId = 'man_' + gc(4);
-  const sess = getS(S.code);
-  if(sess){
-    sess.officers[mId] = {
-      id: mId,
-      name: uName || ut.lbl,
-      role: typeId,
-      agency: S.offAgency,
-      color: ut.col,
-      lat: lat,
-      lng: lng,
-      joined_at: now(),
-      last_seen: now(),
-      sos: false,
-      is_manual: true
-    };
-    sess.timeline.push({
-      type: 'unit_placed',
-      time: now(),
-      unit: `${uName || ut.lbl} (${ut.lbl})`,
-      lat: lat,
-      lng: lng,
-      by: S.offName
-    });
-    savS(sess);
-  }
-  toast(`${uName || ut.lbl} deployed successfully`,'ok');
-  renderSession();
-  document.querySelectorAll('.legi').forEach(e=>e.classList.remove('active'));
+
+  alert("SEARCH TERMINATED");
+  events.push({type:"TERMINATE",time:Date.now()});
 }
 
-/* ================================================================
-   MANUAL SEARCHER POPUP PROMPT
-================================================================ */
-function promptAddManualSearcher() {
-  const name = prompt("Enter Unit Name / Searcher Callsign (e.g. Deputy Miller, SAR-1, K9 Scout):");
-  if (!name) return;
-  
-  const roleType = prompt("Enter Role Number:\n1: Law Enforcement\n2: K9 Unit\n3: Search & Rescue\n4: Civilian\n5: Drone", "3");
-  if (!roleType) return;
-  
-  let role = "sar";
-  if (roleType === "1") role = "law_enforcement";
-  else if (roleType === "2") role = "k9";
-  else if (roleType === "3") role = "sar";
-  else if (roleType === "4") role = "civilian";
-  else if (roleType === "5") role = "drone";
-  
-  const agency = prompt("Enter Deployed Agency (e.g. VSP, Amherst Sheriff):", S.offAgency || "Amherst Co. Sheriff");
-  
-  S.pendingManualSearcher = { name, role, agency };
-  S.placeMode = 'manual_searcher';
-  setHint(`TAP THE MAP to physically deploy searcher: ${name}`);
-  toast(`Tap map to deploy ${name}`,'in');
-}
+// PDF REPORT
+function exportPDF(){
+  const { jsPDF } = window.jspdf;
+  let doc=new jsPDF();
 
-// Global window hook so leafleted popup controls can route deletion signals
-window.removeManualSearcher = function(id) {
-  if(!confirm("Decommission this searcher and pull their marker from the active operational map?")) return;
-  const sess = getS(S.code);
-  if(sess && sess.officers[id]){
-    const name = sess.officers[id].name;
-    delete sess.officers[id];
-    sess.timeline.push({
-      type: 'unit_removed',
-      time: now(),
-      unit: name,
-      by: S.offName
-    });
-    savS(sess);
-    toast(`${name} decommissioned`,'in');
-    
-    if(S.offMarks[id]) {
-      S.map.removeLayer(S.offMarks[id]);
-      delete S.offMarks[id];
-    }
-    renderSession();
-  }
-};
+  doc.text("TACNET REPORT",10,10);
 
-/* ================================================================
-   PERIMETER DRAW
-================================================================ */
-function setupPerimDraw(){
-  const map=S.map,cont=map.getContainer();
-  let ht=null;
-  const getLL=(cx,cy)=>{const r=cont.getBoundingClientRect();return map.containerPointToLatLng(L.point(cx-r.left,cy-r.top));};
-  const start=ll=>{S.drawDown=true;S.drawPts=[[ll.lat,ll.lng]];map.dragging.disable();map.scrollWheelZoom.disable();updPrev();};
-  const move=ll=>{if(!S.drawDown)return;const lp=S.drawPts[S.drawPts.length-1];if(!lp)return;if(Math.abs(lp[0]-ll.lat)+Math.abs(lp[1]-ll.lng)>0.00003){S.drawPts.push([ll.lat,ll.lng]);updPrev();}};
-  const end=()=>{clearTimeout(ht);ht=null;map.dragging.enable();map.scrollWheelZoom.enable();if(S.drawDown){S.drawDown=false;finalPerim();}};
-  cont.addEventListener('mousedown',e=>{if(!S.drawingPerim)return;ht=setTimeout(()=>start(getLL(e.clientX,e.clientY)),180);});
-  cont.addEventListener('mousemove',e=>{if(!S.drawingPerim||!S.drawDown)return;move(getLL(e.clientX,e.clientY));});
-  document.addEventListener('mouseup',()=>{if(S.drawingPerim)end();});
-  cont.addEventListener('touchstart',e=>{if(!S.drawingPerim)return;const t=e.touches[0];ht=setTimeout(()=>start(getLL(t.clientX,t.clientY)),180);},{passive:true});
-  cont.addEventListener('touchmove',e=>{if(!S.drawingPerim||!S.drawDown)return;const t=e.touches[0];move(getLL(t.clientX,t.clientY));},{passive:true});
-  cont.addEventListener('touchend',()=>{if(S.drawingPerim)end();});
-}
-function updPrev(){
-  if(S.drawPrev)S.map.removeLayer(S.drawPrev);
-  if(S.drawPts.length<2)return;
-  S.drawPrev=L.polyline(S.drawPts,{color:'#39FF14',weight:2.5,dashArray:'6 5',opacity:.9}).addTo(S.map);
-}
-function finalPerim(){
-  if(S.drawPrev){S.map.removeLayer(S.drawPrev);S.drawPrev=null;}
-  if(S.drawPts.length>=3){setPerim(S.code,S.drawPts.map(p=>({lat:p[0],lng:p[1]})));toast('Perimeter set','ok');setPerimUI(false);renderSession();}
-  S.drawPts=[];
-}
-function setPerimUI(on){
-  S.drawingPerim=on;
-  const btn=document.getElementById('btn-perim');
-  if(on){btn.classList.add('bneon','on');btn.innerHTML='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg> Drawing…';setHint('Hold & drag to draw perimeter.');if(S.map)S.map.getContainer().style.cursor='crosshair';}
-  else{btn.classList.remove('bneon','on');btn.innerHTML='<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg> Draw Perimeter';setHint('Tap legend → tap map to place named unit. Drag any manual unit to update coordinates.');if(S.map)S.map.getContainer().style.cursor='';}
-}
-function togglePerim(){S.drawingPerim?setPerimUI(false):(setPlaceUI(null),setFreeUI(false),setPerimUI(true));}
+  let y=20;
 
-/* ================================================================
-   FREEHAND CANVAS
-================================================================ */
-function setupFreeCanvas(){
-  const cv=document.getElementById('fcanvas');
-  const mw=document.getElementById('mapw');
-  cv.width=mw.offsetWidth;cv.height=mw.offsetHeight;
-  S.fctx=cv.getContext('2d');
-  S.fctx.strokeStyle='#FF2020';S.fctx.lineWidth=3;S.fctx.lineCap='round';S.fctx.lineJoin='round';
-  const xy=e=>{const r=cv.getBoundingClientRect();return e.touches?[e.touches[0].clientX-r.left,e.touches[0].clientY-r.top]:[e.clientX-r.left,e.clientY-r.top];};
-  cv.addEventListener('mousedown',e=>{if(!S.freeOn)return;e.preventDefault();const[x,y]=xy(e);S.freeDrawing=true;S.fctx.beginPath();S.fctx.moveTo(x,y);});
-  cv.addEventListener('mousemove',e=>{if(!S.freeOn||!S.freeDrawing)return;e.preventDefault();const[x,y]=xy(e);S.fctx.lineTo(x,y);S.fctx.stroke();});
-  cv.addEventListener('mouseup',()=>S.freeDrawing=false);
-  cv.addEventListener('touchstart',e=>{if(!S.freeOn)return;e.preventDefault();const[x,y]=xy(e);S.freeDrawing=true;S.fctx.beginPath();S.fctx.moveTo(x,y);},{passive:false});
-  cv.addEventListener('touchmove',e=>{if(!S.freeOn||!S.freeDrawing)return;e.preventDefault();const[x,y]=xy(e);S.fctx.lineTo(x,y);S.fctx.stroke();},{passive:false});
-  cv.addEventListener('touchend',()=>S.freeDrawing=false);
-  window.addEventListener('resize',()=>{
-    if(!S.fctx)return;
-    try{
-      const img=S.fctx.getImageData(0,0,cv.width,cv.height);
-      cv.width=mw.offsetWidth;cv.height=mw.offsetHeight;
-      S.fctx.strokeStyle='#FF2020';S.fctx.lineWidth=3;S.fctx.lineCap='round';S.fctx.lineJoin='round';
-      S.fctx.putImageData(img,0,0);
-    }catch(e){
-      cv.width=mw.offsetWidth;cv.height=mw.offsetHeight;
-      S.fctx.strokeStyle='#FF2020';S.fctx.lineWidth=3;S.fctx.lineCap='round';S.fctx.lineJoin='round';
-    }
-    if(S.map)S.map.invalidateSize();
+  events.forEach(e=>{
+    doc.text(`${e.type} ${e.id||""}`,10,y);
+    y+=6;
   });
-  setTimeout(()=>{if(S.map)S.map.invalidateSize();},300);
-}
-function setFreeUI(on){
-  S.freeOn=on;
-  const cv=document.getElementById('fcanvas');
-  const btn=document.getElementById('btn-free');
-  const clr=document.getElementById('btn-clrfree');
-  if(on){cv.style.display='block';cv.classList.add('active');btn.classList.add('on');clr.style.display='';if(S.map){S.map.dragging.disable();S.map.scrollWheelZoom.disable();}setHint('Draw red arrows/notes on map. Map locked. Tap Freehand again to unlock.');}
-  else{cv.style.display='none';cv.classList.remove('active');btn.classList.remove('on');clr.style.display='none';if(S.map){S.map.dragging.enable();S.map.scrollWheelZoom.enable();}setHint('Tap legend → tap map to place named unit. Drag any manual unit to update coordinates.');}
-}
-function toggleFree(){S.freeOn?setFreeUI(false):(setPerimUI(false),setPlaceUI(null),setFreeUI(true));}
-function clearFree(){if(S.fctx){const cv=document.getElementById('fcanvas');S.fctx.clearRect(0,0,cv.width,cv.height);}toast('Drawing cleared','in');}
 
-/* ================================================================
-   PLACE MODE
-================================================================ */
-function setPlaceUI(m){
-  S.placeMode=m;
-  document.getElementById('btn-lkp').classList.remove('bgold','on');
-  document.querySelectorAll('.legi').forEach(e=>e.classList.remove('active'));
-  if(m!=='unit')S.placeType=null;
-  if(m==='lkp'){document.getElementById('btn-lkp').classList.add('bgold','on');setHint('Tap map to place the Last Known Position.');}
-  else if(m!=='unit')setHint('Tap legend → tap map to place named unit. Drag any manual unit to update coordinates.');
-}
-function togglePlace(m){S.placeMode===m?setPlaceUI(null):(setPerimUI(false),setFreeUI(false),setPlaceUI(m));}
-function setHint(t){const h=document.getElementById('hint');if(h)h.textContent=t;}
-
-/* ================================================================
-   ADDRESS SEARCH + AUTO PERIMETER BOX
-================================================================ */
-function doAddr(){
-  const q=document.getElementById('addr-in').value.trim();if(!q)return;
-  fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`,
-    {headers:{'Accept-Language':'en','User-Agent':'TACNET/4.0'}})
-  .then(r=>r.json())
-  .then(res=>{
-    if(!res.length){toast('Address not found','er');return;}
-    const{lat,lon,display_name}=res[0];
-    drawAddrPerim(+lat,+lon,display_name);
-  })
-  .catch(()=>toast('Search failed','er'));
+  doc.save("TACNET_REPORT.pdf");
 }
 
-function drawAddrPerim(lat,lon,label){
-  clearAddrLayers();
-  const off=S.adrOff;
-  const sw=[lat-off,lon-off],ne=[lat+off,lon+off];
-
-  S.adrMark=L.marker([lat,lon],{
-    icon:L.divIcon({className:'',iconSize:[13,13],iconAnchor:[6,6],html:'<div class="adrdot"></div>'}),
-    zIndexOffset:1000
-  }).addTo(S.map);
-  S.adrMark.bindPopup(`<div style="color:var(--red);font-family:'Black Ops One',cursive;font-size:12px;">📍 ${(label||'').split(',').slice(0,2).join(',')}</div>`).openPopup();
-
-  S.adrPerim=L.polygon([
-    [sw[0],sw[1]],[sw[0],ne[1]],[ne[0],ne[1]],[ne[0],sw[1]]
-  ],{color:'#39FF14',weight:3,fillColor:'#39FF14',fillOpacity:.1,smoothFactor:1}).addTo(S.map);
-
-  const n=S.adrN;
-  const dLat=(ne[0]-sw[0])/n,dLng=(ne[1]-sw[1])/n;
-  S.adrGrid=[];
-  for(let r=0;r<n;r++){
-    for(let c=0;c<n;c++){
-      const cell=L.polygon([
-        [sw[0]+r*dLat,sw[1]+c*dLng],[sw[0]+r*dLat,sw[1]+(c+1)*dLng],
-        [sw[0]+(r+1)*dLat,sw[1]+(c+1)*dLng],[sw[0]+(r+1)*dLat,sw[1]+c*dLng]
-      ],{color:'#39FF14',weight:.7,fillColor:'#39FF14',fillOpacity:.03,smoothFactor:1}).addTo(S.map);
-      S.adrGrid.push(cell);
-    }
-  }
-
-  const pa=document.getElementById('perim-adj');pa.style.display='flex';
-  S.map.setView([lat,lon],18);
-  toast('Address found — adjust perimeter with + / −','ok');
-}
-
-function adjPerim(d){
-  S.adrOff=Math.max(0.0002,Math.min(0.005,S.adrOff+d*0.0003));
-  const q=document.getElementById('addr-in').value.trim();
-  if(q)doAddr();
-}
-
-function clearAddr(){
-  clearAddrLayers();
-  document.getElementById('perim-adj').style.display='none';
-  document.getElementById('addr-in').value='';
-  toast('Cleared','in');
-}
-function clearAddrLayers(){
-  if(S.adrMark){S.map.removeLayer(S.adrMark);S.adrMark=null;}
-  if(S.adrPerim){S.map.removeLayer(S.adrPerim);S.adrPerim=null;}
-  if(S.adrGrid){S.adrGrid.forEach(l=>S.map.removeLayer(l));S.adrGrid=[];}
-}
-
-/* ================================================================
-   RENDER SESSION
-================================================================ */
-function renderSession(){
-  const sess=getS(S.code);if(!sess)return;
-  S.session=sess;
-  renderPerim(sess);renderGrid(sess);renderLKP(sess);
-  renderArts(sess);renderOffs(sess);renderSOS(sess);
-  updateSide(sess);updMob(sess);
-  if(sess.status==='terminated'&&!document.getElementById('s-term').classList.contains('on'))showTerm(sess);
-}
-
-function renderPerim(sess){
-  if(S.perimLayer){S.map.removeLayer(S.perimLayer);S.perimLayer=null;}
-  const pts=sess.perimeter||[];if(pts.length<3)return;
-  S.perimLayer=L.polygon(pts.map(p=>[p.lat,p.lng]),{
-    color:'#39FF14',weight:2.5,fillColor:'#39FF14',fillOpacity:.12,smoothFactor:2
-  }).addTo(S.map);
-}
-
-function renderGrid(sess){
-  S.gridLayers.forEach(l=>S.map.removeLayer(l));S.gridLayers=[];
-  const pts=sess.perimeter||[];if(pts.length<3)return;
-  const lats=pts.map(p=>p.lat),lngs=pts.map(p=>p.lng);
-  const mnLt=Math.min(...lats),mxLt=Math.max(...lats),mnLg=Math.min(...lngs),mxLg=Math.max(...lngs);
-  const n=sess.grid_size||4,dLt=(mxLt-mnLt)/n,dLg=(mxLg-mnLg)/n;
-  const cl=new Set(sess.cleared||[]);
-  for(let r=0;r<n;r++)for(let c=0;c<n;c++){
-    const idx=r*n+c,done=cl.has(idx);
-    const poly=L.polygon([
-      [mnLt+r*dLt,mnLg+c*dLg],[mnLt+r*dLt,mnLg+(c+1)*dLg],
-      [mnLt+(r+1)*dLt,mnLg+(c+1)*dLg],[mnLt+(r+1)*dLt,mnLg+c*dLg]
-    ],{color:done?'#22C55E':'#FFD700',weight:1,opacity:done?.9:.5,fillColor:done?'#22C55E':'#FFD700',fillOpacity:done?.28:.04,smoothFactor:1}).addTo(S.map);
-    poly.on('click',e=>{
-      L.DomEvent.stopPropagation(e);
-      if(!S.drawingPerim&&!S.placeMode&&!S.freeOn){clearCell(S.code,idx,S.offName);toast('Sector '+(idx+1)+' cleared','ok');renderSession();}
-    });
-    S.gridLayers.push(poly);
-  }
-}
-
-function renderLKP(sess){
-  if(S.lkpMark){S.map.removeLayer(S.lkpMark);S.lkpMark=null;}
-  if(S.lkpCircle){S.map.removeLayer(S.lkpCircle);S.lkpCircle=null;}
-  if(!sess.lkp)return;
-  const{lat,lng}=sess.lkp;
-  S.lkpMark=L.marker([lat,lng],{icon:L.divIcon({className:'',iconSize:[22,22],iconAnchor:[11,11],html:'<div class="lpin">🚩</div>'})}).addTo(S.map);
-  S.lkpCircle=L.circle([lat,lng],{radius:12,color:'#FF8C00',weight:1.5,fillColor:'#FF8C00',fillOpacity:.1}).addTo(S.map);
-  S.lkpMark.bindPopup(`<div style="color:#FF8C00;font-family:'Black Ops One',cursive;">LAST KNOWN POSITION</div><div style="font-size:10px;">${lat.toFixed(5)}, ${lng.toFixed(5)}</div><div style="font-size:10px;">Set by ${sess.lkp.by||'—'} · ${ft(sess.lkp.time)}</div>`);
-}
-
-function renderArts(sess){
-  S.artMarks.forEach(m=>S.map.removeLayer(m));S.artMarks=[];
-  (sess.articles||[]).forEach(a=>{
-    const m=L.marker([a.lat,a.lng],{icon:L.divIcon({className:'',iconSize:[24,24],iconAnchor:[12,12],html:`<div class="apin">${AICONS[a.label]||'📦'}</div>`})});
-    m.bindPopup(`<div style="color:var(--gold);font-family:'Black Ops One',cursive;">${(a.label||'').toUpperCase()}</div><div style="font-size:11px;">By: ${a.by||'—'}</div><div style="font-size:10px;">${ft(a.time)}</div>`);
-    m.addTo(S.map);S.artMarks.push(m);
-  });
-}
-
-function renderOffs(sess){
-  const offs=Object.values(sess.officers||{});const seen=new Set();
-  offs.forEach(o=>{
-    seen.add(o.id);if(o.lat==null||o.lng==null)return;
-    const isManual = !!o.is_manual;
-    
-    if(S.offMarks[o.id]) {
-      S.offMarks[o.id].setLatLng([o.lat,o.lng]);
-    } else {
-      const icon=L.divIcon({className:'',iconSize:[20,20],iconAnchor:[10,10],
-        html:`<div class="odot" style="background:${o.color||'#fff'};color:${o.color||'#fff'};${isManual ? 'border: 2.2px dashed #FF2020; box-shadow: 0 0 6px #FF2020;' : ''}"></div>`});
-        
-      const m=L.marker([o.lat,o.lng],{icon, draggable: isManual});
-      
-      // PERSIST MOVEMENT COORDINATES IN ACTIVE THEATER SYSTEM
-      if(isManual) {
-        m.on('dragend', function(event) {
-          const marker = event.target;
-          const pos = marker.getLatLng();
-          updPos(S.code, o.id, pos.lat, pos.lng);
-          toast(`${o.name} moved to ${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)}`,'ok');
-          renderSession();
-        });
-      }
-      
-      let popupContent = `
-        <div style="min-width:140px;">
-          <div style="color:var(--gold);font-family:'Black Ops One',cursive;font-size:13px;line-height:1.2;">${o.name}</div>
-          <div style="font-size:11px;color:#aaa;margin-top:2px;">${RLBLS[o.role]||o.role}</div>
-          <div style="font-size:10px;color:#aaa;">${o.agency||''}</div>
-          ${o.sos?'<div style="color:#FF2020;font-weight:700;margin-top:3px;">⚠ OFFICER DOWN</div>':''}
-      `;
-      
-      if(isManual) {
-        popupContent += `
-          <hr style="border:0;border-top:1.5px solid var(--border);margin:6px 0;">
-          <button class="btn bsm bred bfull" onclick="removeManualSearcher('${o.id}')" style="font-size:9.5px;padding:3px;margin-top:2px;">Decommission Unit</button>
-        `;
-      }
-      
-      popupContent += `</div>`;
-      m.bindPopup(popupContent);
-      m.addTo(S.map);
-      S.offMarks[o.id]=m;
-    }
-  });
-  
-  Object.keys(S.offMarks).forEach(id=>{
-    if(!seen.has(id)){
-      S.map.removeLayer(S.offMarks[id]);
-      delete S.offMarks[id];
-    }
-  });
-}
-
-/* ================================================================
-   SIDE PANEL
-================================================================ */
-function updateSide(sess){
-  document.getElementById('sp-name').textContent=sess.name||sess.code;
-  document.getElementById('sp-code').textContent=sess.code;
-  document.getElementById('sp-status').textContent=sess.status==='terminated'?'TERMINATED':'ACTIVE';
-  const offs=Object.values(sess.officers||{});
-  document.getElementById('sp-offs').innerHTML=offs.length?offs.map(o=>`
-    <div class="orow">
-      <span style="width:10px;height:10px;border-radius:50%;background:${o.color||'#fff'};border:2px solid rgba(255,255,255,.4);flex-shrink:0;display:block;"></span>
-      <div style="flex:1;min-width:0;">
-        <div class="oname">${o.name}</div>
-        <div style="font-size:11px;color:#fff;">${RLBLS[o.role]||o.role} · ${o.agency||''}</div>
-      </div>
-      ${o.sos?'<span style="color:var(--red);font-size:10px;font-weight:700;">SOS</span>':(o.lat!=null?'<span style="color:var(--neon);font-size:10px;">●</span>':'<span style="color:var(--dim);font-size:10px;">○</span>')}
-    </div>`).join(''):'<div class="sstat">No officers online.</div>';
-  const total=(sess.grid_size||4)**2,cl=(sess.cleared||[]).length;
-  const pct=total>0?Math.round((cl/total)*100):0;
-  document.getElementById('sp-pct').textContent=pct+'%';
-  document.getElementById('sp-bar').style.width=pct+'%';
-  document.getElementById('sp-cells').textContent=`${cl} / ${total} sectors cleared`;
-  const arts=sess.articles||[];
-  document.getElementById('sp-noart').style.display=arts.length?'none':'';
-  document.getElementById('sp-arts').innerHTML=arts.slice(-8).reverse().map(a=>`
-    <div class="arty"><span style="font-size:13px;">${AICONS[a.label]||'📦'}</span><span style="font-size:11px;color:#fff;flex:1;">${(a.label||'').toUpperCase()}</span><span style="font-size:9px;color:#fff;">${ft(a.time)}</span></div>`).join('');
-  const lkp=document.getElementById('sp-lkp');
-  if(sess.lkp)lkp.innerHTML=`<span style="color:var(--gold);">🚩 ${sess.lkp.lat.toFixed(5)}, ${sess.lkp.lng.toFixed(5)}</span><br><span style="font-size:9px;color:#fff;">${ft(sess.lkp.time)} · ${sess.lkp.by||''}</span>`;
-  else lkp.textContent='Not set.';
-  const sosEvs=sess.sos_events||[];
-  document.getElementById('sp-sos-sec').style.display=sosEvs.length?'':'none';
-  document.getElementById('sp-sos-list').innerHTML=sosEvs.map(ev=>`<div style="padding:4px 0;border-bottom:1px solid var(--border);"><div style="color:var(--red);font-size:12px;font-weight:700;">${ev.name}</div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#fff;">${ft(ev.time)}</div></div>`).join('');
-}
-function updMob(sess){
-  const o=Object.values(sess.officers||{}).length,a=(sess.articles||[]).length,c=(sess.cleared||[]).length,t=(sess.grid_size||4)**2;
-  document.getElementById('mob-txt').textContent=`${o} units · ${a} articles · ${c}/${t} cleared`;
-}
-
-/* ================================================================
-   SOS / NV / TERMINATE
-================================================================ */
-function doSOS(){trigSOS(S.code,S.offId,S.selfPos?.lat,S.selfPos?.lng,S.offName);toast('⚠ SOS BROADCAST — OFFICER DOWN','er',5000);renderSession();}
-
-function toggleNV(){
-  S.nvOn=!S.nvOn;
-  document.getElementById('s-dash').classList.toggle('nv',S.nvOn);
-  document.getElementById('nv-ov').style.display=S.nvOn?'':'none';
-  document.getElementById('btn-nv').classList.toggle('bneon',S.nvOn);
-  document.getElementById('btn-nv').classList.toggle('on',S.nvOn);
-  toast(S.nvOn?'Night vision ON':'Night vision OFF','in');
-}
-
-function doTerminate(){
-  if(!confirm('TERMINATE this operation?\n\nAll map data will clear. Final report will be generated.'))return;
-  termSess(S.code);stopGeo();stopPoll();
-  const sess=getS(S.code);S.repData=sess;buildRep(sess);showTerm(sess);
-}
-
-function showTerm(sess){
-  if(document.getElementById('s-term').classList.contains('on'))return;
-  document.getElementById('s-term').classList.add('on');
-  const t=(sess.grid_size||4)**2;
-  document.getElementById('term-info').textContent=
-    `${sess.name} · Code: ${sess.code}\nStarted: ${fdt(sess.created_at)} · Ended: ${fdt(sess.terminated_at||now())}\nPersonnel: ${Object.keys(sess.officers||{}).length} · Articles: ${(sess.articles||[]).length} · Cleared: ${(sess.cleared||[]).length}/${t}`;
-}
-
-function startFresh(){
-  document.getElementById('s-term').classList.remove('on');
-  if(S.nvOn)toggleNV();
-  if(S.map){
-    if(S.perimLayer)S.map.removeLayer(S.perimLayer);
-    S.gridLayers.forEach(l=>S.map.removeLayer(l));
-    if(S.lkpMark)S.map.removeLayer(S.lkpMark);
-    if(S.lkpCircle)S.map.removeLayer(S.lkpCircle);
-    if(S.adrMark)S.map.removeLayer(S.adrMark);
-    if(S.adrPerim)S.map.removeLayer(S.adrPerim);
-    S.adrGrid.forEach(l=>S.map.removeLayer(l));
-    S.artMarks.forEach(m=>S.map.removeLayer(m));
-    Object.values(S.offMarks).forEach(m=>S.map.removeLayer(m));
-    S.sosMarks.forEach(m=>S.map.removeLayer(m));
-  }
-  clearFree();
-  goLanding();
-}
-
-function viewRep(){document.getElementById('s-term').classList.remove('on');document.getElementById('s-rep').classList.add('on');}
-function closeRep(){document.getElementById('s-rep').classList.remove('on');document.getElementById('s-term').classList.add('on');}
-
-/* ================================================================
-   GPS
-================================================================ */
-function startGeo(){
-  if(!navigator.geolocation){document.getElementById('gps-txt').textContent='GPS: unavailable';return;}
-  S.geoId=navigator.geolocation.watchPosition(p=>{
-    const{latitude:lat,longitude:lng}=p.coords;
-    S.selfPos={lat,lng};
-    document.getElementById('gps-txt').textContent=`GPS: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-    updPos(S.code,S.offId,lat,lng);
-    renderSession();
-    if(!S._cen){S.map.setView([lat,lng],17);S._cen=true;}
-  },()=>{document.getElementById('gps-txt').textContent='GPS: enable location';},
-  {enableHighAccuracy:true,maximumAge:3000,timeout:10000});
-}
-function stopGeo(){if(S.geoId!=null){navigator.geolocation?.clearWatch(S.geoId);S.geoId=null;}S._cen=false;}
-
-/* ================================================================
-   COMPASS + WIND SIM
-================================================================ */
-function startCompass(){
-  if(window.DeviceOrientationEvent)window.addEventListener('deviceorientation',e=>{
-    if(e.alpha==null)return;S.hasCompass=true;
-    const h=e.webkitCompassHeading||(360-e.alpha)||0;
-    document.getElementById('cneedle').style.transform=`translate(-50%,-100%) rotate(${h}deg)`;
-  });
-  let a=0;
-  S.compassSim=setInterval(()=>{
-    if(!S.hasCompass){a=(a+.4)%360;document.getElementById('cneedle').style.transform=`translate(-50%,-100%) rotate(${a}deg)`;}
-    S.windSpd=Math.max(0,Math.min(35,S.windSpd+(Math.random()-.5)*.3));
-    document.getElementById('wind-txt').textContent=`WIND ${Math.round(S.windSpd)}mph ${S.windDir}`;
-  },100);
-}
-
-/* ================================================================
-   POLL (multi-tab sync)
-================================================================ */
-function startPoll(){S.pollId=setInterval(()=>{if(S.code)renderSession();},2500);}
-function stopPoll(){if(S.pollId){clearInterval(S.pollId);S.pollId=null;}}
-
-/* ================================================================
-   TOKEN
-================================================================ */
-function genTok(){
-  const mins=parseInt(document.getElementById('tok-dur').value);
-  const tok=gc(8);
-  document.getElementById('tok-val').textContent=tok;
-  document.getElementById('tok-disp').style.display='';
-  if(S.tokTimerId)clearInterval(S.tokTimerId);
-  S.tokExpiry=Date.now()+mins*60000;
-  S.tokTimerId=setInterval(()=>{
-    const left=S.tokExpiry-Date.now();
-    if(left<=0){clearInterval(S.tokTimerId);document.getElementById('tok-timer').textContent='TOKEN EXPIRED';document.getElementById('tok-timer').style.color='var(--red)';return;}
-    const m=Math.floor(left/60000),s=Math.floor((left%60000)/1000);
-    document.getElementById('tok-timer').textContent=`Expires in ${m}m ${s}s`;
-  },1000);
-  toast(`Token generated — expires in ${mins} min`,'ok');
-}
-function showTok(){document.getElementById('s-tok').classList.add('on');}
-function closeTok(){document.getElementById('s-tok').classList.remove('on');}
-
-/* ================================================================
-   FINAL REPORT
-================================================================ */
-function buildRep(sess){
-  if(!sess)return;
-  const total=(sess.grid_size||4)**2,cl=(sess.cleared||[]).length,pct=total>0?Math.round((cl/total)*100):0;
-  const offs=Object.values(sess.officers||{}),arts=sess.articles||[],sosEvs=sess.sos_events||[],tl=sess.timeline||[];
-  const R=(l,v)=>`<div><div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:#888;text-transform:uppercase;letter-spacing:1px;">${l}</div><div style="font-size:13px;font-weight:600;color:#0f2012;">${v}</div></div>`;
-  const TL=ev=>{
-    const d={
-      join:`<strong>${ev.officer}</strong> joined as ${RLBLS[ev.role]||ev.role} · ${ev.agency||''}`,
-      perimeter:`Search perimeter drawn by <strong>${ev.by}</strong>`,
-      lkp:`LKP set at ${ev.lat?.toFixed(5)||'—'}, ${ev.lng?.toFixed(5)||'—'} by <strong>${ev.by}</strong>`,
-      article:`Article: <strong>${(ev.label||'').toUpperCase()}</strong> at ${ev.lat?.toFixed(5)||'—'}, ${ev.lng?.toFixed(5)||'—'} by ${ev.by}`,
-      clear:`Sector ${ev.cell} cleared by <strong>${ev.by}</strong>`,
-      unit_placed:`Unit placed: <strong>${ev.unit}</strong> at ${ev.lat?.toFixed(5)||'—'}, ${ev.lng?.toFixed(5)||'—'} by ${ev.by}`,
-      unit_removed:`Unit <strong>${ev.unit}</strong> decommissioned by ${ev.by}`,
-      sos:`<span style="color:#cc0000;font-weight:700;">⚠ OFFICER DOWN — SOS</span> from <strong>${ev.officer}</strong>`,
-      terminate:`<strong>Operation terminated</strong> by ${ev.by}`
-    };
-    return d[ev.type]||JSON.stringify(ev);
-  };
-  
-  const personnelJoined = offs.filter(o => !o.is_manual);
-  const manualPlacements = offs.filter(o => o.is_manual);
-
-  document.getElementById('rep-content').innerHTML=`
-<div style="font-family:'Rajdhani',sans-serif;color:#1a1a1a;background:#fff;line-height:1.5;">
-  <div style="background:linear-gradient(135deg,#060e07,#0f2012 60%,#060e07);padding:26px 30px 22px;border-radius:10px 10px 0 0;margin:-30px -30px 0;position:relative;overflow:hidden;">
-    <div style="position:absolute;inset:0;border:2px solid #FF2020;border-radius:10px 10px 0 0;opacity:.35;pointer-events:none;"></div>
-    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#FF2020,#FFD700,#FF2020,transparent);"></div>
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-      <div>
-        <div style="font-family:'Black Ops One',cursive;font-size:42px;background:linear-gradient(135deg,#fff8a0,#FFD700,#c9a840);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:3px;line-height:.9;">TACNET</div>
-        <div style="font-family:'Black Ops One',cursive;color:#FFD700;font-size:13px;letter-spacing:2px;margin-top:3px;">Multi-Agency Task Force Search App</div>
-        <div style="color:#FF2020;font-size:11px;font-family:'Share Tech Mono',monospace;letter-spacing:1.5px;margin-top:2px;">Federal · State · Local</div>
-        <div style="color:#7aaa7e;font-size:9px;font-family:'Share Tech Mono',monospace;margin-top:5px;line-height:1.7;">USA's First Multi-Agency App · Built by Law Enforcement · For Law Enforcement<br>App Created by Earl A. Wood — Deputy Sheriff, Retired, Virginia</div>
-      </div>
-      <div style="text-align:right;">
-        <div style="background:#FFD700;color:#1a1200;font-family:'Black Ops One',cursive;font-size:11px;padding:5px 13px;border-radius:5px;letter-spacing:2px;display:inline-block;margin-bottom:5px;">OFFICIAL OPERATION REPORT</div>
-        <div style="background:#FF2020;color:#fff;font-family:'Black Ops One',cursive;font-size:10px;padding:3px 10px;border-radius:4px;letter-spacing:1px;display:inline-block;margin-bottom:7px;margin-left:4px;">FOR COURT USE</div>
-        <div style="color:#c8dcc9;font-family:'Share Tech Mono',monospace;font-size:9.5px;line-height:1.8;">Generated: ${fdt(now())}<br>Session Code: <strong style="color:#FFD700;letter-spacing:3px;">${sess.code}</strong></div>
-      </div>
-    </div>
-  </div>
-  <div style="padding:22px 0 0;">
-    <div style="background:#f8faf8;border:2px solid #d8e8d8;border-left:5px solid #FFD700;border-radius:8px;padding:15px 18px;margin-bottom:16px;">
-      <div style="font-family:'Black Ops One',cursive;color:#0f2012;font-size:13px;letter-spacing:2px;margin-bottom:9px;">▶ OPERATION SUMMARY</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 22px;">
-        ${R('Operation Name',sess.name||'—')}${R('Session Code',sess.code)}
-        ${R('Created By',sess.created_by||'—')}${R('Location',sess.addr||'—')}
-        ${R('Operation Start',fdt(sess.created_at))}${R('Operation End',fdt(sess.terminated_at||now()))}
-        ${R('Total Online Personnel',personnelJoined.length)}${R('Manual Map Placements',manualPlacements.length)}
-        ${R('Articles / Evidence',arts.length)}${R('Grid Coverage',`${cl} / ${total} sectors (${pct}%)`)}
-      </div>
-    </div>
-    <div style="background:#f8faf8;border:2px solid #d8e8d8;border-left:5px solid #FF8C00;border-radius:8px;padding:15px 18px;margin-bottom:16px;">
-      <div style="font-family:'Black Ops One',cursive;color:#0f2012;font-size:13px;letter-spacing:2px;margin-bottom:9px;">🚩 LAST KNOWN POSITION</div>
-      ${sess.lkp?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 22px;">${R('Coordinates',sess.lkp.lat.toFixed(6)+', '+sess.lkp.lng.toFixed(6))}${R('Set By',sess.lkp.by||'—')}${R('Time',fdt(sess.lkp.time))}</div>`:'<div style="color:#888;font-size:12px;">No LKP set during this operation.</div>'}
-    </div>
-    <div style="background:#f8faf8;border:2px solid #d8e8d8;border-left:5px solid #2563EB;border-radius:8px;padding:15px 18px;margin-bottom:16px;">
-      <div style="font-family:'Black Ops One',cursive;color:#0f2012;font-size:13px;letter-spacing:2px;margin-bottom:9px;">👮 DEPLOYED SYSTEM USER SIGN-INS (${personnelJoined.length})</div>
-      <table style="width:100%;border-collapse:collapse;font-size:12px;">
-        <thead><tr style="background:#0f2012;color:#FFD700;"><th style="padding:7px 9px;text-align:left;font-family:'Black Ops One',cursive;">Name</th><th style="padding:7px 9px;text-align:left;font-family:'Black Ops One',cursive;">Role</th><th style="padding:7px 9px;text-align:left;font-family:'Black Ops One',cursive;">Agency</th><th style="padding:7px 9px;text-align:left;font-family:'Black Ops One',cursive;">Status</th><th style="padding:7px 9px;text-align:left;font-family:'Black Ops One',cursive;">Joined</th></tr></thead>
-        <tbody>${personnelJoined.map((o,i)=>`<tr style="background:${i%2?'#f8faf8':'#fff'};border-bottom:1px solid #d8e8d8;"><td style="padding:6px 9px;font-weight:600;">${o.name}</td><td style="padding:6px 9px;"><span style="display:inline-block;padding:2px 7px;border-radius:20px;background:${o.color||'#999'}22;color:${o.color||'#333'};font-weight:600;font-size:11px;">${RLBLS[o.role]||o.role}</span></td><td style="padding:6px 9px;">${o.agency||'—'}</td><td style="padding:6px 9px;color:${o.sos?'#FF2020':'#22C55E'};font-weight:700;">${o.sos?'SOS/DOWN':'Active'}</td><td style="padding:6px 9px;font-family:monospace;font-size:10px;">${fdt(o.joined_at)}</td></tr>`).join('')}</tbody>
-      </table>
-    </div>
-    
-    ${manualPlacements.length?`
-    <div style="background:#f8faf8;border:2px solid #d8e8d8;border-left:5px solid #9CA3AF;border-radius:8px;padding:15px 18px;margin-bottom:16px;">
-      <div style="font-family:'Black Ops One',cursive;color:#0f2012;font-size:13px;letter-spacing:2px;margin-bottom:9px;">🗺 MANUAL FIELD UNIT PLACEMENTS (${manualPlacements.length})</div>
-      <table style="width:100%;border-collapse:collapse;font-size:12px;">
-        <thead><tr style="background:#0f2012;color:#FFD700;"><th style="padding:7px 9px;text-align:left;font-family:'Black Ops One',cursive;">Callsign / Unit</th><th style="padding:7px 9px;text-align:left;font-family:'Black Ops One',cursive;">Role Type</th><th style="padding:7px 9px;text-align:left;font-family:'Black Ops One',cursive;">GPS Location</th><th style="padding:7px 9px;text-align:left;font-family:'Black Ops One',cursive;">Last Known Spot</th></tr></thead>
-        <tbody>${manualPlacements.map((u,i)=>`<tr style="background:${i%2?'#f8faf8':'#fff'};border-bottom:1px solid #d8e8d8;"><td style="padding:6px 9px;font-weight:700;">${u.name}</td><td style="padding:6px 9px;">${RLBLS[u.role]||u.role}</td><td style="padding:6px 9px;font-family:monospace;font-size:11px;">${u.lat.toFixed(6)}, ${u.lng.toFixed(6)}</td><td style="padding:6px 9px;font-family:monospace;font-size:11px;">${fdt(u.last_seen)}</td></tr>`).join('')}</tbody>
-      </table>
-    </div>`:''}
-
-    <div style="background:#f8faf8;border:2px solid #d8e8d8;border-left:5px solid #FFD700;border-radius:8px;padding:15px 18px;margin-bottom:16px;">
-      <div style="font-family:'Black Ops One',cursive;color:#0f2012;font-size:13px;letter-spacing:2px;margin-bottom:9px;">📦 EVIDENCE / ARTICLES (${arts.length})</div>
-      ${arts.length?`<table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:#0f2012;color:#FFD700;"><th style="padding:7px 9px;text-align:left;font-family:'Black Ops One',cursive;">#</th><th style="padding:7px 9px;text-align:left;font-family:'Black Ops One',cursive;">Type</th><th style="padding:7px 9px;text-align:left;font-family:'Black Ops One',cursive;">GPS Coordinates</th><th style="padding:7px 9px;text-align:left;font-family:'Black Ops One',cursive;">Found By</th><th style="padding:7px 9px;text-align:left;font-family:'Black Ops One',cursive;">Time</th></tr></thead><tbody>${arts.map((a,i)=>`<tr style="background:${i%2?'#f8faf8':'#fff'};border-bottom:1px solid #d8e8d8;"><td style="padding:6px 9px;font-weight:700;">${i+1}</td><td style="padding:6px 9px;">${AICONS[a.label]||'📦'} ${(a.label||'').toUpperCase()}</td><td style="padding:6px 9px;font-family:monospace;font-size:11px;">${a.lat?.toFixed(6)||'—'}, ${a.lng?.toFixed(6)||'—'}</td><td style="padding:6px 9px;">${a.by||'—'}</td><td style="padding:6px 9px;font-family:monospace;font-size:11px;">${fdt(a.time)}</td></tr>`).join('')}</tbody></table>`:'<div style="color:#888;font-size:12px;">No articles logged.</div>'}
-    </div>
-    ${sosEvs.length?`<div style="background:#fff6f6;border:2px solid #ffd0d0;border-left:5px solid #FF2020;border-radius:8px;padding:15px 18px;margin-bottom:16px;"><div style="font-family:'Black Ops One',cursive;color:#cc0000;font-size:13px;letter-spacing:2px;margin-bottom:9px;">⚠ SOS / OFFICER DOWN EVENTS (${sosEvs.length})</div><table style="width:100%;border-collapse:collapse;font-size:12px;"><thead><tr style="background:#cc0000;color:#fff;"><th style="padding:7px 9px;text-align:left;font-family:'Black Ops One',cursive;">Officer</th><th style="padding:7px 9px;text-align:left;font-family:'Black Ops One',cursive;">GPS Location</th><th style="padding:7px 9px;text-align:left;font-family:'Black Ops One',cursive;">Time</th></tr></thead><tbody>${sosEvs.map((ev,i)=>`<tr style="background:${i%2?'#fff6f6':'#fff'};border-bottom:1px solid #ffd0d0;"><td style="padding:6px 9px;font-weight:700;color:#cc0000;">${ev.name}</td><td style="padding:6px 9px;font-family:monospace;font-size:11px;">${ev.lat?.toFixed(6)||'—'}, ${ev.lng?.toFixed(6)||'—'}</td><td style="padding:6px 9px;font-family:monospace;font-size:11px;">${fdt(ev.time)}</td></tr>`).join('')}</tbody></table></div>`:''}
-    <div style="background:#f8faf8;border:2px solid #d8e8d8;border-left:5px solid #A855F7;border-radius:8px;padding:15px 18px;margin-bottom:16px;">
-      <div style="font-family:'Black Ops One',cursive;color:#0f2012;font-size:13px;letter-spacing:2px;margin-bottom:9px;">📋 OPERATION TIMELINE</div>
-      ${tl.map(ev=>`<div style="display:flex;gap:10px;padding:4px 0;border-bottom:1px solid #e8ede8;font-size:12px;"><span style="font-family:monospace;font-size:10px;color:#888;white-space:nowrap;flex-shrink:0;padding-top:1px;">${ft(ev.time)}</span><span>${TL(ev)}</span></div>`).join('')}
-    </div>
-    <div style="text-align:center;padding:16px 0 0;border-top:2px solid #d8e8d8;">
-      <div style="font-family:'Black Ops One',cursive;font-size:10px;color:#888;letter-spacing:2px;line-height:1.9;">TACNET · MULTI-AGENCY TASK FORCE SEARCH APP<br>BUILT BY EARL A. WOOD — DEPUTY SHERIFF, RETIRED, VIRGINIA<br>DEDICATED TO AMHERST COUNTY SHERIFF'S DEPT · 10-4</div>
-      <div style="font-family:monospace;font-size:8.5px;color:#aaa;margin-top:4px;">Report: ${fdt(now())} · Session ${sess.code} · FOR LAW ENFORCEMENT AND COURT USE ONLY</div>
-    </div>
-  </div>
-</div>`;
-}
-
-function emailRep(){
-  const s=S.repData||S.session;
-  window.location.href=`mailto:?subject=${encodeURIComponent('TACNET Operation Report — '+(s?.name||'')+' ('+(s?.code||')')+')')}&body=${encodeURIComponent('TACNET Operation Report\n\nOperation: '+(s?.name)+'\nCode: '+(s?.code)+'\nStarted: '+fdt(s?.created_at)+'\nTerminated: '+fdt(s?.terminated_at)+'\n\nPersonnel: '+Object.keys(s?.officers||{}).length+'\nArticles/Evidence: '+(s?.articles||[]).length+'\nSOS Events: '+(s?.sos_events||[]).length+'\n\nOpen TACNET to print or save the full PDF report.\n\n— TACNET · Built by Earl A. Wood · Deputy Sheriff (Ret.) · Virginia')}`;
-}
-
-/* INIT */
-setMode('create');
-
-/* ================================================================
-   FULL-SCREEN SPATIAL ANIMATION BACKDROP ENGINE
-================================================================ */
-function initUniversalSpaceEngine() {
-  if (document.getElementById('space-backdrop')) return;
-  const canvas = document.createElement('canvas');
-  canvas.id = 'space-backdrop';
-  document.body.insertBefore(canvas, document.body.firstChild);
-  
-  const ctx = canvas.getContext('2d');
-  
-  function resizeBackdrop() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-  resizeBackdrop();
-  window.addEventListener('resize', resizeBackdrop);
-
-  let earthRotation = 0;
-  let satelliteOrbit = 0;
-
-  function runAnimationLoop() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
-    const scaleFactor = Math.min(canvas.width, canvas.height);
-    const earthRadius = scaleFactor * 0.25;
-
-    // 1. STARFIELD GENERATION
-    ctx.fillStyle = '#ffffff';
-    for (let i = 0; i < 75; i++) {
-      let starX = (Math.sin(i * 143.5) * 0.5 + 0.5) * canvas.width;
-      let starY = (Math.cos(i * 87.3) * 0.5 + 0.5) * canvas.height;
-      let twinkleAlpha = Math.sin(i * 1.5 + earthRotation * 0.8) * 0.4 + 0.6;
-      
-      ctx.save();
-      ctx.globalAlpha = twinkleAlpha;
-      ctx.fillRect(starX, starY, 1.5, 1.5);
-      ctx.restore();
-    }
-
-    // 2. SPINNING EARTH GLOBE
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(earthRotation);
-    
-    let sphereGrd = ctx.createRadialGradient(-earthRadius * 0.2, -earthRadius * 0.2, earthRadius * 0.1, 0, 0, earthRadius);
-    sphereGrd.addColorStop(0, '#2563EB');   
-    sphereGrd.addColorStop(0.5, '#047857'); 
-    sphereGrd.addColorStop(0.85, '#064E3B'); 
-    sphereGrd.addColorStop(1, '#020617');    
-    
-    ctx.fillStyle = sphereGrd;
-    ctx.beginPath();
-    ctx.arc(0, 0, earthRadius, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-
-    // 3. ATMOSPHERIC SHIMMER RADIAL GLOW
-    ctx.beginPath();
-    ctx.arc(cx, cy, earthRadius, 0, Math.PI * 2);
-    let atmosphericGrd = ctx.createRadialGradient(cx, cy, earthRadius * 0.95, cx, cy, earthRadius * 1.08);
-    atmosphericGrd.addColorStop(0, 'rgba(56, 189, 248, 0)');
-    atmosphericGrd.addColorStop(0.4, 'rgba(56, 189, 248, 0.3)');  
-    atmosphericGrd.addColorStop(0.7, 'rgba(57, 255, 20, 0.15)'); 
-    atmosphericGrd.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = atmosphericGrd;
-    ctx.fill();
-
-    // 4. TACTICAL SATELLITE ORBIT TRACK
-    let radiusX = earthRadius * 1.7;
-    let radiusY = earthRadius * 0.4;
-    let orbitTiltAngle = -Math.PI / 8; 
-
-    let rawX = Math.cos(satelliteOrbit) * radiusX;
-    let rawY = Math.sin(satelliteOrbit) * radiusY;
-    
-    let satX = cx + (rawX * Math.cos(orbitTiltAngle) - rawY * Math.sin(orbitTiltAngle));
-    let satY = cy + (rawX * Math.sin(orbitTiltAngle) + rawY * Math.cos(orbitTiltAngle));
-
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(orbitTiltAngle);
-    ctx.strokeStyle = 'rgba(255, 215, 0, 0.08)';
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.ellipse(0, 0, radiusX, radiusY, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
-
-    // ACTIVE SATELLITE OBJECT
-    ctx.save();
-    ctx.fillStyle = '#FF2020'; 
-    ctx.shadowColor = '#FF2020';
-    ctx.shadowBlur = 8;
-    ctx.beginPath();
-    ctx.arc(satX, satY, 5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-
-    // TELEMETRY COMM SIGNAL FLASHES
-    if (Math.floor(satelliteOrbit * 6) % 2 === 0) {
-      ctx.save();
-      ctx.strokeStyle = '#39FF14'; 
-      ctx.globalAlpha = 0.6;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.arc(satX, satY, 11, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    earthRotation += 0.0006;   
-    satelliteOrbit += 0.0045;  
-    
-    requestAnimationFrame(runAnimationLoop);
-  }
-  
-  runAnimationLoop();
-}
-
-document.addEventListener('DOMContentLoaded', initUniversalSpaceEngine);
 </script>
+
 </body>
 </html>
-```
