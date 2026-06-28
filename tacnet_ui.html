@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { margin: 0; background: #000; color: #fff; font-family: 'Share Tech Mono', monospace; overflow: hidden; }
+        
+        #tacnet-ui { width: 100vw; height: 100vh; background: url('./ui.jpg') no-repeat center center; background-size: cover; display: flex; }
+
+        /* Emergency Pulse Effect */
+        @keyframes pulse {
+            0% { background-color: rgba(255, 0, 0, 0.4); }
+            50% { background-color: rgba(255, 0, 0, 0.1); }
+            100% { background-color: rgba(255, 0, 0, 0.4); }
+        }
+        .emergency-mode { animation: pulse 1s infinite; }
+
+        .sidebar { width: 250px; background: rgba(0,0,0,0.85); padding: 20px; border-right: 1px solid #444; }
+        .icon-row { display: flex; align-items: center; margin: 10px 0; padding: 5px; border-radius: 4px; box-shadow: 0 0 10px rgba(255,255,255,0.05); font-size: 14px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 15px; }
+        
+        /* Asset Colors */
+        .blue { background: blue; box-shadow: 0 0 8px blue; }
+        .red { background: red; box-shadow: 0 0 8px red; }
+        .green { background: green; box-shadow: 0 0 8px green; }
+        .purple { background: purple; box-shadow: 0 0 8px purple; }
+        .orange { background: orange; box-shadow: 0 0 8px orange; }
+        .yellow { background: yellow; box-shadow: 0 0 8px yellow; }
+        .white { background: white; box-shadow: 0 0 8px white; }
+        .cmd-post { background: red; border-top: 5px solid black; }
+
+        .tools { margin-top: 30px; border-top: 1px solid #444; padding-top: 15px; }
+        button { width: 100%; margin: 8px 0; background: #111; color: #aaa; border: 1px solid #444; padding: 10px; cursor: pointer; text-transform: uppercase; font-size: 12px; }
+        button:hover { background: #333; color: #fff; }
+    </style>
+</head>
+<body>
+
+<div id="tacnet-ui">
+    <div class="sidebar">
+        <h3>ASSETS</h3>
+        <div class="icon-row"><div class="dot blue"></div> Law Enforcement</div>
+        <div class="icon-row"><div class="dot red"></div> SAR</div>
+        <div class="icon-row"><div class="dot green"></div> Civilian</div>
+        <div class="icon-row"><div class="dot purple"></div> Suspect</div>
+        <div class="icon-row"><div class="dot orange"></div> Article Find</div>
+        <div class="icon-row"><div class="dot yellow"></div> Boat</div>
+        <div class="icon-row"><div class="dot white"></div> Victim</div>
+        <div class="icon-row"><div class="dot cmd-post"></div> Command Post</div>
+
+        <div class="tools">
+            <button onclick="console.log('Pen Active')">PEN</button>
+            <button onclick="console.log('Eraser Active')">ERASER</button>
+            <button onclick="triggerEmergency()">OFFICER DOWN</button>
+            <button onclick="location.reload()">CLEAR / RESET</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function triggerEmergency() {
+        document.getElementById('tacnet-ui').classList.toggle('emergency-mode');
+    }
+</script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TACNET COMMAND</title>
+    <style>
+        body { margin: 0; background: #000; color: #fff; font-family: 'Share Tech Mono', monospace; overflow: hidden; }
+        #tacnet-ui { width: 100vw; height: 100vh; background: url('ui.jpg') no-repeat center center; background-size: cover; display: flex; }
+        .sidebar { width: 260px; background: rgba(0,0,0,0.9); padding: 20px; border-right: 1px solid #444; z-index: 10; }
+        .icon-row { display: flex; align-items: center; margin: 8px 0; font-size: 13px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 10px; }
+        .tools { margin-top: 20px; border-top: 1px solid #444; padding-top: 15px; }
+        button { width: 100%; margin: 6px 0; background: #111; color: #ddd; border: 1px solid #555; padding: 10px; cursor: pointer; text-transform: uppercase; font-size: 11px; }
+        button:hover { background: #333; }
+        /* Emergency Effect */
+        .emergency-mode { animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { background-color: rgba(255,0,0,0.3); } 50% { background-color: rgba(0,0,0,0.5); } }
+    </style>
+</head>
+<body>
+
+<div id="tacnet-ui" onclick="handleMapClick(event)">
+    <div class="sidebar">
+        <h3>TACNET ASSETS</h3>
+        <div class="icon-row"><div class="dot" style="background:blue; box-shadow:0 0 8px blue;"></div> LAW ENFORCEMENT</div>
+        <div class="icon-row"><div class="dot" style="background:red; box-shadow:0 0 8px red;"></div> SAR</div>
+        <div class="icon-row"><div class="dot" style="background:orange; box-shadow:0 0 8px orange;"></div> ARTICLE FIND</div>
+        <div class="icon-row"><div class="dot" style="background:yellow; box-shadow:0 0 8px yellow;"></div> BOAT</div>
+        <div class="tools">
+            <button onclick="activateTool('PEN')">PEN</button>
+            <button onclick="activateTool('ERASER')">ERASER</button>
+            <button onclick="activateTool('MEASURE')">MEASURE (RNG)</button>
+            <button onclick="activateTool('TRAP')">TRAP N TRACE</button>
+            <button onclick="triggerEmergency()">OFFICER DOWN</button>
+            <button onclick="location.reload()">CLEAR / RESET</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let activeTool = null;
+    function activateTool(tool) {
+        activeTool = tool;
+        console.log("TOOL ACTIVATED: " + tool);
+        alert("TOOL READY: " + tool + ". Click on map to place.");
+    }
+    function handleMapClick(e) {
+        if (!activeTool) return;
+        console.log("Placing " + activeTool + " at " + e.clientX + ", " + e.clientY);
+        // Visual marker placement logic goes here
+    }
+    function triggerEmergency() {
+        document.getElementById('tacnet-ui').classList.toggle('emergency-mode');
+    }
+</script>
+</body>
+</html>
