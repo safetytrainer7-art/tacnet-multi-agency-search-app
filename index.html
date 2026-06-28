@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TACNET MISSION CONTROL</title>
+    <title>TACNET COMMAND - MEASURE</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
@@ -10,25 +11,16 @@
         .left-panel { width: 320px; background: #111; border-right: 2px solid #00ff41; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
         .map-area { flex: 1; position: relative; border: 2px solid #00ff41; margin: 10px; }
         #map { height: 100%; width: 100%; }
-        .tool-btn { background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 10px; cursor: pointer; text-transform: uppercase; font-weight: bold; font-size: 12px; }
+        .tool-btn { background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 10px; cursor: pointer; text-transform: uppercase; font-weight: bold; }
         .tool-btn:hover { background: #00ff41; color: #000; }
-        .section-title { color: #fff; font-size: 14px; margin-top: 15px; border-bottom: 1px solid #00ff41; padding-bottom: 5px; }
     </style>
 </head>
 <body>
 
 <div class="left-panel">
     <h2>FIELD OPERATIONS</h2>
-    
-    <div class="section-title">MAP LAYERS</div>
-    <button class="tool-btn" onclick="setLayer('satellite')">🛰️ SATELLITE</button>
-    <button class="tool-btn" onclick="setLayer('street')">🗺️ STREET</button>
-    
-    <div class="section-title">TACTICAL TOOLS</div>
-    <button class="tool-btn" onclick="alert('Measure Tool Active')">📏 MEASURE TOOL</button>
-    <button class="tool-btn" onclick="alert('Trap & Trace Active')">📡 TRAP & TRACE</button>
-    <button class="tool-btn" onclick="alert('Marker Placed')">📍 ADD SEARCHER</button>
-    <button class="tool-btn" onclick="findMe()">🎯 FIND MY POSITION</button>
+    <button class="tool-btn" onclick="activateMeasure()">📏 MEASURE TOOL</button>
+    <button class="tool-btn" onclick="location.reload()">CLEAR MAP</button>
 </div>
 
 <div class="map-area">
@@ -37,17 +29,19 @@
 
 <script>
     var map = L.map('map').setView([37.5, -79.2], 12);
-    var satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
-    satellite.addTo(map);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
 
-    function setLayer(type) {
-        if(type === 'satellite') { map.removeLayer(street); satellite.addTo(map); }
-        if(type === 'street') { map.removeLayer(satellite); street.addTo(map); }
+    var points = [];
+    var polyline = L.polyline([], {color: 'red'}).addTo(map);
+
+    function activateMeasure() {
+        alert("MEASURE MODE ON: Click on the map to start measuring distance.");
+        map.on('click', function(e) {
+            points.push(e.latlng);
+            polyline.setLatLngs(points);
+            L.circleMarker(e.latlng, {radius: 5, color: 'red'}).addTo(map);
+        });
     }
-    var street = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png');
-
-    function findMe() { map.locate({setView: true, maxZoom: 16}); }
-    map.on('locationfound', function(e) { L.marker(e.latlng).addTo(map).bindPopup("YOU ARE HERE").openPopup(); });
 </script>
 
 </body>
