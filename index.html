@@ -2,35 +2,54 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TACNET LIVE TRACKING</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <title>TACNET - Tactical Interface</title>
     <style>
-        body { margin: 0; background: #000; color: #00ff41; font-family: 'Courier New', monospace; height: 100vh; display: flex; }
-        #map { height: 100%; width: 100%; }
+        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; overflow: hidden; }
+        #tacnet-app { width: 100vw; height: 100vh; background: url('ui.jpg') no-repeat center center; background-size: cover; display: flex; }
+        
+        .sidebar { width: 300px; background: rgba(0,0,0,0.9); padding: 20px; border-right: 1px solid #444; z-index: 10; }
+        
+        /* Tool Button Styling */
+        .tool-btn { width: 100%; padding: 12px; margin: 8px 0; background: #222; color: #fff; border: 1px solid #666; cursor: pointer; text-transform: uppercase; font-weight: bold; }
+        .tool-btn:hover { background: #444; }
+        .active-tool { border: 2px solid #ffcc00; background: #333; }
+        
+        .emergency-btn { background: #8b0000; color: white; border: 1px solid red; }
     </style>
 </head>
 <body>
-<div id="map"></div>
+
+<div id="tacnet-app">
+    <div class="sidebar">
+        <h3>OPERATIONAL TOOLS</h3>
+        
+        <button id="penBtn" class="tool-btn" onclick="setTool('pen')">✏️ PEN</button>
+        <button id="eraserBtn" class="tool-btn" onclick="setTool('eraser')">🧽 ERASER</button>
+        
+        <div style="margin-top:20px; border-top:1px solid #444; padding-top:20px;">
+            <button class="tool-btn emergency-btn" onclick="triggerEmergency()">OFFICER DOWN</button>
+            <button class="tool-btn" onclick="location.reload()">RESET INTERFACE</button>
+        </div>
+    </div>
+</div>
 
 <script>
-    // 1. Initialize Map
-    var map = L.map('map').setView([37.5, -79.2], 15);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+    let currentTool = null;
 
-    // 2. The Live GPS Tracker
-    // This watches the phone's GPS and places a marker automatically
-    var userMarker = L.circleMarker([0, 0], {radius: 8, color: 'cyan', fillOpacity: 1}).addTo(map);
-
-    function onLocationFound(e) {
-        userMarker.setLatLng(e.latlng);
-        map.setView(e.latlng, 17); // Keeps the map centered on the officer
+    function setTool(tool) {
+        currentTool = tool;
+        // Visual indicator that tool is selected
+        document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active-tool'));
+        if(tool === 'pen') document.getElementById('penBtn').classList.add('active-tool');
+        if(tool === 'eraser') document.getElementById('eraserBtn').classList.add('active-tool');
+        
+        console.log("TOOL ACTIVATED: " + tool.toUpperCase());
     }
 
-    // 3. Start the Live Watch
-    map.locate({watch: true, setView: true, maxZoom: 17});
-    map.on('locationfound', onLocationFound);
-    map.on('locationerror', function(e) { alert("GPS DISABLED: Please allow location access on your phone."); });
+    function triggerEmergency() {
+        alert("EMERGENCY MODE ACTIVATED");
+    }
 </script>
+
 </body>
 </html>
