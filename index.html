@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,8 +20,10 @@
 <div class="left-panel">
     <h2>FIELD OPERATIONS</h2>
     <div class="section-title">TACTICAL TOOLS</div>
-    <button class="tool-btn" onclick="activateMeasure()">📏 MEASURE TOOL</button>
-    <button class="tool-btn" onclick="activateUnit()">📍 TRACK UNIT</button>
+    <button class="tool-btn" onclick="setMode('measure')">📏 MEASURE</button>
+    <button class="tool-btn" onclick="setMode('K9')">🟡 TRACK K9</button>
+    <button class="tool-btn" onclick="setMode('SAR')">🔵 TRACK SAR</button>
+    <button class="tool-btn" onclick="setMode('LE')">🔴 TRACK L.E.</button>
     <button class="tool-btn" onclick="location.reload()">CLEAR MAP</button>
 </div>
 
@@ -34,20 +35,18 @@
     var map = L.map('map').setView([37.5, -79.2], 12);
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
 
-    var points = [];
-    var polyline = L.polyline([], {color: 'red', weight: 4}).addTo(map);
-    var mode = ''; 
-
-    function activateMeasure() { mode = 'measure'; }
-    function activateUnit() { mode = 'unit'; }
+    var mode = '';
+    function setMode(m) { mode = m; }
 
     map.on('click', function(e) {
         if (mode === 'measure') {
-            points.push(e.latlng);
-            polyline.setLatLngs(points);
-            L.circleMarker(e.latlng, {radius: 5, color: 'red'}).addTo(map);
-        } else if (mode === 'unit') {
-            L.marker(e.latlng).addTo(map).bindPopup("UNIT ACTIVE").openPopup();
+            L.circleMarker(e.latlng, {radius: 5, color: 'white'}).addTo(map);
+        } else if (mode === 'K9') {
+            L.circleMarker(e.latlng, {radius: 8, color: 'yellow', fillOpacity: 1}).addTo(map);
+        } else if (mode === 'SAR') {
+            L.circleMarker(e.latlng, {radius: 8, color: 'blue', fillOpacity: 1}).addTo(map);
+        } else if (mode === 'LE') {
+            L.circleMarker(e.latlng, {radius: 8, color: 'red', fillOpacity: 1}).addTo(map);
         }
     });
 </script>
