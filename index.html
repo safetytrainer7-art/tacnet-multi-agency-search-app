@@ -2,52 +2,60 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TACNET COMMAND</title>
+    <title>TACNET TACTICAL COMMAND</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body { margin: 0; background: #050505; color: #00ff41; font-family: 'Courier New', monospace; height: 100vh; overflow: hidden; display: flex; }
-        .left-panel { width: 320px; background: #111; border-right: 2px solid #00ff41; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+        .left-panel { width: 300px; background: #111; border-right: 2px solid #00ff41; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; }
         .map-area { flex: 1; position: relative; border: 2px solid #00ff41; margin: 10px; }
         #map { height: 100%; width: 100%; }
-        .tool-btn { background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 10px; cursor: pointer; text-transform: uppercase; font-weight: bold; }
+        .tool-btn { background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 6px; cursor: pointer; text-transform: uppercase; font-size: 11px; text-align: left; }
         .tool-btn:hover { background: #00ff41; color: #000; }
-        .section-title { color: #fff; font-size: 14px; margin-top: 15px; border-bottom: 1px solid #00ff41; padding-bottom: 5px; }
+        .instruction { font-size: 10px; color: #aaa; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <div class="left-panel">
-    <h2>FIELD OPERATIONS</h2>
-    <div class="section-title">TACTICAL TOOLS</div>
-    <button class="tool-btn" onclick="setMode('measure')">📏 MEASURE</button>
-    <button class="tool-btn" onclick="setMode('K9')">🟡 TRACK K9</button>
-    <button class="tool-btn" onclick="setMode('SAR')">🔵 TRACK SAR</button>
-    <button class="tool-btn" onclick="setMode('LE')">🔴 TRACK L.E.</button>
-    <button class="tool-btn" onclick="location.reload()">CLEAR MAP</button>
+    <h2>TACNET MARKERS</h2>
+    <div class="instruction">CLICK BUTTON TO SELECT, CLICK MAP TO PLACE, CLICK MARKER TO REMOVE.</div>
+    
+    <button class="tool-btn" onclick="setMarker('blue', 'circle')">🔵 LAW ENFORCEMENT</button>
+    <button class="tool-btn" onclick="setMarker('lightblue', 'circle')">🔘 K-9 & HANDLER</button>
+    <button class="tool-btn" onclick="setMarker('red', 'circle')">🔴 SAR</button>
+    <button class="tool-btn" onclick="setMarker('green', 'circle')">🟢 CIVILIANS</button>
+    <button class="tool-btn" onclick="setMarker('purple', 'circle')">🟣 SUSPECT</button>
+    <button class="tool-btn" onclick="setMarker('gray', 'circle')">⚪ DRONE</button>
+    <button class="tool-btn" onclick="setMarker('orange', 'circle')">🟠 ARTICLE FIND</button>
+    <button class="tool-btn" onclick="setMarker('white', 'circle')">⚪ VICTIM</button>
+    <button class="tool-btn" onclick="setMarker('yellow', 'circle')">🟡 BOAT</button>
+    <button class="tool-btn" onclick="setMarker('black', 'circle')">⚫ VEHICLE</button>
+    <button class="tool-btn" onclick="setMarker('yellow', 'square')">🟨 COMMAND POST</button>
+    <button class="tool-btn" onclick="setMarker('green', 'triangle')">🔼 FOUND VICTIM</button>
+    <button class="tool-btn" onclick="setMarker('brown', 'triangle')">🔽 SUSPECT IN CUSTODY</button>
+    <button class="tool-btn" onclick="setMarker('orange', 'square')">🟧 HELI-PAD</button>
+    <button class="tool-btn" style="color:red; border-color:red;" onclick="location.reload()">CLEAR ALL</button>
 </div>
 
-<div class="map-area">
-    <div id="map"></div>
-</div>
+<div class="map-area"><div id="map"></div></div>
 
 <script>
     var map = L.map('map').setView([37.5, -79.2], 12);
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
 
-    var mode = '';
-    function setMode(m) { mode = m; }
+    var currentStyle = {color: 'blue', shape: 'circle'};
+
+    function setMarker(color, shape) { currentStyle = {color: color, shape: shape}; }
 
     map.on('click', function(e) {
-        if (mode === 'measure') {
-            L.circleMarker(e.latlng, {radius: 5, color: 'white'}).addTo(map);
-        } else if (mode === 'K9') {
-            L.circleMarker(e.latlng, {radius: 8, color: 'yellow', fillOpacity: 1}).addTo(map);
-        } else if (mode === 'SAR') {
-            L.circleMarker(e.latlng, {radius: 8, color: 'blue', fillOpacity: 1}).addTo(map);
-        } else if (mode === 'LE') {
-            L.circleMarker(e.latlng, {radius: 8, color: 'red', fillOpacity: 1}).addTo(map);
+        var marker;
+        if(currentStyle.shape === 'circle') {
+            marker = L.circleMarker(e.latlng, {radius: 8, color: currentStyle.color, fillOpacity: 0.8}).addTo(map);
+        } else {
+            marker = L.marker(e.latlng).addTo(map); // Simplified for now
         }
+        marker.on('click', function() { map.removeLayer(this); });
     });
 </script>
 
