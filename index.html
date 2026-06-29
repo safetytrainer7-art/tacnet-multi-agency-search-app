@@ -1,28 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Virginia Instant Code Assistant - FINAL</title>
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: #050805; font-family: 'Georgia', serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-.app { width: 100%; max-width: 450px; background: radial-gradient(circle at top, #163016 0%, #071007 80%); border-radius: 32px; padding: 20px; border: 2px solid rgba(255, 0, 0, 0.75); box-shadow: 0 0 10px rgba(255, 0, 0, 0.8); position: relative; }
-.badge { text-align: center; font-size: 58px; margin-bottom: 5px; color: #ffcf66; text-shadow: 0 0 10px gold; }
-h1 { text-align: center; font-size: 22px; line-height: 1.2; color: #dcb35b; }
-.sub { text-align: center; font-size: 10px; color: #d8b9a0; margin-top: 8px; margin-bottom: 15px; }
-.btn { width: 100%; background: linear-gradient(to bottom, #101a10, #091109); border: 2px solid rgba(255, 50, 50, 0.75); border-radius: 18px; padding: 14px; margin-bottom: 10px; text-align: left; cursor: pointer; color: #ff9999; }
-.footer { text-align: center; font-size: 13px; font-weight: bold; color: #FFD700; text-shadow: 0 0 5px #B8860B, 0 0 3px rgba(0,0,0,0.5); margin-top: 18px; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 12px; }
-</style>
+    <title>TACNET MASTER COMMAND</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.appwrite.io/v1/sdk.js"></script>
+    <style>
+        body { margin:0; background:#000; color:#00ff41; font-family:monospace; }
+        .toolbar { padding: 10px; background:#111; display:flex; gap:5px; flex-wrap:wrap; }
+        #map { height: 75vh; width: 100%; border: 3px solid #00ff41; }
+        .legend-bar { display:flex; gap:8px; padding:10px; background:#000; color:#fff; overflow-x:auto; }
+    </style>
 </head>
 <body>
-<div class="app">
-  <div class="badge">⭐</div>
-  <h1>VIRGINIA INSTANT<br>CODE ASSISTANT</h1>
-  <div class="sub">Criminal • Traffic • Game-Fish • Juvenile/Domestic</div>
-  <button class="btn"><div style="font-size:18px; font-weight:bold;">⚖️ CRIMINAL LAW</div></button>
-  <button class="btn"><div style="font-size:18px; font-weight:bold;">🚔 TRAFFIC LAW</div></button>
-  <div class="footer">⭐ APP CREATOR ⭐<br>EARL A. WOOD<br>DEPUTY SHERIFF (RETIRED)</div>
-</div>
+    <div class="toolbar">
+        <input id="addr" placeholder="Search Address...">
+        <button onclick="findAddr()">GO</button>
+        <button onclick="toggleDraw()">RED PEN</button>
+        <button onclick="toggleLock()">MAP LOCK</button>
+        <button onclick="toggleNVG('red')">RED NVG</button>
+        <button onclick="toggleNVG('green')">GREEN NVG</button>
+        <button style="color:red" onclick="terminate()">TERMINATE</button>
+    </div>
+    <div id="map"></div>
+    <div class="legend-bar">
+        🔵LE 🔘K9 🔴SAR 🟢CIV 🟣SUS ⚪DRN 🟠ART ⚪VIC 🟡BOAT ⬛VEH 🟨CP 🔼FND 🔽CUS 🟧HEL
+    </div>
+
+    <script>
+        const map = L.map('map').setView([37.5, -79.2], 14);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+
+        function findAddr() { 
+            const addr = document.getElementById('addr').value;
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${addr}`)
+            .then(res => res.json()).then(data => {
+                if(data.length > 0) map.setView([data[0].lat, data[0].lon], 16);
+            });
+        }
+
+        function toggleLock() { map.dragging.enabled() ? map.dragging.disable() : map.dragging.enable(); }
+        function toggleNVG(c) { document.body.style.filter = (c === 'red') ? 'sepia(1) hue-rotate(-50deg)' : 'hue-rotate(90deg)'; }
+        function terminate() { location.reload(); }
+
+        // Real-time tracking engine
+        const client = new Appwrite.Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('YOUR_PROJECT_ID');
+        client.subscribe('databases.YOUR_DB_ID.collections.YOUR_COLLECTION_ID.documents', res => {
+            const { lat, lng, unit_id } = res.payload;
+            L.circleMarker([lat, lng], {radius: 12, color: 'cyan'}).addTo(map).bindPopup(unit_id);
+        });
+    </script>
 </body>
 </html>
