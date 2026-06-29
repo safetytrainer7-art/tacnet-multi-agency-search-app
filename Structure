@@ -1,4 +1,0 @@
-tacnet-live/
- ├── server.js   (THE BRAIN)
- └── public/
-      └── index.html (THE APP)
