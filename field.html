@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head><title>FIELD LOGIN</title></head>
+<body style="background:#000; color:#00ff41; font-family:monospace;">
+    <div id="login">
+        <h3>UNIT SIGN-IN</h3>
+        <input id="name" placeholder="Name"><br>
+        <input id="dept" placeholder="Dept"><br>
+        <button onclick="start()">JOIN SEARCH</button>
+    </div>
+    <script src="https://cdn.appwrite.io/v1/sdk.js"></script>
+    <script>
+        function start() {
+            const client = new Appwrite.Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('YOUR_PROJECT_ID');
+            const db = new Appwrite.Databases(client);
+            navigator.geolocation.watchPosition(pos => {
+                db.createDocument('YOUR_DB_ID', 'YOUR_COLLECTION_ID', 'unique()', {
+                    unit_id: document.getElementById('name').value,
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude
+                });
+            }, null, {enableHighAccuracy:true});
+            document.getElementById('login').innerHTML = "TRANSMITTING LIVE...";
+        }
+    </script>
+</body>
+</html>
