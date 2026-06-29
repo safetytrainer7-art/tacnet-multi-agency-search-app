@@ -31,7 +31,7 @@
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
 
     // Initialize Appwrite (Replace these with your specific IDs)
-    const client = new Appwrite.Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('YOUR_PROJECT_ID');
+    const client = new Appwrite.Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('6a38e834003e0cc64c31');
     const databases = new Appwrite.Databases(client);
 
     var marker;
@@ -52,7 +52,7 @@
             map.setView([lat, lng], 17);
 
             // Push to Appwrite (This sends the data to your cloud database)
-            databases.createDocument('YOUR_DB_ID', 'YOUR_COLLECTION_ID', 'unique()', {
+            databases.createDocument('tacnet_live_units', 'tacnet-search-app', 'unique()', {
                 lat: lat,
                 lng: lng,
                 timestamp: new Date().toISOString()
