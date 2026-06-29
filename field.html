@@ -1,26 +1,21 @@
 <!DOCTYPE html>
 <html>
-<head><title>UNIT TRACKER</title></head>
-<body style="background:#000; color:#00ff41; font-family:monospace; padding:20px;">
-    <h3>FIELD UNIT - LIVE LINK</h3>
+<body style="background:#000; color:#00ff41; padding:20px;">
+    <h3>FIELD UNIT ACTIVE</h3>
     <input id="unitID" placeholder="Enter Unit Name">
-    <button style="padding:20px; background:red; color:white; font-size:20px;" onclick="start()">START GPS TRACKING</button>
-    <button style="padding:20px; background:yellow; color:black; font-size:20px;" onclick="sos()">SOS OFFICER DOWN</button>
-
+    <button style="width:100%; padding:30px; background:red; color:white;" onclick="start()">START GPS</button>
     <script src="https://cdn.appwrite.io/v1/sdk.js"></script>
     <script>
         function start() {
-            const client = new Appwrite.Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('YOUR_PROJECT_ID');
-            const db = new Appwrite.Databases(client);
-            const unit = document.getElementById('unitID').value;
-            
+            const db = new Appwrite.Databases(new Appwrite.Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('YOUR_PROJECT_ID'));
             navigator.geolocation.watchPosition(pos => {
                 db.createDocument('YOUR_DB_ID', 'YOUR_COLLECTION_ID', 'unique()', {
-                    unit_id: unit, lat: pos.coords.latitude, lng: pos.coords.longitude
+                    unit_id: document.getElementById('unitID').value,
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude
                 });
-            }, null, {enableHighAccuracy: true, timeout: 5000, maximumAge: 0});
+            }, null, {enableHighAccuracy: true, timeout: 0, maximumAge: 0});
         }
-        function sos() { alert("SOS ALERT SENT TO COMMAND POST"); }
     </script>
 </body>
 </html>
