@@ -2,65 +2,42 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TACNET LIVE COMMAND</title>
+    <title>TACNET MASTER COMMAND</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.appwrite.io/v1/sdk.js"></script>
     <style>
-        body { margin: 0; background: #000; color: #00ff41; font-family: 'Courier New', monospace; height: 100vh; display: flex; }
-        .left-panel { width: 320px; background: #111; border-right: 2px solid #00ff41; padding: 20px; overflow-y: auto; }
-        .map-area { flex: 1; border: 2px solid #00ff41; margin: 10px; position: relative; }
-        #map { height: 100%; width: 100%; }
-        .tool-btn { display: block; width: 100%; background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 10px; margin-bottom: 8px; cursor: pointer; text-transform: uppercase; font-weight: bold; }
+        body { margin:0; background:#000; color:#00ff41; font-family:monospace; }
+        .toolbar { padding: 10px; background:#111; display:flex; gap:8px; flex-wrap:wrap; border-bottom: 2px solid #00ff41; }
+        #map { height: 75vh; width: 100%; border: 3px solid #00ff41; }
+        .legend-bar { display:flex; gap:15px; padding:15px; background:#000; color:#fff; overflow-x:auto; font-size: 14px; font-weight: bold; border-top: 2px solid #00ff41; }
+        button { background:#222; color:#00ff41; border:1px solid #00ff41; padding:8px; cursor:pointer; }
+        input { background:#000; color:#00ff41; border:1px solid #00ff41; padding:8px; }
     </style>
 </head>
 <body>
+    <div class="toolbar">
+        <input id="addr" placeholder="Search Address...">
+        <button onclick="alert('Searching address...')">GO</button>
+        <button onclick="alert('Red Pen Active')">RED PEN</button>
+        <button onclick="alert('Map Locked')">MAP LOCK</button>
+        <button onclick="document.body.style.filter='sepia(1) hue-rotate(-50deg)'">RED NVG</button>
+        <button onclick="document.body.style.filter='hue-rotate(90deg)'">GREEN NVG</button>
+        <button onclick="document.body.style.filter='none'">RESET LIGHTING</button>
+        <button style="color:red; border-color:red;" onclick="location.reload()">TERMINATE SEARCH</button>
+    </div>
+    <div id="map"></div>
+    <div class="legend-bar">
+        <span>🔵 LE</span> <span>🔘 K9</span> <span>🔴 SAR</span> <span>🟢 CIV</span> <span>🟣 SUS</span> <span>⚪ DRN</span> 
+        <span>🟠 ART</span> <span>⚪ VIC</span> <span>🟡 BOAT</span> <span>⬛ VEH</span> <span>🟨 CP</span> <span>🔼 FND</span> 
+        <span>🔽 CUS</span> <span>🟧 HEL</span>
+    </div>
 
-<div class="left-panel">
-    <h2>TACNET LIVE</h2>
-    <div id="status" style="font-size: 10px; margin-bottom: 10px;">SYSTEM: STANDBY</div>
-    <button class="tool-btn" onclick="startTracking()">START LIVE FEED</button>
-    <button class="tool-btn" onclick="location.reload()">RESET</button>
-</div>
-
-<div class="map-area"><div id="map"></div></div>
-
-<script>
-    // Initialize Map
-    var map = L.map('map').setView([37.5, -79.2], 15);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
-
-    // Initialize Appwrite (Replace these with your specific IDs)
-    const client = new Appwrite.Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('6a38e834003e0cc64c31');
-    const databases = new Appwrite.Databases(client);
-
-    var marker;
-
-    function startTracking() {
-        document.getElementById('status').innerText = "SYSTEM: TRACKING LIVE...";
+    <script>
+        const map = L.map('map').setView([37.5, -79.2], 14);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
         
-        // Watch the phone's GPS
-        navigator.geolocation.watchPosition(function(pos) {
-            var lat = pos.coords.latitude;
-            var lng = pos.coords.longitude;
-
-            if (!marker) {
-                marker = L.circleMarker([lat, lng], {radius: 8, color: 'cyan', fillOpacity: 1}).addTo(map);
-            } else {
-                marker.setLatLng([lat, lng]);
-            }
-            map.setView([lat, lng], 17);
-
-            // Push to Appwrite (This sends the data to your cloud database)
-            databases.createDocument('tacnet_live_units', 'tacnet-search-app', 'unique()', {
-                lat: lat,
-                lng: lng,
-                timestamp: new Date().toISOString()
-            });
-        }, function(err) {
-            alert("LOCATION ACCESS DENIED");
-        }, {enableHighAccuracy: true});
-    }
-</script>
+        // Marker test
+        L.circleMarker([37.5, -79.2], {radius: 12, color: 'cyan', fillOpacity: 1}).addTo(map).bindPopup("COMMAND POST");
+    </script>
 </body>
 </html>
