@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TACNET COMMAND</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.appwrite.io/v1/sdk.js"></script>
+    <style>
+        body { margin:0; font-family:monospace; background:#000; color:#00ff41; }
+        #map { height: 90vh; width: 100%; filter: brightness(100%); }
+        .nvg-red { filter: sepia(100%) hue-rotate(-50deg) saturate(500%); }
+        .nvg-green { filter: hue-rotate(90deg) saturate(500%); }
+        .ui { padding:10px; display:flex; gap:10px; background:#111; }
+    </style>
+</head>
+<body>
+    <div class="ui">
+        <input id="addr" placeholder="Search Address...">
+        <button onclick="findAddr()">GO</button>
+        <button onclick="document.getElementById('map').className='nvg-red'">RED NVG</button>
+        <button onclick="document.getElementById('map').className='nvg-green'">GREEN NVG</button>
+        <button onclick="document.getElementById('map').className=''">RESET</button>
+        <button onclick="terminate()">TERMINATE SEARCH</button>
+    </div>
+    <div id="map"></div>
+    <script>
+        const map = L.map('map').setView([37.5, -79.2], 15);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+        const markers = {};
+        const client = new Appwrite.Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('YOUR_PROJECT_ID');
+        
+        client.subscribe('databases.YOUR_DB_ID.collections.YOUR_COLLECTION_ID.documents', (res) => {
+            const { unit_id, lat, lng } = res.payload;
+            if(!markers[unit_id]) markers[unit_id] = L.circleMarker([lat, lng], {color:'cyan'}).addTo(map);
+            else markers[unit_id].setLatLng([lat, lng]);
+        });
+
+        function findAddr() { /* Logic to fetch and flyTo coordinates */ }
+        function terminate() { location.reload(); }
+    </script>
+</body>
+</html>
