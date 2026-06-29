@@ -1,46 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>TACNET MASTER COMMAND</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.appwrite.io/v1/sdk.js"></script>
     <style>
-        body { margin:0; background:#000; color:#00ff41; font-family:sans-serif; }
-        #map { height: 80vh; width: 100%; border: 3px solid #00ff41; }
-        .toolbar { padding: 10px; background:#111; display:flex; gap:5px; flex-wrap:wrap; }
-        .legend-bar { display:flex; gap:10px; padding:10px; background:#000; color:#fff; overflow-x:auto; white-space:nowrap; }
-        .marker-icon { font-size: 20px; font-weight: bold; }
+        body { margin:0; background:#000; color:#00ff41; font-family:monospace; }
+        #map { height: 75vh; width: 100%; border: 3px solid #00ff41; }
+        .toolbar { padding: 10px; display:flex; gap:10px; background:#111; }
+        .active { border: 3px solid white !important; }
     </style>
 </head>
 <body>
     <div class="toolbar">
-        <button onclick="document.body.style.filter='sepia(100%) hue-rotate(-50deg)'">RED NVG</button>
-        <button onclick="document.body.style.filter='hue-rotate(90deg)'">GREEN NVG</button>
-        <button onclick="location.reload()">RESET SYSTEM</button>
-        <button style="color:red" onclick="alert('SEARCH TERMINATED')">TERMINATE</button>
+        <button id="drawBtn" onclick="toggleDraw()">RED PEN</button>
+        <button id="lockBtn" onclick="toggleLock()">MAP LOCK</button>
+        <button onclick="toggleNVG('red')">RED NVG</button>
+        <button onclick="toggleNVG('green')">GREEN NVG</button>
+        <button style="color:red" onclick="terminate()">TERMINATE</button>
     </div>
     <div id="map"></div>
-    <div class="legend-bar">
-        🔵LE 🔘K9 🔴SAR 🟢CIV 🟣SUS ⚪DRN 🟠ART ⚪VIC 🟡BOAT ⬛VEH 🟨CP 🔼FND 🔽CUS 🟧HEL
-    </div>
     <script>
         const map = L.map('map').setView([37.5, -79.2], 14);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
 
-        const client = new Appwrite.Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('YOUR_PROJECT_ID');
-        const db = new Appwrite.Databases(client);
-        const markers = {};
+        // Toggle Functions
+        function toggleLock() {
+            if(map.dragging.enabled()) { map.dragging.disable(); document.getElementById('lockBtn').classList.add('active'); }
+            else { map.dragging.enable(); document.getElementById('lockBtn').classList.remove('active'); }
+        }
 
-        // Real-time tracking for all units
+        function toggleNVG(color) {
+            const body = document.body;
+            if(color === 'red') body.style.filter = (body.style.filter === 'sepia(1) hue-rotate(-50deg)') ? 'none' : 'sepia(1) hue-rotate(-50deg)';
+            if(color === 'green') body.style.filter = (body.style.filter === 'hue-rotate(90deg)') ? 'none' : 'hue-rotate(90deg)';
+        }
+        
+        // GPS Listener
+        const client = new Appwrite.Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('YOUR_PROJECT_ID');
         client.subscribe('databases.YOUR_DB_ID.collections.YOUR_COLLECTION_ID.documents', res => {
-            const { unit_id, lat, lng, type } = res.payload;
-            if(!markers[unit_id]) {
-                markers[unit_id] = L.circleMarker([lat, lng], {radius: 12, color: 'cyan', fillOpacity: 1}).addTo(map).bindPopup(unit_id);
-            } else {
-                markers[unit_id].setLatLng([lat, lng]);
-            }
+            const { lat, lng, unit_id } = res.payload;
+            L.circleMarker([lat, lng], {radius: 12, color: 'cyan'}).addTo(map).bindPopup(unit_id);
         });
     </script>
 </body>
