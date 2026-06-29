@@ -8,42 +8,40 @@
     <script src="https://cdn.appwrite.io/v1/sdk.js"></script>
     <style>
         body { margin:0; background:#000; color:#00ff41; font-family:sans-serif; }
-        #map { height: 85vh; width: 100%; border: 3px solid #00ff41; }
-        .toolbar { padding: 15px; display: flex; gap: 10px; background: #000; flex-wrap: wrap; }
-        .tool-btn { background:#222; color:#00ff41; border:2px solid #00ff41; padding:10px; cursor:pointer; font-weight:bold; }
-        .legend { display: flex; gap: 10px; padding: 10px; background: #111; font-size: 14px; }
+        #map { height: 80vh; width: 100%; border: 3px solid #00ff41; }
+        .toolbar { padding: 10px; background:#111; display:flex; gap:5px; flex-wrap:wrap; }
+        .legend-bar { display:flex; gap:10px; padding:10px; background:#000; color:#fff; overflow-x:auto; white-space:nowrap; }
+        .marker-icon { font-size: 20px; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="toolbar">
-        <button class="tool-btn" onclick="enableDrawing()">RED MARKER</button>
-        <button class="tool-btn" onclick="enableEraser()">ERASER</button>
-        <button class="tool-btn" onclick="map.dragging.disable()">LOCK MAP</button>
-        <button class="tool-btn" style="color:red" onclick="terminate()">TERMINATE SEARCH</button>
-        <div id="safety-dist" style="color:yellow; font-weight:bold; padding:10px;">SAFETY DISTANCE: --</div>
+        <button onclick="document.body.style.filter='sepia(100%) hue-rotate(-50deg)'">RED NVG</button>
+        <button onclick="document.body.style.filter='hue-rotate(90deg)'">GREEN NVG</button>
+        <button onclick="location.reload()">RESET SYSTEM</button>
+        <button style="color:red" onclick="alert('SEARCH TERMINATED')">TERMINATE</button>
     </div>
     <div id="map"></div>
-    <div class="legend" id="legend"></div>
-
+    <div class="legend-bar">
+        🔵LE 🔘K9 🔴SAR 🟢CIV 🟣SUS ⚪DRN 🟠ART ⚪VIC 🟡BOAT ⬛VEH 🟨CP 🔼FND 🔽CUS 🟧HEL
+    </div>
     <script>
         const map = L.map('map').setView([37.5, -79.2], 14);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
 
-        // Trap N Trace / GPS Sync
         const client = new Appwrite.Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('YOUR_PROJECT_ID');
         const db = new Appwrite.Databases(client);
-        let markers = {};
+        const markers = {};
 
+        // Real-time tracking for all units
         client.subscribe('databases.YOUR_DB_ID.collections.YOUR_COLLECTION_ID.documents', res => {
-            const { unit_id, lat, lng } = res.payload;
-            if(!markers[unit_id]) markers[unit_id] = L.circleMarker([lat, lng], {radius: 12, color: 'cyan', fillOpacity: 1}).addTo(map);
-            else {
+            const { unit_id, lat, lng, type } = res.payload;
+            if(!markers[unit_id]) {
+                markers[unit_id] = L.circleMarker([lat, lng], {radius: 12, color: 'cyan', fillOpacity: 1}).addTo(map).bindPopup(unit_id);
+            } else {
                 markers[unit_id].setLatLng([lat, lng]);
-                L.polyline([markers[unit_id].getLatLng(), [lat, lng]], {color: 'white', opacity: 0.3}).addTo(map); // Trap n Trace
             }
         });
-
-        function terminate() { if(confirm("TERMINATE SEARCH?")) location.reload(); }
     </script>
 </body>
 </html>
