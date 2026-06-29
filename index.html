@@ -1,54 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>TACNET MASTER COMMAND</title>
+    <meta charset="UTF-8">
+    <title>TACNET | Operational Command</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.appwrite.io/v1/sdk.js"></script>
     <style>
-        body { margin:0; background:#000; color:#00ff41; font-family:monospace; }
-        .toolbar { padding: 10px; background:#111; display:flex; gap:5px; flex-wrap:wrap; }
-        #map { height: 75vh; width: 100%; border: 3px solid #00ff41; }
-        .legend-bar { display:flex; gap:8px; padding:10px; background:#000; color:#fff; overflow-x:auto; }
+        body, html { margin: 0; height: 100%; background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        #map { height: 100vh; width: 100%; z-index: 1; }
+        .ui-overlay { position: absolute; top: 10px; left: 10px; z-index: 1000; background: rgba(0,0,0,0.85); padding: 15px; border: 1px solid #00aaff; pointer-events: auto; }
+        .control-panel { position: absolute; bottom: 20px; left: 20px; right: 20px; z-index: 1000; background: rgba(0,0,0,0.9); padding: 15px; border: 1px solid #00aaff; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+        .btn { padding: 8px 15px; cursor: pointer; border: 1px solid #00aaff; background: #001f3f; color: #fff; text-transform: uppercase; font-weight: bold; }
+        .btn-alert { background: #8b0000; border-color: #ff0000; }
+        .btn-terminate { background: #330000; border-color: #ff0000; }
+        .nvg-active { filter: sepia(1) hue-rotate(100deg) brightness(1.2); }
     </style>
 </head>
 <body>
-    <div class="toolbar">
-        <input id="addr" placeholder="Search Address...">
-        <button onclick="findAddr()">GO</button>
-        <button onclick="toggleDraw()">RED PEN</button>
-        <button onclick="toggleLock()">MAP LOCK</button>
-        <button onclick="toggleNVG('red')">RED NVG</button>
-        <button onclick="toggleNVG('green')">GREEN NVG</button>
-        <button style="color:red" onclick="terminate()">TERMINATE</button>
-    </div>
-    <div id="map"></div>
-    <div class="legend-bar">
-        🔵LE 🔘K9 🔴SAR 🟢CIV 🟣SUS ⚪DRN 🟠ART ⚪VIC 🟡BOAT ⬛VEH 🟨CP 🔼FND 🔽CUS 🟧HEL
-    </div>
 
-    <script>
-        const map = L.map('map').setView([37.5, -79.2], 14);
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+<div id="map"></div>
 
-        function findAddr() { 
-            const addr = document.getElementById('addr').value;
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${addr}`)
-            .then(res => res.json()).then(data => {
-                if(data.length > 0) map.setView([data[0].lat, data[0].lon], 16);
-            });
+<!-- Search & Perimeter UI -->
+<div class="ui-overlay">
+    <h3>TACNET SEARCH</h3>
+    <input type="text" id="addressInput" placeholder="Enter Address">
+    <button onclick="searchAddress()">GO</button>
+    <p>Perimeter Radius (m): <input type="range" id="radiusSlider" min="10" max="500" value="100" oninput="updatePerimeter()"></p>
+    <div id="markerControls">
+        <button onclick="addMarker('blue')">LE (Blue)</button>
+        <button onclick="addMarker('purple')">Suspect (Purple)</button>
+        <button onclick="addMarker('green')">Civilian (Green)</button>
+    </div>
+</div>
+
+<!-- Main Control Bar -->
+<div class="control-panel">
+    <button class="btn" onclick="toggleNVG()">NVG LIGHT</button>
+    <button class="btn" onclick="alert('Live Pinging Active')">TRACK & TRACE</button>
+    <button class="btn btn-alert" onclick="alert('EMERGENCY ALERT BROADCAST')">EMERGENCY ALERT</button>
+    <button class="btn" onclick="alert('Recorder Active - Saving Events')">REPLAY RECORDER</button>
+    <button class="btn" onclick="alert('Report Generated')">FINAL REPORT</button>
+    <button class="btn btn-terminate" onclick="terminateSearch()">TERMINATE SEARCH</button>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    const map = L.map('map').setView([37.4087, -79.1678], 15);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'TACNET Satellite'
+    }).addTo(map);
+
+    let perimeter = null;
+    let centerMarker = null;
+
+    function searchAddress() {
+        const lat = 37.4087, lng = -79.1678; // Mock coordinate logic
+        if(centerMarker) map.removeLayer(centerMarker);
+        centerMarker = L.circleMarker([lat, lng], {color: 'red', radius: 5}).addTo(map);
+        updatePerimeter(lat, lng);
+        map.setView([lat, lng], 17);
+    }
+
+    function updatePerimeter(lat = 37.4087, lng = -79.1678) {
+        if(perimeter) map.removeLayer(perimeter);
+        const rad = document.getElementById('radiusSlider').value;
+        perimeter = L.circle([lat, lng], {color: 'green', fillColor: 'transparent', radius: rad}).addTo(map);
+    }
+
+    function addMarker(color) {
+        const center = map.getCenter();
+        L.circleMarker(center, {color: color, radius: 8}).addTo(map).bindPopup("Unit: " + color).openPopup();
+    }
+
+    function toggleNVG() {
+        document.getElementById('map').classList.toggle('nvg-active');
+    }
+
+    function terminateSearch() {
+        if(confirm("CONFIRM: Terminate search and archive report?")) {
+            location.reload();
         }
-
-        function toggleLock() { map.dragging.enabled() ? map.dragging.disable() : map.dragging.enable(); }
-        function toggleNVG(c) { document.body.style.filter = (c === 'red') ? 'sepia(1) hue-rotate(-50deg)' : 'hue-rotate(90deg)'; }
-        function terminate() { location.reload(); }
-
-        // Real-time tracking engine
-        const client = new Appwrite.Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('YOUR_PROJECT_ID');
-        client.subscribe('databases.YOUR_DB_ID.collections.YOUR_COLLECTION_ID.documents', res => {
-            const { lat, lng, unit_id } = res.payload;
-            L.circleMarker([lat, lng], {radius: 12, color: 'cyan'}).addTo(map).bindPopup(unit_id);
-        });
-    </script>
+    }
+</script>
 </body>
 </html>
