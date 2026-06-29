@@ -2,80 +2,53 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TACNET FINAL COMMAND</title>
+    <title>TACNET - SAFETY OPERATIONS</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.appwrite.io/v1/sdk.js"></script>
     <style>
         body { margin: 0; background: #000; color: #00ff41; font-family: 'Courier New', monospace; height: 100vh; display: flex; }
-        .left-panel { width: 320px; background: #111; border-right: 2px solid #00ff41; padding: 20px; overflow-y: auto; }
+        .left-panel { width: 320px; background: #111; border-right: 2px solid #00ff41; padding: 20px; }
         .map-area { flex: 1; border: 2px solid #00ff41; margin: 10px; position: relative; }
         #map { height: 100%; width: 100%; }
         .safety-monitor { background: #200; border: 2px solid #ff0000; padding: 15px; margin-bottom: 20px; color: #fff; font-weight: bold; text-align: center; }
-        .tool-btn { display: block; width: 100%; background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 8px; margin-bottom: 5px; cursor: pointer; text-transform: uppercase; font-size: 11px; }
-        .tool-btn:hover { background: #00ff41; color: #000; }
-        .section-title { color: #fff; font-size: 14px; margin-top: 15px; border-bottom: 1px solid #00ff41; padding-bottom: 5px; }
+        .tool-btn { display: block; width: 100%; background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 12px; margin-bottom: 8px; cursor: pointer; text-transform: uppercase; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="left-panel">
-    <h2>TACNET OPERATIONAL</h2>
+    <h2>TACNET SAFETY</h2>
     <div class="safety-monitor" id="safety-dist">DISTANCE: --- m</div>
+    <div style="font-size: 11px; margin-bottom: 10px; color: #ccc;">* AUTOMATIC SPACING MONITOR *</div>
     
-    <div class="section-title">TACTICAL TOOLS</div>
-    <button class="tool-btn" onclick="setMode('measure')">📏 MEASURE (SAFETY)</button>
-    <button class="tool-btn" onclick="location.reload()">RESET SYSTEM</button>
-    
-    <div class="section-title">MARKERS</div>
-    <button class="tool-btn" onclick="setMarker('blue', 'circle')">🔵 LAW ENFORCEMENT</button>
-    <button class="tool-btn" onclick="setMarker('lightblue', 'circle')">🔘 K-9 & HANDLER</button>
-    <button class="tool-btn" onclick="setMarker('red', 'circle')">🔴 SAR</button>
-    <button class="tool-btn" onclick="setMarker('green', 'circle')">🟢 CIVILIANS</button>
-    <button class="tool-btn" onclick="setMarker('purple', 'circle')">🟣 SUSPECT</button>
-    <button class="tool-btn" onclick="setMarker('gray', 'circle')">⚪ DRONE</button>
-    <button class="tool-btn" onclick="setMarker('orange', 'circle')">🟠 ARTICLE FIND</button>
-    <button class="tool-btn" onclick="setMarker('white', 'circle')">⚪ VICTIM</button>
-    <button class="tool-btn" onclick="setMarker('yellow', 'circle')">🟡 BOAT</button>
-    <button class="tool-btn" onclick="setMarker('black', 'circle')">⚫ VEHICLE</button>
-    <button class="tool-btn" onclick="setMarker('yellow', 'square')">🟨 COMMAND POST</button>
-    <button class="tool-btn" onclick="setMarker('green', 'triangle')">🔼 FOUND VICTIM</button>
-    <button class="tool-btn" onclick="setMarker('brown', 'triangle')">🔽 SUSPECT IN CUSTODY</button>
-    <button class="tool-btn" onclick="setMarker('orange', 'square')">🟧 HELI-PAD</button>
+    <button class="tool-btn" onclick="startSafetyMeasure()">START SPACING MONITOR</button>
+    <button class="tool-btn" onclick="location.reload()">RESET SAFETY</button>
 </div>
 
 <div class="map-area"><div id="map"></div></div>
 
 <script>
-    // 1. Map Initialization (Tree Top/High-Res View)
     var map = L.map('map').setView([37.5, -79.2], 15);
+    // Tree Top Height / High-Res View
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
 
-    // 2. Appwrite Prep
-    const client = new Appwrite.Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('YOUR_PROJECT_ID');
+    var markers = [];
     
-    // 3. Logic
-    var mode = 'marker';
-    var currentMarker = {color: 'blue', shape: 'circle'};
-    var measurePoints = [];
-
-    function setMode(m) { mode = m; measurePoints = []; }
-    function setMarker(color, shape) { mode = 'marker'; currentMarker = {color: color, shape: shape}; }
-
-    map.on('click', function(e) {
-        if (mode === 'measure') {
-            measurePoints.push(e.latlng);
-            if (measurePoints.length === 2) {
-                var d = map.distance(measurePoints[0], measurePoints[1]);
-                document.getElementById('safety-dist').innerText = "DISTANCE: " + Math.round(d) + " m";
-                L.polyline(measurePoints, {color: 'yellow', weight: 4}).addTo(map);
-                measurePoints = [];
+    function startSafetyMeasure() {
+        alert("SAFETY MONITOR ACTIVE: Click two officer positions to calculate real-time distance.");
+        map.on('click', function(e) {
+            if (markers.length < 2) {
+                var m = L.circleMarker(e.latlng, {radius: 8, color: 'yellow', fillOpacity: 1}).addTo(map);
+                markers.push(e.latlng);
+                
+                if (markers.length === 2) {
+                    var d = map.distance(markers[0], markers[1]);
+                    document.getElementById('safety-dist').innerText = "DISTANCE: " + Math.round(d) + " m";
+                    L.polyline(markers, {color: 'yellow', dashArray: '5, 10'}).addTo(map);
+                }
             }
-        } else {
-            var m = L.circleMarker(e.latlng, {radius: 8, color: currentMarker.color, fillOpacity: 1}).addTo(map);
-            m.on('click', function() { map.removeLayer(this); });
-        }
-    });
+        });
+    }
 </script>
 
 </body>
