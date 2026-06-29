@@ -1,43 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>TACNET MASTER COMMAND</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body { margin:0; background:#000; color:#00ff41; font-family:monospace; }
-        .toolbar { padding: 10px; background:#111; display:flex; gap:8px; flex-wrap:wrap; border-bottom: 2px solid #00ff41; }
-        #map { height: 75vh; width: 100%; border: 3px solid #00ff41; }
-        .legend-bar { display:flex; gap:15px; padding:15px; background:#000; color:#fff; overflow-x:auto; font-size: 14px; font-weight: bold; border-top: 2px solid #00ff41; }
-        button { background:#222; color:#00ff41; border:1px solid #00ff41; padding:8px; cursor:pointer; }
-        input { background:#000; color:#00ff41; border:1px solid #00ff41; padding:8px; }
+        body { margin: 0; height: 100vh; background: url('https://example.com/spinning-earth.gif') no-repeat center center fixed; background-size: cover; display: flex; align-items: center; justify-content: center; }
+        .btn { padding: 20px 40px; font-size: 24px; background: rgba(0, 255, 65, 0.2); border: 2px solid #00ff41; color: #00ff41; text-decoration: none; }
     </style>
 </head>
 <body>
-    <div class="toolbar">
-        <input id="addr" placeholder="Search Address...">
-        <button onclick="alert('Searching address...')">GO</button>
-        <button onclick="alert('Red Pen Active')">RED PEN</button>
-        <button onclick="alert('Map Locked')">MAP LOCK</button>
-        <button onclick="document.body.style.filter='sepia(1) hue-rotate(-50deg)'">RED NVG</button>
-        <button onclick="document.body.style.filter='hue-rotate(90deg)'">GREEN NVG</button>
-        <button onclick="document.body.style.filter='none'">RESET LIGHTING</button>
-        <button style="color:red; border-color:red;" onclick="location.reload()">TERMINATE SEARCH</button>
-    </div>
-    <div id="map"></div>
-    <div class="legend-bar">
-        <span>🔵 LE</span> <span>🔘 K9</span> <span>🔴 SAR</span> <span>🟢 CIV</span> <span>🟣 SUS</span> <span>⚪ DRN</span> 
-        <span>🟠 ART</span> <span>⚪ VIC</span> <span>🟡 BOAT</span> <span>⬛ VEH</span> <span>🟨 CP</span> <span>🔼 FND</span> 
-        <span>🔽 CUS</span> <span>🟧 HEL</span>
-    </div>
-
-    <script>
-        const map = L.map('map').setView([37.5, -79.2], 14);
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
-        
-        // Marker test
-        L.circleMarker([37.5, -79.2], {radius: 12, color: 'cyan', fillOpacity: 1}).addTo(map).bindPopup("COMMAND POST");
-    </script>
+    <a href="signin.html" class="btn">ENTER TACNET COMMAND</a>
 </body>
 </html>
