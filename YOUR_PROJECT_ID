@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TACNET LIVE TRACKING</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body { margin: 0; background: #000; color: #00ff41; font-family: 'Courier New', monospace; height: 100vh; display: flex; }
+        #map { height: 100%; width: 100%; }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+
+<script>
+    // 1. Initialize Map
+    var map = L.map('map').setView([37.5, -79.2], 15);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+
+    // 2. The Live GPS Tracker
+    // This watches the phone's GPS and places a marker automatically
+    var userMarker = L.circleMarker([0, 0], {radius: 8, color: 'cyan', fillOpacity: 1}).addTo(map);
+
+    function onLocationFound(e) {
+        userMarker.setLatLng(e.latlng);
+        map.setView(e.latlng, 17); // Keeps the map centered on the officer
+    }
+
+    // 3. Start the Live Watch
+    map.locate({watch: true, setView: true, maxZoom: 17});
+    map.on('locationfound', onLocationFound);
+    map.on('locationerror', function(e) { alert("GPS DISABLED: Please allow location access on your phone."); });
+</script>
+</body>
+</html>
