@@ -2,84 +2,48 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TACNET | Operational Command</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <title>TACNET - Tactical Network</title>
     <style>
-        body, html { margin: 0; height: 100%; background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
-        #map { height: 100vh; width: 100%; z-index: 1; }
-        .ui-overlay { position: absolute; top: 10px; left: 10px; z-index: 1000; background: rgba(0,0,0,0.85); padding: 15px; border: 1px solid #00aaff; pointer-events: auto; }
-        .control-panel { position: absolute; bottom: 20px; left: 20px; right: 20px; z-index: 1000; background: rgba(0,0,0,0.9); padding: 15px; border: 1px solid #00aaff; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-        .btn { padding: 8px 15px; cursor: pointer; border: 1px solid #00aaff; background: #001f3f; color: #fff; text-transform: uppercase; font-weight: bold; }
-        .btn-alert { background: #8b0000; border-color: #ff0000; }
-        .btn-terminate { background: #330000; border-color: #ff0000; }
-        .nvg-active { filter: sepia(1) hue-rotate(100deg) brightness(1.2); }
+        body { margin: 0; background: #050b14; color: #fff; font-family: sans-serif; overflow: hidden; }
+        .hero-container {
+            width: 100vw; height: 100vh;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: radial-gradient(circle at center, #1b3a5f 0%, #050b14 70%);
+            text-align: center;
+        }
+        h1 { font-size: 5rem; letter-spacing: 0.2rem; color: #add8e6; text-shadow: 0 0 20px #00aaff; }
+        .info-panel { position: absolute; top: 20px; right: 20px; text-align: right; font-size: 0.9rem; }
+        .login-btn {
+            margin-top: 50px; padding: 15px 60px; font-size: 1.5rem;
+            background: transparent; border: 2px solid #00d4ff; color: #00d4ff;
+            cursor: pointer; transition: 0.3s; text-transform: uppercase;
+        }
+        .login-btn:hover { background: #00d4ff; color: #000; }
+        .map-inset { position: absolute; bottom: 50px; left: 50px; border: 1px solid #00d4ff; padding: 10px; width: 300px; }
     </style>
 </head>
 <body>
 
-<div id="map"></div>
-
-<!-- Search & Perimeter UI -->
-<div class="ui-overlay">
-    <h3>TACNET SEARCH</h3>
-    <input type="text" id="addressInput" placeholder="Enter Address">
-    <button onclick="searchAddress()">GO</button>
-    <p>Perimeter Radius (m): <input type="range" id="radiusSlider" min="10" max="500" value="100" oninput="updatePerimeter()"></p>
-    <div id="markerControls">
-        <button onclick="addMarker('blue')">LE (Blue)</button>
-        <button onclick="addMarker('purple')">Suspect (Purple)</button>
-        <button onclick="addMarker('green')">Civilian (Green)</button>
+<div class="hero-container">
+    <div class="info-panel">
+        <p>CREATOR: EARL WOOD</p>
+        <p>DEPUTY SHERIFF RETIRED - VIRGINIA</p>
+        <p>TACNET SYSTEM: v2.1</p>
+        <p>SAT STATUS: OPTIMAL</p>
+        <p>UNITS ONLINE: 12</p>
+        <p>REAL-TIME SYNC: ACTIVE</p>
     </div>
+
+    <h1>TACNET</h1>
+    <p style="font-size: 1.5rem; letter-spacing: 0.3rem;">TACTICAL NETWORK for search and coordination</p>
+
+    <div class="map-inset">
+        <small>ACTIVE SECTORS</small>
+        <p>• Amherst SAR<br>• Lynchburg LE<br>• Appomattox K9<br>• Campbell Drone</p>
+    </div>
+
+    <button class="login-btn" onclick="alert('Proceeding to Secure Interface...')">LOGIN</button>
 </div>
 
-<!-- Main Control Bar -->
-<div class="control-panel">
-    <button class="btn" onclick="toggleNVG()">NVG LIGHT</button>
-    <button class="btn" onclick="alert('Live Pinging Active')">TRACK & TRACE</button>
-    <button class="btn btn-alert" onclick="alert('EMERGENCY ALERT BROADCAST')">EMERGENCY ALERT</button>
-    <button class="btn" onclick="alert('Recorder Active - Saving Events')">REPLAY RECORDER</button>
-    <button class="btn" onclick="alert('Report Generated')">FINAL REPORT</button>
-    <button class="btn btn-terminate" onclick="terminateSearch()">TERMINATE SEARCH</button>
-</div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-    const map = L.map('map').setView([37.4087, -79.1678], 15);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'TACNET Satellite'
-    }).addTo(map);
-
-    let perimeter = null;
-    let centerMarker = null;
-
-    function searchAddress() {
-        const lat = 37.4087, lng = -79.1678; // Mock coordinate logic
-        if(centerMarker) map.removeLayer(centerMarker);
-        centerMarker = L.circleMarker([lat, lng], {color: 'red', radius: 5}).addTo(map);
-        updatePerimeter(lat, lng);
-        map.setView([lat, lng], 17);
-    }
-
-    function updatePerimeter(lat = 37.4087, lng = -79.1678) {
-        if(perimeter) map.removeLayer(perimeter);
-        const rad = document.getElementById('radiusSlider').value;
-        perimeter = L.circle([lat, lng], {color: 'green', fillColor: 'transparent', radius: rad}).addTo(map);
-    }
-
-    function addMarker(color) {
-        const center = map.getCenter();
-        L.circleMarker(center, {color: color, radius: 8}).addTo(map).bindPopup("Unit: " + color).openPopup();
-    }
-
-    function toggleNVG() {
-        document.getElementById('map').classList.toggle('nvg-active');
-    }
-
-    function terminateSearch() {
-        if(confirm("CONFIRM: Terminate search and archive report?")) {
-            location.reload();
-        }
-    }
-</script>
 </body>
 </html>
