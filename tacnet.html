@@ -6,133 +6,52 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body, html { margin:0; padding:0; height:100%; width:100%; background:#000; color:#00ff41; font-family: -apple-system, BlinkMacSystemFont, monospace; overflow: hidden; -webkit-tap-highlight-color: transparent; }
-        .main-ui { display:flex; flex-direction:column; height:100vh; width:100vw; position: relative; }
+        body, html { margin:0; padding:0; height:100%; width:100%; background:#000; overflow: hidden; font-family: -apple-system, sans-serif; }
+        .main-ui { display:flex; flex-direction:column; height:100vh; width:100vw; }
         
-        /* Top Navigation Header Bar */
-        .top-bar { height: 50px; background:#001a00; border-bottom:2px solid #00ff41; display:flex; padding: 0 10px; gap:10px; align-items:center; justify-content: space-between; box-sizing: border-box; z-index: 1000; }
-        .search-container { display:flex; gap:8px; align-items:center; flex: 1; }
-        .map-toggles { display:flex; gap:5px; }
+        /* Top Navigation Taskbar */
+        .top-bar { height: 60px; background:#001a00; border-bottom:2px solid #00ff41; display:flex; padding: 0 15px; align-items:center; justify-content: space-between; box-sizing: border-box; z-index: 1000; }
+        .btn-nav { background:#000; color:#00ff41; border:1px solid #00ff41; padding:10px 15px; cursor:pointer; font-weight:bold; text-transform:uppercase; font-size: 14px; border-radius: 4px; }
+        .btn-map-type { background:#001a00; color:#00ff41; border:1px solid #00ff41; padding:8px 12px; cursor:pointer; font-size:12px; font-weight: bold; border-radius: 3px; }
+        .btn-map-type.active { background:#00ff41; color:#000; font-weight:bold; }
         
-        /* Core View Workspace Landscape vs Portrait Handling */
-        .middle-section { display:flex; flex-direction: row; flex:1; width:100%; height:calc(100vh - 115px); position: relative; }
-        #map { flex:1; height: 100%; min-height: 200px; border-right:2px solid #00ff41; cursor: crosshair; }
+        /* Map Area pushes dynamically to fit space above legend */
+        #map { flex:1; width: 100%; z-index: 1; }
         
-        /* Sidebar layout handles flex space dynamically */
-        .sidebar { width:260px; background:#000; padding:15px; border-left:2px solid #00ff41; display:flex; flex-direction:column; gap:12px; box-sizing: border-box; overflow-y: auto; height: 100%; }
-        .legend-bar { height:65px; background:#000; display:flex; align-items:center; overflow-x:auto; white-space:nowrap; gap:20px; padding:0 15px; border-top:2px solid #00ff41; box-sizing: border-box; width: 100%; }
+        /* High-Visibility Scrollable Mobile Legend Bar */
+        .legend-bar { height:75px; background:#000; display:flex; align-items:center; overflow-x:auto; white-space:nowrap; gap:25px; padding:0 20px; border-top:2px solid #00ff41; box-sizing: border-box; width: 100%; z-index: 1000; -webkit-overflow-scrolling: touch; }
+        .legend-item { cursor:pointer; font-size:24px; font-weight:bold; display:inline-flex; align-items:center; gap:8px; background: rgba(0,26,0,0.4); padding: 6px 12px; border: 1px solid #333; border-radius: 4px; color: #00ff41; }
         
-        /* Adaptive Adjustment for Vertical Phone View (Portrait) */
-        @media (max-width: 600px) and (orientation: portrait) {
-            .middle-section { flex-direction: column; }
-            .sidebar { width: 100%; height: 50%; border-left: none; border-top: 2px solid #00ff41; }
-            #map { border-right: none; }
-        }
-
-        /* Tactical UI Button Styling */
-        .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding:12px; cursor:pointer; font-weight:bold; text-transform:uppercase; text-align: center; width: 100%; font-size: 13px; border-radius: 4px; }
-        .btn-map-type { background:#001a00; color:#00ff41; border:1px solid #00ff41; padding:6px 10px; cursor:pointer; font-size:11px; font-weight: bold; border-radius: 3px; }
-        .btn-map-type.active { background:#00ff41; color:#000; }
-        .btn-danger { color:red; border-color:red; }
-        
-        .btn-sos { background: #ff0000 !important; color: #fff !important; border: 2px solid #fff !important; font-size: 14px; animation: pulseSOS 1s infinite; font-weight: bold; }
-        @keyframes pulseSOS { 0% { background: #ff0000; box-shadow: 0 0 10px #ff0000; } 50% { background: #880000; } 100% { background: #ff0000; box-shadow: 0 0 10px #ff0000; } }
-        
+        .orange-dist-label { background: #000; color: #FF8C00; border: 1px solid #FF8C00; font-weight: bold; font-family: monospace; padding: 4px 8px; font-size: 13px; border-radius: 4px; }
         .leaflet-sos-pulse { animation: mapPulse 1.2s infinite ease-out; }
         @keyframes mapPulse { 0% { stroke-width: 4; stroke-opacity: 1; fill-opacity: 0.6; } 100% { stroke-width: 25; stroke-opacity: 0; fill-opacity: 0; } }
-
-        input, select, textarea { background:#000; color:#fff; border:1px solid #00ff41; padding:8px; box-sizing: border-box; font-family: monospace; font-size: 14px; border-radius: 4px; }
-        .form-block input, .form-block textarea { background: #fff !important; color: #000 !important; border: 1px solid #000 !important; width: 100%; display: block; padding: 6px; box-sizing: border-box; font-size: 13px; }
-        
-        .large-toggle { width: 24px; height: 24px; cursor: pointer; accent-color: #00ff41; }
-        
-        .slider-box { display:flex; align-items:center; gap:6px; font-weight:bold; font-size:11px; color: #00ff41; }
-        input[type="range"] { -webkit-appearance: none; background: #002b00; border: 1px solid #00ff41; height: 10px; width: 90px; cursor: pointer; border-radius: 5px; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; background: #00ff41; width: 18px; height: 18px; border: 1px solid #000; border-radius: 50%; }
-
-        .toggle-row { display:flex; justify-content:space-between; align-items:center; width:100%; font-size:13px; font-weight:bold; padding: 2px 0; }
-        .legend-item { cursor:pointer; font-size:22px; font-weight:bold; display:inline-flex; align-items:center; gap:6px; background: rgba(0,26,0,0.4); padding: 4px 10px; border: 1px solid #333; border-radius: 4px; }
-        
-        .radar-box { border: 1px solid #00ff41; background: #020f02; padding: 10px; font-size: 11px; display: none; flex-direction: column; gap:6px; font-family: monospace; position: relative; overflow: hidden; height: 55px; box-sizing: border-box; width: 100%; margin-top: 5px; }
-        .radar-scan-line { position: absolute; top: 0; left: 0; height: 100%; width: 4px; background: #00ff41; opacity: 0.9; box-shadow: 0 0 10px #00ff41; animation: scanAcross 2.5s linear infinite; }
-        @keyframes scanAcross { 0% { left: 0%; } 50% { left: 100%; } 100% { left: 0%; } }
-        
-        .orange-dist-label { background: #000; color: #FF8C00; border: 1px solid #FF8C00; font-weight: bold; font-family: monospace; padding: 3px 6px; font-size: 12px; border-radius: 4px; cursor: pointer; }
-        
-        .modal { display:none; position:fixed; top:1%; left:1%; width:96%; height:96%; background:#111; border:2px solid #00ff41; z-index:9999; padding:15px; box-sizing:border-box; overflow-y:auto; color:#fff; font-family: 'Times New Roman', Times, serif; }
-        .report-selector-bar { display: flex; flex-wrap: wrap; gap: 10px; background: #000; padding: 10px; border: 1px solid #00ff41; margin-bottom: 15px; align-items: center; }
-        .report-form-container { background: #fff; color: #000; padding: 20px; box-sizing: border-box; width: 100%; max-width: 800px; margin: 0 auto; display: none; }
-        .report-form-container.active { display: block; }
-        .form-header { text-align: center; margin-bottom: 15px; border: 1px solid #000; padding: 8px; }
-        .form-header h1 { margin: 0; font-size: 22px; text-transform: uppercase; }
-        .form-header h2 { margin: 3px 0 0 0; font-size: 15px; font-weight: normal; }
-        .form-row { display: flex; width: 100%; margin-bottom: 8px; gap: 8px; }
-        .form-block { border: 1px solid #000; padding: 4px 6px; display: flex; flex-direction: column; background: #fcfcfc; flex: 1; min-width: 50px; }
-        .form-block label { font-size: 9px; font-weight: bold; text-transform: uppercase; margin-bottom: 1px; color: #000; }
-        .section-banner { background: #000; color: #fff; font-size: 11px; font-weight: bold; padding: 4px 8px; text-transform: uppercase; margin: 12px 0 6px 0; }
-        .report-string-box { border: 1px solid #000; background: #f9f9f9; padding: 8px; font-family: monospace; font-size: 11px; height: 110px; overflow-y: auto; margin-bottom: 15px; color: #000; }
     </style>
 </head>
 <body>
     <div class="main-ui">
+        <!-- Top Taskbar -->
         <div class="top-bar">
-            <div class="search-container">
-                <button class="btn-tac" style="padding: 6px 12px; font-size: 16px; width: auto;" onclick="window.location.href='signin.html'">⬅</button>
-                <input id="addrInput" placeholder="Location/Address..." style="width:140px; font-size: 12px;">
-                <button class="btn-tac" id="cmdGoBtn" style="width: auto; padding: 8px 12px;" onclick="searchAddr()">GO</button>
-                
-                <div class="slider-box" id="cmdSliderBox">
-                    <input type="range" id="radiusSlider" min="200" max="10560" value="2500" oninput="adjustPerimeter(this.value)">
-                    <span id="radiusVal" style="min-width: 50px; font-size: 11px;">2500 FT</span>
-                </div>
+            <button class="btn-nav" onclick="window.location.href='signin.html'">⬅ LOGOUT</button>
+            
+            <div class="map-toggles">
+                <button class="btn-map-type active" id="btn-street" onclick="switchBaseLayer('street')">STREETS</button>
+                <button class="btn-map-type" id="btn-terrain" onclick="switchBaseLayer('terrain')">TERRAIN</button>
+                <button class="btn-map-type" id="btn-sat" onclick="switchBaseLayer('sat')">SATELLITE</button>
             </div>
             
-            <div id="roleDisplayBadge" style="font-weight: bold; padding: 4px 8px; border: 1px solid #00ff41; font-size: 11px; white-space: nowrap;">ASSET: SEARCHER</div>
-
-            <div class="map-toggles">
-                <button class="btn-map-type active" id="btn-street" onclick="switchBaseLayer('street')">STR</button>
-                <button class="btn-map-type" id="btn-terrain" onclick="switchBaseLayer('terrain')">TER</button>
-                <button class="btn-map-type" id="btn-sat" onclick="switchBaseLayer('sat')">SAT</button>
-            </div>
+            <button class="btn-nav" id="cmdConsoleTab" onclick="window.location.href='console.html'" style="border-color: #ffd700; color: #ffd700;">COMMAND CONSOLE ➔</button>
         </div>
 
-        <div class="middle-section">
-            <div id="map"></div>
-            <div class="sidebar">
-                <h3 id="panelTitle" style="margin:0 0 5px 0; font-size: 16px; text-align: center;">FIELD CONSOLE</h3>
-                <button class="btn-tac btn-sos" onclick="triggerSOSAlert()">🚨 OFFICER DOWN SOS 🚨</button>
-                <button class="btn-tac" id="articleFindBtn" onclick="setMarker('FND')">🔍 DEPLOY ARTICLE FIND</button>
-                
-                <div class="radar-box" id="radarDisplay">
-                    <div class="radar-scan-line"></div>
-                    <div style="display:flex; justify-content:space-between; color:#00ff41;"><span id="radarIP">NET: LIVE</span><span id="radarPing">14ms</span></div>
-                    <div id="radarStatus" style="font-size:9px; color:#aaa; white-space: nowrap; overflow: hidden;">SCANNING GRID...</div>
-                </div>
+        <!-- Open Map Container -->
+        <div id="map"></div>
 
-                <div id="commanderControls" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
-                    <hr style="border-color: #00ff41; width: 100%; margin: 4px 0;">
-                    <button class="btn-tac" onclick="activateGPS()">ACTIVATE SEARCHERS</button>
-                    <button class="btn-tac" style="border-color: #ffd700; color: #ffd700;" onclick="triggerTreeTopHeight()">🔎 TREE TOP VIEW</button>
-                    
-                    <div class="toggle-row"><span>MAP LOCK</span><input type="checkbox" id="lockToggle" class="large-toggle" onchange="toggleMapLock(this.checked)"></div>
-                    <div class="toggle-row"><span>RED PEN</span><input type="checkbox" id="penToggle" class="large-toggle" onchange="togglePenMode(this.checked)"></div>
-                    
-                    <button class="btn-tac" style="border-color: #ff3333; color: #ff3333; padding: 8px;" onclick="eraseLastLine()">❌ ERASE LAST LINE</button>
-                    <button class="btn-tac" id="crossfireBtn" style="padding: 8px;" onclick="toggleCrossfireMode()">CROSSFIRE DIST</button>
-                    <button class="btn-tac" id="trapTraceBtn" style="padding: 8px;" onclick="toggleTrapTrace()">TRAP N TRACE [OFF]</button>
-
-                    <button class="btn-tac" style="border-color: #00ff41; color: #00ff41; padding: 8px;" onclick="generateReport()">📄 PREVIEW REPORT</button>
-                    <button class="btn-tac btn-danger" style="padding: 8px;" onclick="generateReport()">TERMINATE SEARCH</button>
-                </div>
-            </div>
-        </div>
-
+        <!-- Scrollable Mobile Legend Bar -->
         <div class="legend-bar" id="tacticalLegend">
             <span class="legend-item" onclick="setMarker('LE')">🔵 LE</span>
             <span class="legend-item" onclick="setMarker('K9')">🔘 K9</span>
             <span class="legend-item" onclick="setMarker('SAR')">🔴 SAR</span>
             <span class="legend-item" onclick="setMarker('CIV')">🟢 CIV</span>
-            <span class="legend-item" onclick="setMarker('SUS')">🟣 SUS</span>
+            <span class="legend-item" onclick="setMarker('SUS')">🟣 SUS (LKL)</span>
             <span class="legend-item" onclick="setMarker('DRN')">⚪ DRN</span>
             <span class="legend-item" onclick="setMarker('ART')">🟠 ART</span>
             <span class="legend-item" onclick="setMarker('VIC')">⚪ VIC</span>
@@ -143,111 +62,33 @@
             <span class="legend-item" onclick="setMarker('CUS')">🔽 CUS</span>
             <span class="legend-item" onclick="setMarker('HEL')">🟧 HEL</span>
             <span class="legend-item" onclick="setMarker('FED')"><span style="color:#ffd700;">🟡</span> FED</span>
-            <span class="legend-item" onclick="setMarker('VSP')"><span style="color:#0000ff;">🔵</span> VSP</span>
-        </div>
-    </div>
-
-    <!-- Reports Window -->
-    <div id="reportModal" class="modal">
-        <div class="report-selector-bar no-print">
-            <button class="btn-tac" style="padding: 5px 10px; width:auto;" onclick="document.getElementById('reportModal').style.display='none'">⬅ MAP</button>
-            <button class="btn-tac" id="toggleLEFormBtn" style="border-color:#00ff41; width:auto; padding: 5px 10px;" onclick="setActiveForm('LE')">LE RPT</button>
-            <button class="btn-tac" id="toggleFRFormBtn" style="border-color:#aaa; width:auto; padding: 5px 10px;" onclick="setActiveForm('FR')">FR RPT</button>
-        </div>
-
-        <!-- FORM LE -->
-        <div id="formContainerLE" class="report-form-container active">
-            <div class="form-header"><h1>TACNET</h1><h2>Law Enforcement Incident Report</h2></div>
-            <div class="form-row">
-                <div class="form-block"><label>Fire Dept ID</label><input type="text" value="02312"></div>
-                <div class="form-block"><label>Incident #</label><input type="text" placeholder="LE-2026-X1"></div>
-                <div class="form-block"><label>Incident Date</label><input type="text" id="leFormDate"></div>
-                <div class="form-block"><label>Type of Call</label><input type="text" placeholder="LE Ops"></div>
-            </div>
-            <div class="form-row">
-                <div class="form-block"><label>No. of Personnel</label><input type="text" placeholder="Count"></div>
-                <div class="form-block">
-                    <label>Incident Times</label>
-                    <div style="font-size:11px;"><input type="text" style="width:30px;" value="10-8"> <input type="text" style="width:30px;"> <input type="text" style="width:30px;"></div>
-                </div>
-            </div>
-            <div style="border: 1px solid #000; padding: 8px; margin-top: 10px;">
-                <div class="form-block" style="margin-bottom:5px;"><label>Incident Address</label><input type="text" id="leFormAddr"></div>
-                <div class="form-row"><div class="form-block" style="flex:3;"><label>Subject Name</label><input type="text"></div><div class="form-block"><label>Gender</label><input type="text"></div></div>
-                <div class="form-row"><div class="form-block" style="flex:2;"><label>Street</label><input type="text"></div><div class="form-block"><label>City</label><input type="text"></div><div class="form-block"><label>State</label><input type="text"></div></div>
-            </div>
-            <div class="section-banner">Telemetry Logs</div>
-            <div class="report-string-box reportLogClass"></div>
-            <div class="section-banner">Incident Details</div>
-            <div class="form-block"><textarea rows="3"></textarea></div>
-        </div>
-
-        <!-- FORM FR -->
-        <div id="formContainerFR" class="report-form-container">
-            <div class="form-header"><h1>TACNET</h1><h2>First Responder Incident Report</h2></div>
-            <div class="form-row">
-                <div class="form-block"><label>Fire Dept ID</label><input type="text" value="02312"></div>
-                <div class="form-block"><label>Incident #</label><input type="text" placeholder="FR-2026-X1"></div>
-                <div class="form-block"><label>Incident Date</label><input type="text" id="frFormDate"></div>
-                <div class="form-block"><label>Type of Call</label><input type="text" placeholder="Fire/EMS/SAR"></div>
-            </div>
-            <div style="border: 1px solid #000; padding: 8px; margin-top: 10px;">
-                <div class="form-block" style="margin-bottom:5px;"><label>Incident Address</label><input type="text" id="frFormAddr"></div>
-                <div class="form-row"><div class="form-block" style="flex:3;"><label>Patient Name</label><input type="text"></div><div class="form-block"><label>Gender</label><input type="text"></div></div>
-            </div>
-            <div class="section-banner">Telemetry Logs</div>
-            <div class="report-string-box reportLogClass"></div>
-            <div class="section-banner">Detailed Logs</div>
-            <div class="form-block"><textarea rows="3"></textarea></div>
-        </div>
-        
-        <div class="modal-actions no-print" style="margin-top:15px; display:flex; gap:10px; justify-content:center;">
-            <button class="btn-tac" style="border-color:#ffd700; color:#ffd700; width:auto;" onclick="alert('Reviewing operational playback sequence...')">REPLAY</button>
-            <button class="btn-tac" style="border-color:#00ff41; color:#00ff41; width:auto;" onclick="window.print()">PRINT</button>
-            <button class="btn-tac btn-danger" style="width:auto;" onclick="resetConsole()">RESET</button>
+            <span class="legend-item" onclick="setMarker('VSP')"><span style="color:#0000ff; text-shadow: 0 0 3px #ffd700;">🔵</span> VSP</span>
         </div>
     </div>
 
     <script>
         const currentRole = sessionStorage.getItem('tacnet_role') || 'searcher';
-        const currentUser = sessionStorage.getItem('tacnet_user') || 'Field Asset';
         
         document.addEventListener("DOMContentLoaded", () => {
-            const cmdControls = document.getElementById('commanderControls');
             const legend = document.getElementById('tacticalLegend');
-            const badge = document.getElementById('roleDisplayBadge');
-            const title = document.getElementById('panelTitle');
-            const goBtn = document.getElementById('cmdGoBtn');
-            const sliderBox = document.getElementById('cmdSliderBox');
-
+            const consoleTab = document.getElementById('cmdConsoleTab');
+            
+            // Searchers have their legend stripped to keep their layout simple and safe
             if (currentRole === 'commander') {
-                cmdControls.style.display = 'flex';
                 legend.style.display = 'flex';
-                badge.innerText = `CMD: ${currentUser.toUpperCase()}`;
-                badge.style.borderColor = '#ffd700'; badge.style.color = '#ffd700';
-                title.innerText = "COMMAND POST";
+                consoleTab.innerText = "COMMAND CONSOLE ➔";
             } else {
-                cmdControls.style.display = 'none';
                 legend.style.display = 'none';
-                goBtn.style.display = 'none';
-                sliderBox.style.display = 'none';
-                badge.innerText = `ASSET: ${currentUser.toUpperCase()}`;
-                title.innerText = "FIELD ASSET";
+                consoleTab.innerText = "FIELD ASSET CONSOLE ➔";
             }
-            initDuressAccelerometer();
-            setTimeout(() => { map.invalidateSize(); }, 400);
+            setTimeout(() => { map.invalidateSize(); }, 300);
         });
 
-        // Map Setup
         const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 20 });
         const terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 20 });
         const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 20 });
+        
         const map = L.map('map', { center: [37.4138, -79.1422], zoom: 14, maxZoom: 20, layers: [streetLayer] });
-
-        // Force orientation recalculation listener to clear phone view anomalies dynamically
-        window.addEventListener("orientationchange", function() {
-            setTimeout(() => { map.invalidateSize(); }, 400);
-        });
 
         function switchBaseLayer(type) {
             map.removeLayer(streetLayer); map.removeLayer(terrainLayer); map.removeLayer(satelliteLayer);
@@ -257,226 +98,37 @@
             if (type === 'sat') { satelliteLayer.addTo(map); document.getElementById('btn-sat').classList.add('active'); }
         }
 
-        let eventLog = []; let activeMarkers = []; let drawingLayers = []; let crossfireVectors = [];
-        let searchPerimeter = null; let perimeterCenter = null; let activeType = null; let sosVisualRing = null;
-
+        let activeType = null;
+        let activeMarkers = [];
         const unitColors = { 'LE': 'blue', 'K9': 'gray', 'SAR': 'red', 'CIV': 'green', 'SUS': 'purple', 'DRN': 'white', 'ART': 'orange', 'VIC': 'white', 'BOAT': 'yellow', 'VEH': 'black', 'CP': 'yellow', 'FND': 'blue', 'CUS': 'blue', 'HEL': 'orange', 'FED': '#ffd700', 'VSP': '#002f6c' };
 
-        function logEvent(desc) {
-            const time = new Date().toISOString().replace('T', ' ').substring(0, 19);
-            eventLog.push({ time, desc });
-        }
-
-        function setMarker(type) { 
-            activeType = type; 
-            if(document.getElementById('penToggle')) document.getElementById('penToggle').checked = false;
-            crossfireActive = false;
-        }
-
-        function triggerTreeTopHeight() { map.setZoom(20); logEvent("PERSPECTIVE LOCK: Tree-top height zoom."); }
-
-        function triggerSOSAlert() {
-            logEvent(`🚨 SOS BROADCAST SIGNALLED BY: ${currentUser.toUpperCase()}`);
-            navigator.geolocation.getCurrentPosition(p => {
-                const lat = p.coords.latitude; const lon = p.coords.longitude;
-                if(sosVisualRing) map.removeLayer(sosVisualRing);
-                sosVisualRing = L.circle([lat, lon], { radius: 90, color: '#ff0000', fillColor: '#ff0000', fillOpacity: 0.5, className: 'leaflet-sos-pulse' }).addTo(map);
-                let m = L.marker([lat, lon]).addTo(map).bindPopup(`<b style="color:red;">🚨 DOWNED UNIT: ${currentUser.toUpperCase()}</b>`).openPopup();
-                activeMarkers.push(m);
-                map.setView([lat, lon], 18);
-            }, null, {enableHighAccuracy: true});
-        }
-
-        function initDuressAccelerometer() {
-            if (window.DeviceMotionEvent) {
-                window.addEventListener('devicemotion', event => {
-                    let acceleration = event.accelerationIncludingGravity;
-                    let totalForce = Math.sqrt(acceleration.x * acceleration.x + acceleration.y * acceleration.y + acceleration.z * acceleration.z);
-                    if (totalForce > 35) { window.removeEventListener('devicemotion', this); executeAutomatedDuressCountdown(); }
-                });
-            }
-        }
-
-        function executeAutomatedDuressCountdown() {
-            logEvent("⚠️ SENSOR: Severe dynamic impact force captured on device.");
-            let countdown = 5;
-            let duressTimer = setInterval(() => { if (countdown > 0) { countdown--; } else { clearInterval(duressTimer); triggerAutomated911Call(); } }, 1000);
-            let bypass = confirm(`TACTICAL IMPACT RECOGNIZED. System auto-dialing 911 in 5 seconds. Press Cancel to abort.`);
-            if (bypass) { clearInterval(duressTimer); logEvent("DURESS BYPASS: Emergency aborted by user."); initDuressAccelerometer(); }
-        }
-
-        function triggerAutomated911Call() { logEvent("🚨 CRITICAL AUTO-TRACE: Executing emergency dial payload."); window.location.href = "tel:911"; triggerSOSAlert(); }
+        function setMarker(type) { activeType = type; }
 
         map.on('click', e => {
-            if (activeType) {
-                if (currentRole !== 'commander' && activeType !== 'FND') return;
-
+            if (activeType && currentRole === 'commander') {
                 let borderCol = (activeType === 'VSP') ? '#ffd700' : '#fff';
-                let m = L.circleMarker(e.latlng, { radius: 14, fillColor: unitColors[activeType], color: borderCol, fillOpacity: 1, weight: 3, draggable: true }).addTo(map);
-                m.unitType = activeType;
+                let m = L.circleMarker(e.latlng, {
+                    radius: 14,
+                    fillColor: unitColors[activeType],
+                    color: borderCol,
+                    fillOpacity: 1,
+                    weight: 3,
+                    draggable: true
+                }).addTo(map);
                 
+                m.unitType = activeType;
                 if(activeType === 'SUS') m.bindTooltip("SUSPECT LKL", {permanent: true, direction: 'top', className: 'orange-dist-label'}).openTooltip();
 
-                m.on('drag', function() { updateCrossfireDimensionality(); });
                 m.on('click', function(ev) {
                     L.DomEvent.stopPropagation(ev);
-                    if (currentRole !== 'commander') return;
-                    logEvent(`ASSET PURGE: Removed ${this.unitType} node.`);
                     map.removeLayer(this);
                     activeMarkers = activeMarkers.filter(item => item !== this);
-                    updateCrossfireDimensionality();
                 });
-
-                m.on('mousedown', function () {
-                    if(currentRole === 'commander' && !document.getElementById('lockToggle').checked) {
-                        map.dragging.disable(); map.on('mousemove', onMarkerDrag);
-                    }
-                });
-                function onMarkerDrag(ev) { m.setLatLng(ev.latlng); updateCrossfireDimensionality(); }
-                map.on('mouseup', function () { map.off('mousemove', onMarkerDrag); if(currentRole === 'commander' && !document.getElementById('lockToggle').checked) map.dragging.enable(); });
 
                 activeMarkers.push(m);
-                logEvent(`ASSET DISPATCH: Deployed ${activeType} node asset onto operational map canvas.`);
                 activeType = null;
-            } else if (crossfireActive && currentRole === 'commander') {
-                handleCrossfireClick(e.latlng);
             }
         });
-
-        function toggleMapLock(locked) { if(currentRole === 'commander') locked ? map.dragging.disable() : map.dragging.enable(); }
-        function togglePenMode(checked) { if (checked) { activeType = null; crossfireActive = false; document.getElementById('crossfireBtn').classList.remove('btn-active'); } }
-
-        function eraseLastLine() {
-            if (currentRole === 'commander' && drawingLayers.length > 0) {
-                map.removeLayer(drawingLayers.pop()); logEvent("ERASER: Step-back segment cleared.");
-            }
-        }
-
-        let isDrawing = false; let activeLine = null;
-        map.on('mousedown', e => {
-            if (currentRole === 'commander' && document.getElementById('penToggle').checked) {
-                isDrawing = true;
-                activeLine = L.polyline([e.latlng], {color: 'red', weight: 4, interactive: false}).addTo(map);
-                drawingLayers.push(activeLine);
-            }
-        });
-        map.on('mousemove', e => { if (isDrawing && activeLine) activeLine.addLatLng(e.latlng); });
-        map.on('mouseup', () => { if (isDrawing) isDrawing = false; });
-
-        let crossfireActive = false; let firstPoint = null;
-        function toggleCrossfireMode() {
-            if(currentRole !== 'commander') return;
-            crossfireActive = !crossfireActive; const btn = document.getElementById('crossfireBtn');
-            if (crossfireActive) { btn.classList.add('btn-active'); firstPoint = null; activeType = null; document.getElementById('penToggle').checked = false; }
-            else { btn.classList.remove('btn-active'); }
-        }
-
-        function handleCrossfireClick(latlng) {
-            let clickedMarker = activeMarkers.find(m => map.distance(latlng, m.getLatLng()) < 350);
-            let targetLatLng = clickedMarker ? clickedMarker.getLatLng() : latlng;
-            if (!firstPoint) { firstPoint = { latlng: targetLatLng, marker: clickedMarker || null }; } 
-            else { createCrossfireVector(firstPoint, { latlng: targetLatLng, marker: clickedMarker || null }); crossfireActive = false; document.getElementById('crossfireBtn').classList.remove('btn-active'); }
-        }
-
-        function createCrossfireVector(ptA, ptB) {
-            let line = L.polyline([ptA.latlng, ptB.latlng], {color: '#FF8C00', weight: 4, dashArray: '4, 4'}).addTo(map);
-            let dist = ptA.latlng.distanceTo(ptB.latlng) * 3.28084;
-            let labelMarker = L.marker(line.getCenter(), { icon: L.divIcon({ className: 'orange-dist-label', html: `${dist.toFixed(0)} FT` }) }).addTo(map);
-            let vectorObj = { line, labelMarker, ptA, ptB };
-            labelMarker.on('click', function(ev) {
-                L.DomEvent.stopPropagation(ev); if(currentRole !== 'commander') return;
-                map.removeLayer(line); map.removeLayer(labelMarker);
-                crossfireVectors = crossfireVectors.filter(v => v !== vectorObj);
-            });
-            crossfireVectors.push(vectorObj);
-        }
-
-        function updateCrossfireDimensionality() {
-            crossfireVectors.forEach(v => {
-                let posA = v.ptA.marker ? v.ptA.marker.getLatLng() : v.ptA.latlng;
-                let posB = v.ptB.marker ? v.ptB.marker.getLatLng() : v.ptB.latlng;
-                v.line.setLatLngs([posA, posB]);
-                v.labelMarker.setLatLng(v.line.getCenter());
-                v.labelMarker.setIcon(L.divIcon({ className: 'orange-dist-label', html: `${(posA.distanceTo(posB) * 3.28084).toFixed(0)} FT` }));
-            });
-        }
-
-        let trapTraceInterval = null;
-        function toggleTrapTrace() {
-            const btn = document.getElementById('trapTraceBtn'); const box = document.getElementById('radarDisplay'); const statusText = document.getElementById('radarStatus');
-            if (!trapTraceInterval) {
-                btn.innerText = "TRAP N TRACE [ON]"; btn.style.borderColor = "#FF8C00"; box.style.display = "flex";
-                let scanCount = 0;
-                trapTraceInterval = setInterval(() => {
-                    scanCount++;
-                    document.getElementById('radarPing').innerText = `PING: ${Math.floor(Math.random() * 20) + 10}ms`;
-                    if(scanCount % 3 === 0) { statusText.innerText = `SCANNING APEX NODE ID [${Math.floor(Math.random()*800)+100}]...`; } 
-                    else if (scanCount % 3 === 1) { statusText.innerText = "TRIANGULATING MOBILE TELEMETRY CELL STRINGS..."; } 
-                    else { statusText.innerText = "INTERCEPTING MULTI-CHANNEL DATA PACKETS..."; }
-                }, 2000);
-            } else {
-                btn.innerText = "TRAP N TRACE [OFF]"; btn.style.borderColor = "#111"; box.style.display = "none";
-                clearInterval(trapTraceInterval); trapTraceInterval = null;
-            }
-        }
-
-        function searchAddr() {
-            if (currentRole !== 'commander') return;
-            const q = document.getElementById('addrInput').value;
-            const radiusFeet = parseFloat(document.getElementById('radiusSlider').value);
-            fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(q))
-                .then(r => r.json()).then(d => { 
-                    if(d.length > 0) {
-                        perimeterCenter = [d[0].lat, d[0].lon]; map.setView(perimeterCenter, 15);
-                        drawPerimeter(radiusFeet);
-                        document.getElementById('leFormAddr').value = q; document.getElementById('frFormAddr').value = q;
-                    } 
-                });
-        }
-
-        function drawPerimeter(feet) {
-            if (searchPerimeter) map.removeLayer(searchPerimeter);
-            if (!perimeterCenter) return;
-            searchPerimeter = L.circle(perimeterCenter, { radius: feet / 3.28084, color: '#00661a', fillColor: '#00ff41', fillOpacity: 0.12, weight: 4, dashArray: '8, 8' }).addTo(map);
-        }
-
-        function adjustPerimeter(val) {
-            document.getElementById('radiusVal').innerText = val + " FT";
-            if (perimeterCenter && currentRole === 'commander') { drawPerimeter(parseFloat(val)); }
-        }
-
-        function activateGPS() {
-            navigator.geolocation.getCurrentPosition(p => {
-                let m = L.marker([p.coords.latitude, p.coords.longitude]).addTo(map);
-                activeMarkers.push(m); map.setView([p.coords.latitude, p.coords.longitude], 16);
-            }, null, {enableHighAccuracy: true});
-        }
-
-        function setActiveForm(type) {
-            document.getElementById('formContainerLE').classList.remove('active'); document.getElementById('formContainerFR').classList.remove('active');
-            if(type === 'LE') document.getElementById('formContainerLE').classList.add('active');
-            else document.getElementById('formContainerFR').classList.add('active');
-        }
-
-        function generateReport() {
-            const targetBoxes = document.getElementsByClassName('reportLogClass');
-            for(let i = 0; i < targetBoxes.length; i++) {
-                targetBoxes[i].innerHTML = "";
-                eventLog.forEach(e => targetBoxes[i].innerHTML += `[${e.time}] &gt;&gt; ${e.desc}<br>`);
-            }
-            document.getElementById('leFormDate').value = new Date().toISOString().substring(0,10);
-            document.getElementById('frFormDate').value = new Date().toISOString().substring(0,10);
-            document.getElementById('reportModal').style.display = 'block';
-        }
-
-        function resetConsole() {
-            activeMarkers.forEach(m => map.removeLayer(m)); drawingLayers.forEach(l => map.removeLayer(l));
-            crossfireVectors.forEach(v => { map.removeLayer(v.line); map.removeLayer(v.labelMarker); });
-            if (searchPerimeter) map.removeLayer(searchPerimeter); if (trapTraceInterval) toggleTrapTrace();
-            if (sosVisualRing) map.removeLayer(sosVisualRing);
-            activeMarkers = []; drawingLayers = []; crossfireVectors = []; eventLog = []; searchPerimeter = null; perimeterCenter = null; sosVisualRing = null;
-            sessionStorage.clear(); window.location.href = 'signin.html';
-        }
     </script>
 </body>
 </html>
