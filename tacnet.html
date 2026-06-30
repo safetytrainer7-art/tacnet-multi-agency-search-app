@@ -19,7 +19,6 @@
         .toggle-row { display:flex; justify-content:space-between; align-items:center; width:100%; }
         .legend-item { cursor:pointer; font-size:20px; font-weight:bold; display:inline-flex; align-items:center; gap:5px; }
         
-        /* Report Modal Overlay */
         .modal { display:none; position:fixed; top:10%; left:10%; width:80%; height:80%; background:rgba(0,0,0,0.95); border:2px solid #00ff41; z-index:9999; padding:20px; box-sizing:border-box; overflow-y:auto; }
         .report-log { background:#111; border:1px solid #00ff41; padding:10px; font-family:monospace; height:60%; overflow-y:auto; color:#00ff41; margin-bottom:15px; }
     </style>
@@ -40,20 +39,24 @@
                 <button class="btn-tac" onclick="activateGPS()">ACTIVATE SEARCHERS</button>
                 
                 <div class="toggle-row">
+                    <span>MAP LOCK</span> 
+                    <input type="checkbox" id="lockToggle" onchange="toggleMapLock(this.checked)" style="width:auto;">
+                </div>
+                <div class="toggle-row">
                     <span>RED PEN</span> 
-                    <input type="checkbox" id="penToggle" style="width:auto;">
+                    <input type="checkbox" id="penToggle" style="width:auto;" onchange="togglePenMode(this.checked)">
                 </div>
                 <div class="toggle-row">
                     <span>ERASER</span> 
-                    <input type="checkbox" id="eraserToggle" style="width:auto;" onchange="toggleEraser(this.checked)">
+                    <input type="checkbox" id="eraserToggle" style="width:auto;" onchange="toggleEraserMode(this.checked)">
                 </div>
                 
-                <button class="btn-tac" id="crossfireBtn" onclick="toggleCrossfire()">CROSSFIRE DIST</button>
+                <button class="btn-tac" id="crossfireBtn" onclick="toggleCrossfireMode()">CROSSFIRE DIST</button>
                 <button class="btn-tac btn-danger" onclick="terminateSearch()">TERMINATE SEARCH</button>
             </div>
         </div>
 
-        <!-- Scrollable Legend with New Federal & VSP Dots -->
+        <!-- Scrollable Legend -->
         <div class="legend-bar">
             <span class="legend-item" onclick="setMarker('LE')">🔵 LE</span>
             <span class="legend-item" onclick="setMarker('K9')">🔘 K9</span>
@@ -74,22 +77,37 @@
         </div>
     </div>
 
-    <!-- Incident Report & Replay Overlay -->
+    <!-- Incident Report Overlay -->
     <div id="reportModal" class="modal">
         <h2>INCIDENT COMMAND REPORT & REPLAY RECORD LOG</h2>
         <div id="reportLog" class="report-log"></div>
-        <button class="btn-tac" style="width:200px; margin-right:15px;" onclick="replayRecorder()">REPLAY RECORDER</button>
+        <button class="btn-tac" style="width:200px; margin-right:15px;" onclick="alert('Replaying history...')">REPLAY RECORDER</button>
         <button class="btn-tac btn-danger" style="width:200px;" onclick="resetConsole()">CLEAR & RESET CONSOLE</button>
     </div>
 
     <script>
-        const map = L.map('map').setView([37.4138, -79.1422], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        // Core Layers Definition
+        const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: 'OSM' });
+        const terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { attribution: 'OTM' });
+        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Esri' });
 
-        // Core tracking elements
+        const map = L.map('map', {
+            center: [37.4138, -79.1422], // Lynchburg base coordinate template
+            zoom: 14,
+            layers: [streetLayer] // Default street layout view
+        });
+
+        // Built-in Leaflet Layer control interface top right
+        const baseMaps = {
+            "Street View": streetLayer,
+            "Terrain View": terrainLayer,
+            "Satellite View": satelliteLayer
+        };
+        L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
+
         let eventLog = [];
-        let mapMarkers = [];
-        let penLines = [];
+        let activeMarkers = [];
+        let drawingLayers = [];
         let activeType = null;
 
         const unitColors = { 
@@ -98,158 +116,172 @@
             'CP': 'yellow', 'FND': 'blue', 'CUS': 'blue', 'HEL': 'orange', 'FED': '#ffd700', 'VSP': '#002f6c'
         };
 
-        function logEvent(description) {
-            const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
-            eventLog.push({ timestamp, description });
+        function logEvent(desc) {
+            const time = new Date().toISOString().replace('T', ' ').substring(0, 19);
+            eventLog.push({ time, desc });
         }
 
-        // Marker Deployment Functionality
-        function setMarker(type) { activeType = type; }
+        function setMarker(type) { 
+            activeType = type; 
+            document.getElementById('penToggle').checked = false;
+            document.getElementById('eraserToggle').checked = false;
+            document.getElementById('crossfireBtn').classList.remove('btn-active');
+            crossfireActive = false;
+        }
 
-        map.on('click', e => { 
+        // Integrated Direct Canvas Placement
+        map.on('click', e => {
             if (activeType) {
                 let borderCol = (activeType === 'VSP') ? '#ffd700' : '#fff';
-                let m = L.circleMarker(e.latlng, {radius: 9, fillColor: unitColors[activeType], color: borderCol, fillOpacity: 1, weight: 2}).addTo(map);
-                
+                let m = L.circleMarker(e.latlng, {radius: 11, fillColor: unitColors[activeType], color: borderCol, fillOpacity: 1, weight: 2.5}).addTo(map);
                 m.unitType = activeType;
+                
+                // Fixed Interactive Eraser Tap Detection
                 m.on('click', function(ev) {
+                    L.DomEvent.stopPropagation(ev); // Stop event bubble
                     if (document.getElementById('eraserToggle').checked) {
-                        logEvent(`REMOVED: ${this.unitType} Marker at [${this.getLatLng().lat.toFixed(4)}, ${this.getLatLng().lng.toFixed(4)}]`);
+                        logEvent(`ERASED: Removed ${this.unitType} unit marker.`);
                         map.removeLayer(this);
-                        mapMarkers = mapMarkers.filter(item => item !== this);
+                        activeMarkers = activeMarkers.filter(item => item !== this);
+                    } else if (crossfireActive) {
+                        handleCrossfireClick(this.getLatLng());
                     }
                 });
 
-                mapMarkers.push(m);
-                logEvent(`DEPLOYED: ${activeType} Unit placed at [${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}]`);
+                activeMarkers.push(m);
+                logEvent(`DEPLOYED: ${activeType} marker dropped at workspace location.`);
                 activeType = null;
-            } 
+            }
         });
 
-        // Fixed Freehand Red Pen Logic (No Jitter, Drag-to-Draw)
+        // Map Lock Switch Logic
+        function toggleMapLock(locked) {
+            if (locked) {
+                map.dragging.disable();
+                map.touchZoom.disable();
+                map.doubleClickZoom.disable();
+                map.scrollWheelZoom.disable();
+                logEvent("CONSOLE MATRIX: Map frame locked down for manual tracing overlays.");
+            } else {
+                map.dragging.enable();
+                map.touchZoom.enable();
+                map.doubleClickZoom.enable();
+                map.scrollWheelZoom.enable();
+                logEvent("CONSOLE MATRIX: Map frame unlocked.");
+            }
+        }
+
+        // Toggles configuration
+        function togglePenMode(checked) { if (checked) document.getElementById('eraserToggle').checked = false; }
+        function toggleEraserMode(checked) { if (checked) document.getElementById('penToggle').checked = false; }
+
+        // Red Pen Drag Line Engine
         let isDrawing = false;
-        let currentPolyline = null;
+        let activeLine = null;
 
         map.on('mousedown', e => {
-            if (document.getElementById('penToggle').checked && !document.getElementById('eraserToggle').checked) {
+            if (document.getElementById('penToggle').checked) {
                 isDrawing = true;
-                map.dragging.disable(); // Prevent map panning while drawing
-                currentPolyline = L.polyline([e.latlng], {color: 'red', weight: 4}).addTo(map);
-                penLines.push(currentPolyline);
+                activeLine = L.polyline([e.latlng], {color: 'red', weight: 4, interactive: true}).addTo(map);
+                
+                // Allow red pen segments to be specifically targetable by eraser
+                activeLine.on('click', function(ev) {
+                    L.DomEvent.stopPropagation(ev);
+                    if (document.getElementById('eraserToggle').checked) {
+                        map.removeLayer(this);
+                        drawingLayers = drawingLayers.filter(l => l !== this);
+                    }
+                });
+                drawingLayers.push(activeLine);
             }
         });
 
-        map.on('mousemove', e => {
-            if (isDrawing && currentPolyline) {
-                currentPolyline.addLatLng(e.latlng);
-            }
-        });
+        map.on('mousemove', e => { if (isDrawing && activeLine) activeLine.addLatLng(e.latlng); });
+        map.on('mouseup', () => { if (isDrawing) { isDrawing = false; logEvent("DRAWING: Traced red path saved."); } });
 
-        map.on('mouseup', () => {
-            if (isDrawing) {
-                isDrawing = false;
-                map.dragging.enable();
-                logEvent("TACTICAL DRAWING: Red Pen path added to map layers.");
-            }
-        });
+        // Accurate Real-Time Crossfire Engine
+        let crossfireActive = false;
+        let firstPoint = null;
+        let visualLine = null;
 
-        function toggleEraser(enabled) {
-            if (enabled) {
-                document.getElementById('penToggle').checked = false;
-                map.getContainer().style.cursor = "cell";
-            } else {
-                map.getContainer().style.cursor = "crosshair";
-            }
-        }
-
-        // Crossfire Distance Measuring Tool
-        let crossfireMode = false;
-        let crossfirePoints = [];
-        let crossfireLine = null;
-
-        function toggleCrossfire() {
-            crossfireMode = !crossfireMode;
+        function toggleCrossfireMode() {
+            crossfireActive = !crossfireActive;
             const btn = document.getElementById('crossfireBtn');
-            if (crossfireMode) {
+            if (crossfireActive) {
                 btn.classList.add('btn-active');
-                crossfirePoints = [];
-                if (crossfireLine) map.removeLayer(crossfireLine);
-                alert("CROSSFIRE MODE: Click two deployed units sequentially to calculate distance line.");
+                firstPoint = null;
+                alert("CROSSFIRE DISTANCE: Tap the map directly to drop Point A, then move cursor and tap to drop Point B.");
             } else {
                 btn.classList.remove('btn-active');
-                if (crossfireLine) map.removeLayer(crossfireLine);
+                if (visualLine) map.removeLayer(visualLine);
             }
         }
 
+        // Fallback or explicit mapping coordinate intercept for distances
         map.on('click', e => {
-            if (crossfireMode) {
-                // Find nearest unit marker within a tight radius
-                let clickedMarker = mapMarkers.find(m => map.distance(e.latlng, m.getLatLng()) < 200);
-                if (clickedMarker) {
-                    crossfirePoints.push(clickedMarker.getLatLng());
-                    if (crossfirePoints.length === 2) {
-                        let distanceMeters = crossfirePoints[0].distanceTo(crossfirePoints[1]);
-                        let distanceFeet = (distanceMeters * 3.28084).toFixed(0);
-                        
-                        crossfireLine = L.polyline(crossfirePoints, {color: '#00ff41', weight: 3, dashArray: '5, 5'}).addTo(map);
-                        crossfireLine.bindPopup(`CROSSFIRE RANGE: ${distanceFeet} FT`, {closeOnClick: false}).openPopup();
-                        
-                        logEvent(`CROSSFIRE DISTANCE TARGETED: Measured Range is ${distanceFeet} feet.`);
-                        crossfireMode = false;
-                        document.getElementById('crossfireBtn').classList.remove('btn-active');
-                    }
-                }
+            if (crossfireActive && !activeType) {
+                handleCrossfireClick(e.latlng);
             }
         });
 
-        // Address Search
-        function searchAddr() {
-            const query = document.getElementById('addrInput').value;
-            fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query))
-                .then(res => res.json())
-                .then(data => { 
-                    if(data.length > 0) {
-                        map.setView([data[0].lat, data[0].lon], 16);
-                        logEvent(`MAP NAVIGATION: Command map recentered to address: ${query}`);
-                    } 
-                });
-        }
-
-        // GPS Activation
-        function activateGPS() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(p => {
-                    let gpsMarker = L.marker([p.coords.latitude, p.coords.longitude]).addTo(map).bindPopup("COMMANDING UNIT LIVE").openPopup();
-                    mapMarkers.push(gpsMarker);
-                    map.setView([p.coords.latitude, p.coords.longitude], 16);
-                    logEvent("GPS TRACKER INITIALIZED: Command Post telemetry locked.");
-                }, null, {enableHighAccuracy: true});
+        function handleCrossfireClick(latlng) {
+            if (!firstPoint) {
+                firstPoint = latlng;
+                visualLine = L.polyline([firstPoint], {color: '#00ff41', weight: 3, dashArray: '6, 6'}).addTo(map);
+                
+                // Track real-time movement to calculate visual vector instantly
+                map.on('mousemove', updateCrossfireLine);
+            } else {
+                map.off('mousemove', updateCrossfireLine);
+                let finalDistance = firstPoint.distanceTo(latlng) * 3.28084; // Instant conversion to feet
+                
+                visualLine.addLatLng(latlng);
+                visualLine.bindPopup(`RANGE CALCULATION: ${finalDistance.toFixed(0)} FT`, {closeOnClick: false}).openPopup();
+                
+                logEvent(`CROSSFIRE RANGING COMPLETED: Vector range determined to be ${finalDistance.toFixed(0)} feet.`);
+                crossfireActive = false;
+                document.getElementById('crossfireBtn').classList.remove('btn-active');
             }
         }
 
-        // Terminate Search and Compile Logs
+        function updateCrossfireLine(e) {
+            if (visualLine && firstPoint) {
+                visualLine.setLatLngs([firstPoint, e.latlng]);
+                let dynamicDist = firstPoint.distanceTo(e.latlng) * 3.28084;
+                visualLine.bindTooltip(`${dynamicDist.toFixed(0)} FT`, {sticky: true, opacity: 0.8}).openTooltip();
+            }
+        }
+
+        // Addresses & Core Telemetry API
+        function searchAddr() {
+            const q = document.getElementById('addrInput').value;
+            fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(q))
+                .then(r => r.json())
+                .then(d => { if(d.length > 0) { map.setView([d[0].lat, d[0].lon], 16); logEvent(`GEO-TARGETING: Positioned to ${q}`); } });
+        }
+
+        function activateGPS() {
+            navigator.geolocation.getCurrentPosition(p => {
+                let m = L.marker([p.coords.latitude, p.coords.longitude]).addTo(map).bindPopup("COMMAND TELEMETRY FEED").openPopup();
+                activeMarkers.push(m);
+                map.setView([p.coords.latitude, p.coords.longitude], 16);
+                logEvent("TELEMETRY ACTIVE: Base system location captured.");
+            }, null, {enableHighAccuracy: true});
+        }
+
         function terminateSearch() {
-            logEvent("COMMAND SIGNAL: EMERGENCY SEARCH SYSTEM TERMINATED.");
+            logEvent("CRITICAL SIGNAL: Search incident matrix closed.");
             const logBox = document.getElementById('reportLog');
             logBox.innerHTML = "=== TACNET SEARCH INCIDENT COMMAND ARCHIVE ===<br><br>";
-            eventLog.forEach(evt => {
-                logBox.innerHTML += `[${evt.timestamp}] ${evt.description}<br>`;
-            });
+            eventLog.forEach(e => logBox.innerHTML += `[${e.time}] ${e.desc}<br>`);
             document.getElementById('reportModal').style.display = 'block';
         }
 
-        function replayRecorder() {
-            alert("REPLAY RECORDER ACTIVE: Processing sequential event strings.");
-        }
-
-        // Reset/Clear Console Button
         function resetConsole() {
-            mapMarkers.forEach(m => map.removeLayer(m));
-            penLines.forEach(l => map.removeLayer(l));
-            if (crossfireLine) map.removeLayer(crossfireLine);
-            mapMarkers = [];
-            penLines = [];
-            eventLog = [];
+            activeMarkers.forEach(m => map.removeLayer(m));
+            drawingLayers.forEach(l => map.removeLayer(l));
+            if (visualLine) map.removeLayer(visualLine);
+            activeMarkers = []; drawingLayers = []; eventLog = [];
             document.getElementById('reportModal').style.display = 'none';
         }
     </script>
