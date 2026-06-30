@@ -4,52 +4,50 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body, html { margin:0; padding:0; height:100%; width:100%; background:#000; color:#00ff41; font-family: 'Courier New', monospace; overflow: hidden; }
-        .main-ui { display:flex; flex-direction:column; height:100vh; width:100vw; }
-        .top-bar { padding:8px; background:#000; display:flex; gap:10px; border-bottom:2px solid #00ff41; align-items:center; }
+        body, html { margin:0; height:100%; width:100%; background:#000; color:#00ff41; font-family: 'Courier New', monospace; overflow: hidden; }
+        .main-ui { display:flex; flex-direction:column; height:100vh; }
         .map-container { display:flex; flex:1; }
         #map { flex:1; border-right:2px solid #00ff41; }
-        .sidebar { width:260px; background:#000; padding:15px; display:flex; flex-direction:column; gap:10px; border-left:2px solid #00ff41; }
-        .legend-bar { height:40px; background:#000; color:#fff; display:flex; align-items:center; gap:10px; padding:0 15px; border-top:2px solid #00ff41; font-size:11px; }
-        .btn-tac { background:#0a0a0a; color:#00ff41; border:1px solid #00ff41; padding:10px; cursor:pointer; font-weight:bold; width:100%; text-transform:uppercase; }
-        .btn-danger { color:red; border-color:red; }
-        input { background:#000; color:#00ff41; border:1px solid #00ff41; padding:8px; width:250px; }
+        .sidebar { width:260px; background:#000; padding:15px; border-left:2px solid #00ff41; display:flex; flex-direction:column; gap:10px; }
+        .legend-bar { height:60px; background:#000; display:flex; align-items:center; overflow-x:auto; white-space:nowrap; gap:20px; padding:0 20px; border-top:2px solid #00ff41; font-size:18px; }
+        .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding:12px; cursor:pointer; font-weight:bold; }
     </style>
 </head>
 <body>
     <div class="main-ui">
-        <div class="top-bar">
-            <input id="addr" placeholder="Enter Address...">
-            <button class="btn-tac" style="width:auto;" onclick="alert('Searching...')">SEARCH & GO</button>
-            <button class="btn-tac" style="width:auto;" onclick="alert('Treetop Height GPS View Active')">TREETOP HEIGHT VIEW</button>
-        </div>
         <div class="map-container">
             <div id="map"></div>
             <div class="sidebar">
                 <h3>COMMAND CONSOLE</h3>
-                <button class="btn-tac" onclick="activateGPS()">ACTIVATE SEARCHER</button>
-                <div style="display:flex; justify-content:space-between;"><span>RED PEN</span> <input type="checkbox" onchange="setDraw(this.checked)"></div>
-                <div style="display:flex; justify-content:space-between;"><span>MAP LOCK</span> <input type="checkbox" onchange="setLock(this.checked)"></div>
-                <button class="btn-tac" onclick="alert('Trap N Trace Active')">TRAP N TRACE</button>
-                <button class="btn-tac" onclick="alert('Measuring...')">CROSSFIRE DIST</button>
-                <button class="btn-tac" onclick="alert('Report Generated')">REPORTS</button>
-                <button class="btn-tac btn-danger" onclick="alert('SOS SENT')">SOS</button>
-                <button class="btn-tac btn-danger" onclick="window.location.href='index.html'">TERMINATE</button>
+                <button class="btn-tac" onclick="activateGPS()">ACTIVATE SEARCHERS</button>
+                <div style="display:flex; justify-content:space-between;"><span>RED PEN</span> <input type="checkbox" id="penToggle"></div>
+                <button class="btn-tac" onclick="window.location.href='index.html'" style="color:red; border-color:red;">TERMINATE</button>
             </div>
         </div>
         <div class="legend-bar">
-            <span>🔵 LE</span> <span>🔘 K9</span> <span>🔴 SAR</span> <span>🟢 CIV</span> <span>🟣 SUS</span> <span>⚪ DRN</span> 
-            <span>🟠 ART</span> <span>⚪ VIC</span> <span>🟡 BOAT</span> <span>⬛ VEH</span> <span>🟨 CP</span> <span>🔼 FND</span> <span>🔽 CUS</span> <span>🟧 HEL</span>
+            <span onclick="alert('LE Unit Selected')" style="cursor:pointer;">🔵 LE</span>
+            <span onclick="alert('K9 Unit Selected')" style="cursor:pointer;">🔘 K9</span>
+            <span onclick="alert('SAR Unit Selected')" style="cursor:pointer;">🔴 SAR</span>
+            <!-- Add remaining symbols here -->
         </div>
     </div>
     <script>
         const map = L.map('map').setView([37.5, -79.2], 14);
         L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png').addTo(map);
-        function setLock(lock) { lock ? map.dragging.disable() : map.dragging.enable(); }
-        let drawMode = false;
-        function setDraw(on) { drawMode = on; }
-        map.on('mousemove', e => { if(drawMode) L.circleMarker(e.latlng, {radius: 2, color: 'red'}).addTo(map); });
-        function activateGPS() { navigator.geolocation.getCurrentPosition(p => L.marker([p.coords.latitude, p.coords.longitude]).addTo(map)); }
+        
+        // Fixed Red Pen
+        let drawing = false;
+        map.on('mousedown', () => drawing = true);
+        map.on('mouseup', () => drawing = false);
+        map.on('mousemove', e => { if(drawing && document.getElementById('penToggle').checked) L.circleMarker(e.latlng, {radius: 3, color: 'red'}).addTo(map); });
+        
+        // GPS
+        function activateGPS() {
+            navigator.geolocation.watchPosition(p => {
+                L.marker([p.coords.latitude, p.coords.longitude]).addTo(map).bindPopup("UNIT LIVE").openPopup();
+                map.setView([p.coords.latitude, p.coords.longitude], 16);
+            }, () => alert("Enable GPS permissions"), {enableHighAccuracy: true});
+        }
     </script>
 </body>
 </html>
