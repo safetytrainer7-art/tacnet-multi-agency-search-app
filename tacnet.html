@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.appwrite.io/v1/sdk.js"></script>
+    <style>
+        body { margin:0; display:flex; flex-direction:column; height:100vh; background:#000; color:#00ff41; font-family:monospace; }
+        .main-container { display:flex; flex:1; }
+        #map { flex:1; border:3px solid #00ff41; }
+        .right-sidebar { width:200px; background:#111; padding:10px; border-left:2px solid #00ff41; display:flex; flex-direction:column; gap:10px; }
+        .legend-bar { height:60px; background:#000; color:#fff; display:flex; align-items:center; gap:10px; padding:0 10px; border-top:2px solid #00ff41; }
+        button { background:#222; color:#00ff41; border:1px solid #00ff41; padding:10px; cursor:pointer; }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div id="map"></div>
+        <div class="right-sidebar">
+            <button style="background:green; color:white;" onclick="activate()">START LIVE TRACKING</button>
+            <button onclick="alert('Drawing')">RED PEN</button>
+            <button style="color:red" onclick="window.location.href='index.html'">TERMINATE</button>
+        </div>
+    </div>
+    <div class="legend-bar">
+        🔵LE 🔘K9 🔴SAR 🟢CIV 🟣SUS ⚪DRN 🟠ART ⚪VIC 🟡BOAT ⬛VEH 🟨CP 🔼FND 🔽CUS 🟧HEL
+    </div>
+    <script>
+        const map = L.map('map').setView([37.5, -79.2], 14);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+        function activate() { /* Appwrite GPS logic here */ alert("TRACKING LIVE"); }
+    </script>
+</body>
+</html>
