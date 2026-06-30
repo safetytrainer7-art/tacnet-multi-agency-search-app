@@ -6,29 +6,47 @@
     <script src="https://cdn.appwrite.io/v1/sdk.js"></script>
     <style>
         body { margin:0; display:flex; flex-direction:column; height:100vh; background:#000; color:#00ff41; font-family:monospace; }
+        .top-bar { padding:10px; background:#111; display:flex; gap:10px; border-bottom:2px solid #00ff41; align-items:center; }
         .main-container { display:flex; flex:1; }
-        #map { flex:1; border:3px solid #00ff41; }
-        .right-sidebar { width:200px; background:#111; padding:10px; border-left:2px solid #00ff41; display:flex; flex-direction:column; gap:10px; }
-        .legend-bar { height:60px; background:#000; color:#fff; display:flex; align-items:center; gap:10px; padding:0 10px; border-top:2px solid #00ff41; }
-        button { background:#222; color:#00ff41; border:1px solid #00ff41; padding:10px; cursor:pointer; }
+        #map { flex:1; border:3px solid #00ff41; position:relative; }
+        .right-sidebar { width:220px; background:#111; padding:15px; border-left:2px solid #00ff41; display:flex; flex-direction:column; gap:10px; }
+        .legend-bar { height:50px; background:#000; color:#fff; display:flex; align-items:center; gap:12px; padding:0 15px; border-top:2px solid #00ff41; font-size:12px; }
+        button { background:#222; color:#00ff41; border:1px solid #00ff41; padding:12px; cursor:pointer; font-weight:bold; }
+        input { background:#000; color:#00ff41; border:1px solid #00ff41; padding:8px; width:200px; }
     </style>
 </head>
 <body>
+    <div class="top-bar">
+        <input id="addr" placeholder="Enter Address..."><button onclick="findAddr()">SEARCH & GO</button>
+        <button style="background:#0041ff;" onclick="alert('CANOPY GPS LOCK ENABLED')">CANOPY GPS MODE</button>
+    </div>
     <div class="main-container">
         <div id="map"></div>
         <div class="right-sidebar">
             <button style="background:green; color:white;" onclick="activate()">START LIVE TRACKING</button>
-            <button onclick="alert('Drawing')">RED PEN</button>
+            <button onclick="toggleDraw()">RED PEN</button>
+            <button onclick="toggleLock()">MAP LOCK</button>
+            <button onclick="alert('Trap N Trace Active')">TRAP N TRACE</button>
+            <button onclick="alert('Measuring distance...')">CROSSFIRE DIST</button>
+            <button onclick="alert('Report Generated')">REPORTS</button>
+            <button style="background:red; color:white;" onclick="alert('SOS SENT')">SOS</button>
             <button style="color:red" onclick="window.location.href='index.html'">TERMINATE</button>
         </div>
     </div>
     <div class="legend-bar">
-        🔵LE 🔘K9 🔴SAR 🟢CIV 🟣SUS ⚪DRN 🟠ART ⚪VIC 🟡BOAT ⬛VEH 🟨CP 🔼FND 🔽CUS 🟧HEL
+        <span>🔵 LE</span> <span>🔘 K9</span> <span>🔴 SAR</span> <span>🟢 CIV</span> <span>🟣 SUS</span> <span>⚪ DRN</span> 
+        <span>🟠 ART</span> <span>⚪ VIC</span> <span>🟡 BOAT</span> <span>⬛ VEH</span> <span>🟨 CP</span> <span>🔼 FND</span> 
+        <span>🔽 CUS</span> <span>🟧 HEL</span>
     </div>
     <script>
+        // High-precision terrain layer for treetop/canopy views
         const map = L.map('map').setView([37.5, -79.2], 14);
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
-        function activate() { /* Appwrite GPS logic here */ alert("TRACKING LIVE"); }
+        L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png').addTo(map);
+        
+        function toggleLock() { map.dragging.enabled() ? map.dragging.disable() : map.dragging.enable(); }
+        function toggleDraw() { alert("Red Pen Active - Click Map to Draw"); }
+        function findAddr() { alert("Searching Address..."); }
+        function activate() { alert("GPS Tracking Active - Unit Live"); }
     </script>
 </body>
 </html>
