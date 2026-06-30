@@ -33,15 +33,35 @@
         .toggle-row { display:flex; justify-content:space-between; align-items:center; width:100%; }
         .legend-item { cursor:pointer; font-size:20px; font-weight:bold; display:inline-flex; align-items:center; gap:5px; }
         
-        /* Professional Report Modal Overlay */
-        .modal { display:none; position:fixed; top:5%; left:5%; width:90%; height:90%; background:#000; border:3px solid #00ff41; z-index:9999; padding:25px; box-sizing:border-box; overflow-y:auto; color:#fff; }
-        .report-header { text-align: center; border-bottom: 2px dashed #00ff41; padding-bottom: 15px; margin-bottom: 20px; }
-        .report-title { color: #00ff41; font-size: 24px; font-weight: bold; margin: 0; letter-spacing: 1px; }
-        .report-meta { display: flex; justify-content: space-between; margin-top: 15px; font-size: 14px; color: #00ff41; font-family: monospace; }
-        .report-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 15px; }
-        .report-log { background:#050505; border:1px solid #00ff41; padding:15px; font-family:monospace; height:350px; overflow-y:auto; color:#00ff41; line-height: 1.4; }
-        .disposition-panel { display: flex; flex-direction: column; gap: 15px; background: #0a0a0a; padding: 15px; border: 1px solid #00ff41; }
-        .modal-actions { margin-top: 25px; display: flex; gap: 15px; justify-content: flex-end; }
+        /* Professional Report Modal Overlay (Dark Preview Mode) */
+        .modal { display:none; position:fixed; top:5%; left:5%; width:90%; height:90%; background:#0a0a0a; border:2px solid #00ff41; z-index:9999; padding:30px; box-sizing:border-box; overflow-y:auto; color:#fff; font-family: 'Times New Roman', Times, serif; }
+        .report-header { text-align: center; border-bottom: 2px solid #fff; padding-bottom: 10px; margin-bottom: 20px; }
+        .report-title { font-size: 22px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #fff; }
+        .report-subtitle { font-size: 14px; font-weight: bold; margin-top: 5px; color: #aaa; text-transform: uppercase; }
+        .report-meta-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .report-meta-table td { border: 1px solid #444; padding: 8px; font-size: 13px; }
+        .section-heading { background: #222; color: #00ff41; padding: 5px 10px; font-size: 14px; font-weight: bold; text-transform: uppercase; margin-top: 20px; border-left: 3px solid #00ff41; }
+        .report-log { background:#111; border:1px solid #333; padding:15px; font-family: monospace; height:200px; overflow-y:auto; color:#fff; font-size: 12px; margin-top: 10px; line-height: 1.5; }
+        .disposition-panel { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
+        .modal-actions { margin-top: 30px; display: flex; gap: 15px; justify-content: flex-end; }
+
+        /* ==========================================================================
+           CRITICAL ADVANCED PRINT STYLESHEET OVERRIDES FOR COURT/OFFICIAL USE
+           ========================================================================== */
+        @media print {
+            body, html { background: #fff !important; color: #000 !important; overflow: visible !important; height: auto !important; }
+            .main-ui, .legend-bar, .sidebar, .top-bar, .modal-actions, #map { display: none !important; }
+            .modal { display: block !important; position: relative !important; width: 100% !important; height: auto !important; top: 0 !important; left: 0 !important; border: none !important; background: #fff !important; color: #000 !important; padding: 0 !important; box-sizing: content-box !important; }
+            .report-title { color: #000 !important; font-size: 24px !important; }
+            .report-subtitle { color: #000 !important; }
+            .report-meta-table td { border: 1px solid #000 !important; color: #000 !important; }
+            .section-heading { background: #f0f0f0 !important; color: #000 !important; border-left: 4px solid #000 !important; border-bottom: 1px solid #000 !important; }
+            .report-log { background: #fff !important; color: #000 !important; border: 1px solid #000 !important; height: auto !important; overflow: visible !important; }
+            textarea { background: #fff !important; color: #000 !important; border: none !important; width: 100% !important; font-family: 'Times New Roman' !important; }
+            select, input { background: #fff !important; color: #000 !important; border: none !important; border-bottom: 1px solid #000 !important; font-family: 'Times New Roman' !important; }
+            .certification-clause { display: block !important; font-size: 11px !important; italic: true; margin-top: 30px !important; border-top: 1px solid #000 !important; padding-top: 10px !important; }
+        }
+        .certification-clause { display: none; }
     </style>
 </head>
 <body>
@@ -83,7 +103,9 @@
                 </div>
                 
                 <button class="btn-tac" id="crossfireBtn" onclick="toggleCrossfireMode()">CROSSFIRE DIST</button>
-                <button class="btn-tac" style="border-color: #00ff41; color: #00ff41;" onclick="generateReport()">PREVIEW REPORT</button>
+                <button class="btn-tac" style="border-color: #00ff41; color: #00ff41; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="generateReport()">
+                    📄 PREVIEW REPORT HERE
+                </button>
                 <button class="btn-tac btn-danger" onclick="generateReport()">TERMINATE SEARCH</button>
             </div>
         </div>
@@ -109,42 +131,58 @@
         </div>
     </div>
 
-    <!-- Professional Task Force Report Overlay -->
+    <!-- Official Multi-Agency Certified Incident Report (Print Optimized) -->
     <div id="reportModal" class="modal">
         <div class="report-header">
-            <div class="report-title">TACNET MULTI-AGENCY SEARCH & RESCUE TASK FORCE COMMAND SUMMARY</div>
-            <div class="report-meta">
-                <span id="repDate">LOG DATE: 2026-06-30</span>
-                <span id="repID">RECORD REF: TAC-INCIDENT-LOG-SEC1</span>
-            </div>
+            <div class="report-title">TACNET MULTI-AGENCY TASK FORCE SUMMARY REPORT</div>
+            <div class="report-subtitle">Official Incident Command Record // Admissible Legal Transcript</div>
         </div>
         
-        <div class="report-grid">
-            <div>
-                <h4 style="margin:0 0 10px 0; color:#00ff41; text-transform: uppercase;">Chronological Field Operation Strings</h4>
-                <div id="reportLog" class="report-log"></div>
-            </div>
+        <table class="report-meta-table">
+            <tr>
+                <td style="font-weight: bold; width: 20%;">CASE / RECORD REF:</td>
+                <td id="repID" style="width: 30%;">TAC-2026-REG-01</td>
+                <td style="font-weight: bold; width: 20%;">REPORT DATE:</td>
+                <td id="repDate" style="width: 30%;">2026-06-30</td>
+            </tr>
+            <tr>
+                <td style="font-weight: bold;">SYSTEM METADATA:</td>
+                <td>GEOCENTRIC GPS LIVE LOGS</td>
+                <td style="font-weight: bold;">SECURITY STATUS:</td>
+                <td>OFFICIAL USE ONLY / UNCLASSIFIED</td>
+            </tr>
+        </table>
+        
+        <div class="section-heading">I. Chronological Telemetry & Field Operation Strings</div>
+        <div id="reportLog" class="report-log"></div>
+        
+        <div class="section-heading">II. Command Narrative & Fact Findings</div>
+        <div class="disposition-panel">
+            <textarea id="commandNotes" rows="5" style="background:#000; color:#fff; border:1px solid #444; font-family:'Times New Roman', serif; font-size:14px; padding:10px; width:100%; box-sizing:border-box; resize:none;" placeholder="Input professional timeline narrative, multi-agency coordinates, terrain tracking updates, or evidentiary notes..."></textarea>
             
-            <div class="disposition-panel">
-                <h4 style="margin:0; color:#00ff41; text-transform: uppercase;">Command Documentation</h4>
-                <label style="font-size:12px;">TACTICAL OPERATIONS LOG NOTES:</label>
-                <textarea id="commandNotes" rows="5" style="background:#000; color:#fff; border:1px solid #00ff41; font-family:monospace; resize:none;" placeholder="Input operational timeline data, terrain factors, and specific search updates..."></textarea>
-                
-                <label style="font-size:12px; margin-top:10px;">FINAL OPERATIONAL DISPOSITION:</label>
-                <select id="finalDisp" style="width:100%;">
-                    <option value="SUCCESSFUL COMPLETED">TACTICAL OBJECTIVE LOCATED / MISSION SUCCESSFUL</option>
-                    <option value="SUSPENDED PENDING INTELLIGENCE">SEARCH OPERATIONS SUSPENDED PENDING FURTHER EVIDENCE</option>
-                    <option value="RE-ROUTE / TRANSFERRED">MUTUAL AID ASSIGNMENT TRANSFERRED TO ADJACENT JURISDICTION</option>
-                </select>
-                
-                <label style="font-size:12px; margin-top:10px;">ON-SCENE COMMAND AUTHORIZATION:</label>
-                <input id="sigName" placeholder="Rank / Badge / Agency Sign-off" style="width:100%;">
+            <div style="display: flex; gap: 20px; width: 100%;">
+                <div style="flex: 1;">
+                    <label style="font-size:12px; font-weight:bold; display:block; margin-bottom:5px;">FINAL OPERATIONAL DISPOSITION:</label>
+                    <select id="finalDisp" style="width:100%; background:#000; color:#fff; border:1px solid #444; padding:8px;">
+                        <option value="SUCCESSFUL COMPLETED">TACTICAL OBJECTIVE LOCATED / MISSION SUCCESSFUL</option>
+                        <option value="SUSPENDED PENDING INTELLIGENCE">SEARCH OPERATIONS SUSPENDED PENDING FURTHER INTEL/EVIDENCE</option>
+                        <option value="RE-ROUTE / TRANSFERRED">MUTUAL AID ASSIGNMENT TRANSFERRED TO ADJACENT JURISDICTION</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-size:12px; font-weight:bold; display:block; margin-bottom:5px;">ON-SCENE COMMAND AUTHORIZATION:</label>
+                    <input id="sigName" placeholder="Rank / Badge / Subscribed Agency Sign-off" style="width:100%; background:#000; color:#fff; border:1px solid #444; padding:8px;">
+                </div>
             </div>
+        </div>
+
+        <div class="certification-clause">
+            I hereby certify that this auto-generated summary report represents a true, unmodified, chronological and precise data collection recorded directly by the TACNET Emergency Command Platform on the time-stamps specified herein.
         </div>
         
         <div class="modal-actions">
-            <button class="btn-tac" style="border-color:#ffd700; color:#ffd700;" onclick="alert('Reviewing operational playback sequence...')">REPLAY RECORDER</button>
-            <button class="btn-tac" onclick="window.print()">APPROVE & PRINT PDF</button>
+            <button class="btn-tac" style="border-color:#ffd700; color:#ffd700;" onclick="alert('Reviewing tactical playback sequence...')">REPLAY RECORDER</button>
+            <button class="btn-tac" style="border-color:#00ff41; color:#00ff41;" onclick="window.print()">APPROVE & PRINT PDF</button>
             <button class="btn-tac btn-danger" onclick="resetConsole()">CLEAR & RESET CONSOLE</button>
         </div>
     </div>
@@ -154,11 +192,7 @@
         const terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png');
         const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
 
-        const map = L.map('map', {
-            center: [37.4138, -79.1422],
-            zoom: 14,
-            layers: [streetLayer]
-        });
+        const map = L.map('map', { center: [37.4138, -79.1422], zoom: 14, layers: [streetLayer] });
 
         function switchBaseLayer(type) {
             map.removeLayer(streetLayer); map.removeLayer(terrainLayer); map.removeLayer(satelliteLayer);
@@ -198,12 +232,12 @@
                 
                 m.on('click', function(ev) {
                     L.DomEvent.stopPropagation(ev);
-                    logEvent(`DISPATCH UPDATE: Removed ${this.unitType} unit asset marker.`);
+                    logEvent(`ASSET DISPATCH: Removed ${this.unitType} deployment tracker.`);
                     map.removeLayer(this);
                     activeMarkers = activeMarkers.filter(item => item !== this);
                 });
                 activeMarkers.push(m);
-                logEvent(`DISPATCH UPDATE: Placed ${activeType} strategic asset on coordinate canvas.`);
+                logEvent(`ASSET DISPATCH: Placed ${activeType} unit onto operational map canvas.`);
                 activeType = null;
             } else if (crossfireActive) {
                 handleCrossfireClick(e.latlng);
@@ -242,7 +276,7 @@
                 let finalDistance = firstPoint.distanceTo(latlng) * 3.28084;
                 visualLine.addLatLng(latlng);
                 visualLine.bindPopup(`RANGE: ${finalDistance.toFixed(0)} FEET`, {closeOnClick: false}).openPopup();
-                logEvent(`TELEMETRY VECTOR: Measured baseline grid distance at ${finalDistance.toFixed(0)} feet.`);
+                logEvent(`TELEMETRY VECTOR: Measured baseline vector grid distance at ${finalDistance.toFixed(0)} feet.`);
                 crossfireActive = false; document.getElementById('crossfireBtn').classList.remove('btn-active');
             }
         }
@@ -255,64 +289,52 @@
             }
         }
 
-        // Search Bar & Real-Time Slider Tuning Logic
         function searchAddr() {
             const q = document.getElementById('addrInput').value;
             const radiusFeet = parseFloat(document.getElementById('radiusSlider').value);
-            
             fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(q))
                 .then(r => r.json())
                 .then(d => { 
                     if(d.length > 0) {
                         perimeterCenter = [d[0].lat, d[0].lon];
                         map.setView(perimeterCenter, 15);
-                        logEvent(`METRIC CAPTURE: Anchored target sector location grid at ${q}`);
+                        logEvent(`METRIC CAPTURE: Anchored baseline target grid centerpoint at ${q}`);
                         drawPerimeter(radiusFeet);
                     } 
                 });
         }
 
-        // Darker, high-visibility perimeter rendering engine
         function drawPerimeter(feet) {
             if (searchPerimeter) map.removeLayer(searchPerimeter);
             if (!perimeterCenter) return;
-
             const meters = feet / 3.28084;
             searchPerimeter = L.circle(perimeterCenter, {
-                radius: meters,
-                color: '#00661a',        // Much darker green primary line
-                fillColor: '#00ff41',
-                fillOpacity: 0.12,       // Darker background fill matrix
-                weight: 4,               // Thicker border
-                dashArray: '8, 8'
+                radius: meters, color: '#00661a', fillColor: '#00ff41', fillOpacity: 0.12, weight: 4, dashArray: '8, 8'
             }).addTo(map);
         }
 
-        // Live slider link function
         function adjustPerimeter(val) {
             document.getElementById('radiusVal').innerText = val + " FT";
-            if (perimeterCenter) {
-                drawPerimeter(parseFloat(val));
-                logEvent(`RADIUS TUNE: Dynamic perimeter resized to ${val} feet.`);
-            }
+            if (perimeterCenter) { drawPerimeter(parseFloat(val)); logEvent(`RADIUS TUNE: Scaled sector containment ring radius to ${val} feet.`); }
         }
 
         function activateGPS() {
             navigator.geolocation.getCurrentPosition(p => {
                 let m = L.marker([p.coords.latitude, p.coords.longitude]).addTo(map);
                 activeMarkers.push(m); map.setView([p.coords.latitude, p.coords.longitude], 16);
-                logEvent("SYSTEM TELEMETRY: Verified active command post tracking beacon lock.");
+                logEvent("SYSTEM TELEMETRY: Verified active command post primary tracking signal lock.");
             }, null, {enableHighAccuracy: true});
         }
 
         function generateReport() {
-            logEvent("REPORT SYSTEM: Generated operation manifest audit log.");
+            logEvent("AUDIT SYSTEM: Compiled absolute multi-agency operational data manifest.");
             const logBox = document.getElementById('reportLog'); logBox.innerHTML = "";
             eventLog.forEach(e => logBox.innerHTML += `[${e.time}] &gt;&gt; ${e.desc}<br>`);
-            document.getElementById('repDate').innerText = "SYSTEM TIME RECORD STAMP: " + new Date().toISOString().substring(0,10);
+            document.getElementById('repDate').innerText = new Date().toISOString().substring(0,10);
             document.getElementById('reportModal').style.display = 'block';
         }
 
+        // Complete Reset Vector Function (Fixes sticking crossfire lines)
         function resetConsole() {
             activeMarkers.forEach(m => map.removeLayer(m));
             drawingLayers.forEach(l => map.removeLayer(l));
