@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>TACNET - Master Command Deck</title>
+    <style>
+        body, html { margin:0; padding:0; height:100%; width:100%; background:#000; color:#00ff41; font-family: -apple-system, BlinkMacSystemFont, monospace; }
+        .console-container { display: flex; flex-direction: column; height: 100vh; width: 100vw; box-sizing: border-box; }
+        
+        /* Top Header Navigation */
+        .header { height: 60px; background: #001a00; border-bottom: 2px solid #00ff41; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; box-sizing: border-box; }
+        .workspace { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; max-width: 500px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+        
+        /* High-Visibility Touch Targets for iOS */
+        .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding:16px; cursor:pointer; font-weight:bold; text-transform:uppercase; text-align: center; width: 100%; font-size: 15px; border-radius: 6px; letter-spacing: 0.5px; }
+        .btn-danger { color:red; border-color:red; }
+        .btn-sos { background: #ff0000 !important; color: #fff !important; border: 2px solid #fff !important; font-size: 16px; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 10px #ff0000; } 50% { box-shadow: 0 0 0px #000; } 100% { box-shadow: 0 0 10px #ff0000; } }
+        
+        .toggle-row { display:flex; justify-content:space-between; align-items:center; width:100%; font-size:15px; font-weight:bold; border: 1px solid #333; padding: 14px; border-radius: 6px; box-sizing: border-box; background: rgba(0,26,0,0.2); }
+        .large-toggle { width: 26px; height: 26px; accent-color: #00ff41; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="console-container">
+        <div class="header">
+            <button class="btn-tac" style="width: auto; padding: 8px 16px;" onclick="window.location.href='tacnet.html'">⬅ BACK TO MAP</button>
+            <span id="roleBadge" style="font-size: 12px; font-weight: bold; border: 1px solid #00ff41; padding: 4px 8px;">CONSOLE</span>
+            <div style="width: 30px;"></div> </div>
+        
+        <div class="workspace">
+            <button class="btn-tac btn-sos" onclick="triggerMobileSOS()">🚨 OFFICER DOWN SOS</button>
+            <button class="btn-tac" id="assetArticleBtn" onclick="triggerMobileArticle()">🔍 DEPLOY ARTICLE FIND</button>
+            
+            <div id="commanderOnlyBlock" style="display: flex; flex-direction: column; gap: 14px; width: 100%;">
+                <hr style="border: 0; border-top: 1px solid #00ff41; margin: 5px 0; width: 100%;">
+                
+                <button class="btn-tac" onclick="alert('Searchers localized.')">ACTIVATE SEARCHERS</button>
+                <button class="btn-tac" style="border-color: #ffd700; color: #ffd700;" onclick="alert('Zoom depth adjusted down to tree-top view height.')">🔎 TREE TOP VIEW</button>
+                
+                <div class="toggle-row">
+                    <span>MAP LOCK FRAME</span>
+                    <input type="checkbox" class="large-toggle">
+                </div>
+                <div class="toggle-row">
+                    <span>RED PEN DRAWING</span>
+                    <input type="checkbox" class="large-toggle">
+                </div>
+                
+                <button class="btn-tac" style="border-color: #ff3333; color: #ff3333;" onclick="alert('Last line segment removed from canvas.')">❌ ERASE LAST LINE</button>
+                <button class="btn-tac" onclick="alert('Crossfire precision vector mode active.')">CROSSFIRE DIST</button>
+                <button class="btn-tac" onclick="alert('Trap n Trace spectrum tracking scan activated.')">TRAP N TRACE</button>
+                
+                <button class="btn-tac" style="border-color: #00ff41; color: #00ff41;" onclick="alert('Compiling multi-agency summary records...')">📄 PREVIEW REPORT</button>
+                <button class="btn-tac btn-danger" onclick="alert('Mission completed. Compiling final dispositions.'); window.location.href='signin.html';">TERMINATE SEARCH</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Read active authentication flag instantly
+        const userRole = sessionStorage.getItem('tacnet_role') || 'searcher';
+        const userName = sessionStorage.getItem('tacnet_user') || 'Asset';
+        
+        document.addEventListener("DOMContentLoaded", () => {
+            const cmdBlock = document.getElementById('commanderOnlyBlock');
+            const badge = document.getElementById('roleBadge');
+            const articleBtn = document.getElementById('assetArticleBtn');
+
+            if (userRole === 'commander') {
+                cmdBlock.style.display = 'flex';
+                badge.innerText = `CMD: ${userName.toUpperCase()}`;
+                badge.style.borderColor = '#ffd700';
+                badge.style.color = '#ffd700';
+            } else {
+                // Instantly strip tracking controls for field searchers
+                cmdBlock.style.display = 'none';
+                badge.innerText = `ASSET: ${userName.toUpperCase()}`;
+                articleBtn.innerText = "🔍 REPORT ARTICLE FIND";
+            }
+        });
+
+        function triggerMobileSOS() {
+            alert("!!! EMERGENCY SOS ALARM BROADCASTED TO ALL DEPLOYED TASK FORCE DEVICES !!!");
+        }
+
+        function triggerMobileArticle() {
+            alert("Article asset marker armed. Return to map and tap to drop coordinate anchor.");
+        }
+    </script>
+</body>
+</html>
