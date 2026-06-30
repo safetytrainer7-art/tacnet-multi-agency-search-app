@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,29 +7,58 @@
     <style>
         body, html { margin:0; padding:0; height:100%; width:100%; background:#000; color:#00ff41; font-family: 'Courier New', monospace; overflow: hidden; }
         .main-ui { display:flex; flex-direction:column; height:100vh; width:100vw; }
-        .top-bar { padding:10px; background:#000; border-bottom:2px solid #00ff41; display:flex; gap:10px; align-items:center; }
-        .middle-section { display:flex; flex:1; width:100%; height:calc(100vh - 120px); }
+        
+        /* Tactical Header Styling */
+        .top-bar { padding:10px 20px; background:#001a00; border-bottom:2px solid #00ff41; display:flex; gap:15px; align-items:center; justify-content: space-between; }
+        .search-container { display:flex; gap:10px; align-items:center; }
+        .map-toggles { display:flex; gap:8px; }
+        
+        .middle-section { display:flex; flex:1; width:100%; height:calc(100vh - 135px); }
         #map { flex:1; border-right:2px solid #00ff41; background:#000; cursor: crosshair; }
         .sidebar { width:260px; background:#000; padding:15px; border-left:2px solid #00ff41; display:flex; flex-direction:column; gap:12px; box-sizing: border-box; overflow-y: auto; }
         .legend-bar { height:60px; background:#000; display:flex; align-items:center; overflow-x:auto; white-space:nowrap; gap:20px; padding:0 20px; border-top:2px solid #00ff41; box-sizing: border-box; }
         
-        .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding:10px; cursor:pointer; font-weight:bold; text-transform:uppercase; width:100%; }
+        /* UI Inputs and Buttons */
+        .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding:10px; cursor:pointer; font-weight:bold; text-transform:uppercase; }
+        .btn-map-type { background:#001a00; color:#00ff41; border:1px solid #00ff41; padding:6px 12px; cursor:pointer; font-size:12px; }
+        .btn-map-type.active { background:#00ff41; color:#000; font-weight:bold; }
         .btn-danger { color:red; border-color:red; }
         .btn-active { background:#00ff41; color:#000; }
-        input { background:#000; color:#00ff41; border:1px solid #00ff41; padding:8px; width:100%; box-sizing: border-box; }
+        input, select { background:#000; color:#00ff41; border:1px solid #00ff41; padding:8px; box-sizing: border-box; }
         .toggle-row { display:flex; justify-content:space-between; align-items:center; width:100%; }
         .legend-item { cursor:pointer; font-size:20px; font-weight:bold; display:inline-flex; align-items:center; gap:5px; }
         
-        .modal { display:none; position:fixed; top:10%; left:10%; width:80%; height:80%; background:rgba(0,0,0,0.95); border:2px solid #00ff41; z-index:9999; padding:20px; box-sizing:border-box; overflow-y:auto; }
-        .report-log { background:#111; border:1px solid #00ff41; padding:10px; font-family:monospace; height:60%; overflow-y:auto; color:#00ff41; margin-bottom:15px; }
+        /* Professional Report Modal Overlay */
+        .modal { display:none; position:fixed; top:5%; left:5%; width:90%; height:90%; background:#000; border:3px solid #00ff41; z-index:9999; padding:25px; box-sizing:border-box; overflow-y:auto; color:#fff; }
+        .report-header { text-align: center; border-bottom: 2px dashed #00ff41; padding-bottom: 15px; margin-bottom: 20px; }
+        .report-title { color: #00ff41; font-size: 26px; font-weight: bold; margin: 0; }
+        .report-meta { display: flex; justify-content: space-between; margin-top: 10px; font-size: 14px; color: #aaa; }
+        .report-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 15px; }
+        .report-log { background:#050505; border:1px solid #00ff41; padding:15px; font-family:monospace; height:350px; overflow-y:auto; color:#00ff41; }
+        .disposition-panel { display: flex; flex-direction: column; gap: 15px; background: #0a0a0a; padding: 15px; border: 1px solid #333; }
+        .modal-actions { margin-top: 25px; display: flex; gap: 15px; justify-content: flex-end; }
     </style>
 </head>
 <body>
     <div class="main-ui">
-        <!-- Top Bar -->
+        <!-- Top Bar with Integrated View Toggles & Dynamic Radius Input -->
         <div class="top-bar">
-            <input id="addrInput" placeholder="Enter Address..." style="width:300px;">
-            <button class="btn-tac" style="width:auto;" onclick="searchAddr()">GO</button>
+            <div class="search-container">
+                <input id="addrInput" placeholder="Enter Address..." style="width:280px;">
+                <select id="perimeterRadius" style="width:110px;">
+                    <option value="500">500 FT</option>
+                    <option value="1000" selected>1000 FT</option>
+                    <option value="2500">2500 FT</option>
+                    <option value="5280">1 MILE</option>
+                </select>
+                <button class="btn-tac" onclick="searchAddr()">GO</button>
+            </div>
+            
+            <div class="map-toggles">
+                <button class="btn-map-type active" id="btn-street" onclick="switchBaseLayer('street')">STREETS</button>
+                <button class="btn-map-type" id="btn-terrain" onclick="switchBaseLayer('terrain')">TERRAIN</button>
+                <button class="btn-map-type" id="btn-sat" onclick="switchBaseLayer('sat')">SATELLITE</button>
+            </div>
         </div>
 
         <!-- Main Workspace -->
@@ -77,37 +107,77 @@
         </div>
     </div>
 
-    <!-- Incident Report Overlay -->
+    <!-- Auto-Generated Incident Report & Preview System -->
     <div id="reportModal" class="modal">
-        <h2>INCIDENT COMMAND REPORT & REPLAY RECORD LOG</h2>
-        <div id="reportLog" class="report-log"></div>
-        <button class="btn-tac" style="width:200px; margin-right:15px;" onclick="alert('Replaying history...')">REPLAY RECORDER</button>
-        <button class="btn-tac btn-danger" style="width:200px;" onclick="resetConsole()">CLEAR & RESET CONSOLE</button>
+        <div class="report-header">
+            <div class="report-title">TACNET MULTI-AGENCY TASK FORCE</div>
+            <div style="color: #00ff41; font-weight: bold; font-size:14px; margin-top:5px;">INCIDENT COMMAND OPERATIONAL ARCHIVE & SUMMARY</div>
+            <div class="report-meta">
+                <span id="repDate">DATE: 2026-06-30</span>
+                <span id="repID">INCIDENT ID: TAC-2026-REG-01</span>
+            </div>
+        </div>
+        
+        <div class="report-grid">
+            <div>
+                <h4 style="margin:0 0 10px 0; color:#00ff41;">ITEMIZED TELEMETRY & STRINGS LOG</h4>
+                <div id="reportLog" class="report-log"></div>
+            </div>
+            
+            <div class="disposition-panel">
+                <h4 style="margin:0; color:#00ff41;">FIELD DISPOSITION INPUT</h4>
+                <label style="font-size:12px;">TACTICAL COMMAND NOTES:</label>
+                <textarea id="commandNotes" rows="5" style="background:#000; color:#fff; border:1px solid #00ff41; font-family:monospace; resize:none;" placeholder="Enter operational notes..."></textarea>
+                
+                <label style="font-size:12px; margin-top:10px;">FINAL DISPOSITION STATUS:</label>
+                <select id="finalDisp" style="width:100%;">
+                    <option value="SUCCESSFUL COMPLETED">OBJECTIVE FOUND / MISSION SUCCESS</option>
+                    <option value="SUSPENDED PENDING INTELLIGENCE">SEARCH SUSPENDED PENDING FURTHER INTEL</option>
+                    <option value="RE-ROUTE / TRANSFERRED">TRANSFERRED TO OUTSIDE JURISDICTION</option>
+                </select>
+                
+                <label style="font-size:12px; margin-top:10px;">COMMANDING OFFICER SIGN-OFF:</label>
+                <input id="sigName" placeholder="Authorized Rank & Surname" style="width:100%;">
+            </div>
+        </div>
+        
+        <div class="modal-actions">
+            <button class="btn-tac" style="border-color:#ffd700; color:#ffd700;" onclick="executeReplay()">REPLAY HISTORY</button>
+            <button class="btn-tac" onclick="approveAndLockReport()">APPROVE & PDF LOCK</button>
+            <button class="btn-tac btn-danger" onclick="resetConsole()">CLEAR & RESET CONSOLE</button>
+        </div>
     </div>
 
     <script>
-        // Core Layers Definition
-        const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: 'OSM' });
-        const terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { attribution: 'OTM' });
-        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Esri' });
+        // Layer Matrices
+        const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+        const terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png');
+        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
 
         const map = L.map('map', {
-            center: [37.4138, -79.1422], // Lynchburg base coordinate template
+            center: [37.4138, -79.1422],
             zoom: 14,
-            layers: [streetLayer] // Default street layout view
+            layers: [streetLayer]
         });
 
-        // Built-in Leaflet Layer control interface top right
-        const baseMaps = {
-            "Street View": streetLayer,
-            "Terrain View": terrainLayer,
-            "Satellite View": satelliteLayer
-        };
-        L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
+        function switchBaseLayer(type) {
+            map.removeLayer(streetLayer);
+            map.removeLayer(terrainLayer);
+            map.removeLayer(satelliteLayer);
+            
+            document.getElementById('btn-street').classList.remove('active');
+            document.getElementById('btn-terrain').classList.remove('active');
+            document.getElementById('btn-sat').classList.remove('active');
+
+            if (type === 'street') { streetLayer.addTo(map); document.getElementById('btn-street').classList.add('active'); }
+            if (type === 'terrain') { terrainLayer.addTo(map); document.getElementById('btn-terrain').classList.add('active'); }
+            if (type === 'sat') { satelliteLayer.addTo(map); document.getElementById('btn-sat').classList.add('active'); }
+        }
 
         let eventLog = [];
         let activeMarkers = [];
         let drawingLayers = [];
+        let searchPerimeter = null;
         let activeType = null;
 
         const unitColors = { 
@@ -129,16 +199,14 @@
             crossfireActive = false;
         }
 
-        // Integrated Direct Canvas Placement
         map.on('click', e => {
             if (activeType) {
                 let borderCol = (activeType === 'VSP') ? '#ffd700' : '#fff';
                 let m = L.circleMarker(e.latlng, {radius: 11, fillColor: unitColors[activeType], color: borderCol, fillOpacity: 1, weight: 2.5}).addTo(map);
                 m.unitType = activeType;
                 
-                // Fixed Interactive Eraser Tap Detection
                 m.on('click', function(ev) {
-                    L.DomEvent.stopPropagation(ev); // Stop event bubble
+                    L.DomEvent.stopPropagation(ev);
                     if (document.getElementById('eraserToggle').checked) {
                         logEvent(`ERASED: Removed ${this.unitType} unit marker.`);
                         map.removeLayer(this);
@@ -149,33 +217,18 @@
                 });
 
                 activeMarkers.push(m);
-                logEvent(`DEPLOYED: ${activeType} marker dropped at workspace location.`);
+                logEvent(`DEPLOYED: ${activeType} marker placed at canvas coordinate.`);
                 activeType = null;
             }
         });
 
-        // Map Lock Switch Logic
         function toggleMapLock(locked) {
-            if (locked) {
-                map.dragging.disable();
-                map.touchZoom.disable();
-                map.doubleClickZoom.disable();
-                map.scrollWheelZoom.disable();
-                logEvent("CONSOLE MATRIX: Map frame locked down for manual tracing overlays.");
-            } else {
-                map.dragging.enable();
-                map.touchZoom.enable();
-                map.doubleClickZoom.enable();
-                map.scrollWheelZoom.enable();
-                logEvent("CONSOLE MATRIX: Map frame unlocked.");
-            }
+            locked ? map.dragging.disable() : map.dragging.enable();
         }
 
-        // Toggles configuration
         function togglePenMode(checked) { if (checked) document.getElementById('eraserToggle').checked = false; }
         function toggleEraserMode(checked) { if (checked) document.getElementById('penToggle').checked = false; }
 
-        // Red Pen Drag Line Engine
         let isDrawing = false;
         let activeLine = null;
 
@@ -183,8 +236,6 @@
             if (document.getElementById('penToggle').checked) {
                 isDrawing = true;
                 activeLine = L.polyline([e.latlng], {color: 'red', weight: 4, interactive: true}).addTo(map);
-                
-                // Allow red pen segments to be specifically targetable by eraser
                 activeLine.on('click', function(ev) {
                     L.DomEvent.stopPropagation(ev);
                     if (document.getElementById('eraserToggle').checked) {
@@ -197,9 +248,8 @@
         });
 
         map.on('mousemove', e => { if (isDrawing && activeLine) activeLine.addLatLng(e.latlng); });
-        map.on('mouseup', () => { if (isDrawing) { isDrawing = false; logEvent("DRAWING: Traced red path saved."); } });
+        map.on('mouseup', () => { if (isDrawing) isDrawing = false; });
 
-        // Accurate Real-Time Crossfire Engine
         let crossfireActive = false;
         let firstPoint = null;
         let visualLine = null;
@@ -210,35 +260,25 @@
             if (crossfireActive) {
                 btn.classList.add('btn-active');
                 firstPoint = null;
-                alert("CROSSFIRE DISTANCE: Tap the map directly to drop Point A, then move cursor and tap to drop Point B.");
             } else {
                 btn.classList.remove('btn-active');
                 if (visualLine) map.removeLayer(visualLine);
             }
         }
 
-        // Fallback or explicit mapping coordinate intercept for distances
-        map.on('click', e => {
-            if (crossfireActive && !activeType) {
-                handleCrossfireClick(e.latlng);
-            }
-        });
+        map.on('click', e => { if (crossfireActive && !activeType) handleCrossfireClick(e.latlng); });
 
         function handleCrossfireClick(latlng) {
             if (!firstPoint) {
                 firstPoint = latlng;
                 visualLine = L.polyline([firstPoint], {color: '#00ff41', weight: 3, dashArray: '6, 6'}).addTo(map);
-                
-                // Track real-time movement to calculate visual vector instantly
                 map.on('mousemove', updateCrossfireLine);
             } else {
                 map.off('mousemove', updateCrossfireLine);
-                let finalDistance = firstPoint.distanceTo(latlng) * 3.28084; // Instant conversion to feet
-                
+                let finalDistance = firstPoint.distanceTo(latlng) * 3.28084;
                 visualLine.addLatLng(latlng);
-                visualLine.bindPopup(`RANGE CALCULATION: ${finalDistance.toFixed(0)} FT`, {closeOnClick: false}).openPopup();
-                
-                logEvent(`CROSSFIRE RANGING COMPLETED: Vector range determined to be ${finalDistance.toFixed(0)} feet.`);
+                visualLine.bindPopup(`RANGE: ${finalDistance.toFixed(0)} FT`, {closeOnClick: false}).openPopup();
+                logEvent(`CROSSFIRE MEASUREMENT: Measured vector distance at ${finalDistance.toFixed(0)} feet.`);
                 crossfireActive = false;
                 document.getElementById('crossfireBtn').classList.remove('btn-active');
             }
@@ -252,36 +292,80 @@
             }
         }
 
-        // Addresses & Core Telemetry API
+        // Search Bar Geocoding + Neon Green Perimeter
         function searchAddr() {
             const q = document.getElementById('addrInput').value;
+            const radiusFeet = parseFloat(document.getElementById('perimeterRadius').value);
+            const radiusMeters = radiusFeet / 3.28084; // Convert layout selection to metric meters for Leaflet engine
+            
             fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(q))
                 .then(r => r.json())
-                .then(d => { if(d.length > 0) { map.setView([d[0].lat, d[0].lon], 16); logEvent(`GEO-TARGETING: Positioned to ${q}`); } });
+                .then(d => { 
+                    if(d.length > 0) {
+                        const targetLat = d[0].lat;
+                        const targetLon = d[0].lon;
+                        
+                        map.setView([targetLat, targetLon], 15);
+                        logEvent(`GEO-TARGET: Located coordinate grid for address: ${q}`);
+                        
+                        // Drop previous radius containment circle if present
+                        if (searchPerimeter) map.removeLayer(searchPerimeter);
+                        
+                        // Build Adjustable Neon Green Perimeter
+                        searchPerimeter = L.circle([targetLat, targetLon], {
+                            radius: radiusMeters,
+                            color: '#00ff41',
+                            fillColor: '#00ff41',
+                            fillOpacity: 0.08,
+                            weight: 2.5,
+                            dashArray: '4, 4'
+                        }).addTo(map);
+                        
+                        logEvent(`PERIMETER LOCK: Established ${radiusFeet} FT containment perimeter.`);
+                    } 
+                });
         }
 
         function activateGPS() {
             navigator.geolocation.getCurrentPosition(p => {
-                let m = L.marker([p.coords.latitude, p.coords.longitude]).addTo(map).bindPopup("COMMAND TELEMETRY FEED").openPopup();
+                let m = L.marker([p.coords.latitude, p.coords.longitude]).addTo(map);
                 activeMarkers.push(m);
                 map.setView([p.coords.latitude, p.coords.longitude], 16);
-                logEvent("TELEMETRY ACTIVE: Base system location captured.");
+                logEvent("TELEMETRY: Captured primary unit anchor point.");
             }, null, {enableHighAccuracy: true});
         }
 
+        // Automated Report Phase Compilation
         function terminateSearch() {
-            logEvent("CRITICAL SIGNAL: Search incident matrix closed.");
+            logEvent("SIGNAL TERMINATION: Active search framework suspended by Command.");
             const logBox = document.getElementById('reportLog');
-            logBox.innerHTML = "=== TACNET SEARCH INCIDENT COMMAND ARCHIVE ===<br><br>";
+            logBox.innerHTML = "";
             eventLog.forEach(e => logBox.innerHTML += `[${e.time}] ${e.desc}<br>`);
+            
+            // Set real-time system stamp values to header fields
+            document.getElementById('repDate').innerText = "DATE: " + new Date().toISOString().substring(0,10);
             document.getElementById('reportModal').style.display = 'block';
+        }
+
+        function executeReplay() {
+            // Internal logic hook placeholder
+        }
+
+        function approveAndLockReport() {
+            const notes = document.getElementById('commandNotes').value;
+            const disposition = document.getElementById('finalDisp').value;
+            const signee = document.getElementById('sigName').value;
+            
+            // Generate standard output strings for pdf context print preview frames
+            window.print();
         }
 
         function resetConsole() {
             activeMarkers.forEach(m => map.removeLayer(m));
             drawingLayers.forEach(l => map.removeLayer(l));
             if (visualLine) map.removeLayer(visualLine);
-            activeMarkers = []; drawingLayers = []; eventLog = [];
+            if (searchPerimeter) map.removeLayer(searchPerimeter);
+            activeMarkers = []; drawingLayers = []; eventLog = []; searchPerimeter = null;
             document.getElementById('reportModal').style.display = 'none';
         }
     </script>
