@@ -23,49 +23,52 @@
         .btn-map-type { background:#001a00; color:#00ff41; border:1px solid #00ff41; padding:6px 12px; cursor:pointer; font-size:12px; }
         .btn-map-type.active { background:#00ff41; color:#000; font-weight:bold; }
         .btn-danger { color:red; border-color:red; }
-        .btn-active { background:FFA500 !important; color:#000 !important; border-color: #FFA500 !important; }
-        input, select { background:#000; color:#00ff41; border:1px solid #00ff41; padding:8px; box-sizing: border-box; }
+        input, select, textarea { background:#000; color:#fff; border:1px solid #444; padding:6px; box-sizing: border-box; font-family: monospace; }
+        input::placeholder { color: #555; }
         
-        /* Enlarged Toggles for Field Use */
         .large-toggle { width: 22px; height: 22px; cursor: pointer; accent-color: #00ff41; }
-        
-        /* Slider Adjustment Styling */
         input[type="range"] { -webkit-appearance: none; background: #002b00; border: 1px solid #00ff41; height: 8px; width: 120px; cursor: pointer; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; background: #00ff41; width: 16px; height: 16px; border: 1px solid #000; }
 
         .toggle-row { display:flex; justify-content:space-between; align-items:center; width:100%; font-size:14px; font-weight:bold; }
         .legend-item { cursor:pointer; font-size:26px; font-weight:bold; display:inline-flex; align-items:center; gap:8px; }
         
-        /* Trap N Trace Radar Display Scanner */
         .radar-box { border: 1px solid #00ff41; background: #020f02; padding: 8px; font-size: 11px; display: none; flex-direction: column; gap:4px; font-family: monospace; }
         .radar-scan-line { width: 100%; background: #00ff41; height: 2px; opacity: 0.7; animation: scan 2s linear infinite; }
         @keyframes scan { 0% { transform: translateY(0px); } 50% { transform: translateY(40px); } 100% { transform: translateY(0px); } }
-
-        /* Professional Report Modal Overlay */
-        .modal { display:none; position:fixed; top:5%; left:5%; width:90%; height:90%; background:#0a0a0a; border:2px solid #00ff41; z-index:9999; padding:30px; box-sizing:border-box; overflow-y:auto; color:#fff; font-family: 'Times New Roman', Times, serif; }
-        .report-header { text-align: center; border-bottom: 2px solid #fff; padding-bottom: 10px; margin-bottom: 20px; }
-        .report-title { font-size: 22px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #fff; }
-        .report-subtitle { font-size: 14px; font-weight: bold; margin-top: 5px; color: #aaa; text-transform: uppercase; }
-        .report-meta-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        .report-meta-table td { border: 1px solid #444; padding: 8px; font-size: 13px; }
-        .section-heading { background: #222; color: #00ff41; padding: 5px 10px; font-size: 14px; font-weight: bold; text-transform: uppercase; margin-top: 20px; border-left: 3px solid #00ff41; }
-        .report-log { background:#111; border:1px solid #333; padding:15px; font-family: monospace; height:180px; overflow-y:auto; color:#fff; font-size: 12px; margin-top: 10px; line-height: 1.5; }
-        .disposition-panel { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
-        .modal-actions { margin-top: 30px; display: flex; gap: 15px; justify-content: flex-end; }
-
         .orange-dist-label { background: #000; color: #FFA500; border: 1px solid #FFA500; font-weight: bold; font-family: monospace; padding: 2px 5px; font-size: 12px; border-radius: 3px; cursor: pointer; }
 
+        /* ==========================================================================
+           PROFESSIONAL REPORT SYSTEM STYLING (COURT / ATTORNEY COMPLIANT)
+           ========================================================================== */
+        .modal { display:none; position:fixed; top:2%; left:2%; width:96%; height:96%; background:#111; border:2px solid #00ff41; z-index:9999; padding:20px; box-sizing:border-box; overflow-y:auto; color:#fff; font-family: 'Times New Roman', Times, serif; }
+        .report-selector-bar { display: flex; gap: 10px; background: #000; padding: 10px; border: 1px solid #00ff41; margin-bottom: 15px; align-items: center; }
+        .report-form-container { background: #fff; color: #000; padding: 30px; box-sizing: border-box; max-width: 850px; margin: 0 auto; display: none; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .report-form-container.active { display: block; }
+        
+        .form-header { text-align: center; margin-bottom: 20px; border: 1px dashed #000; padding: 10px; }
+        .form-header h1 { margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; font-family: 'Times New Roman', serif; }
+        .form-header h2 { margin: 5px 0 0 0; font-size: 18px; font-weight: normal; }
+        
+        /* Grid Layouts for Official Forms */
+        .form-row { display: flex; width: 100%; margin-bottom: 10px; gap: 10px; }
+        .form-block { border: 1px solid #000; padding: 4px 8px; display: flex; flex-direction: column; background: #fcfcfc; }
+        .form-block label { font-size: 10px; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; color: #000; }
+        .form-block input, .form-block select, .form-block textarea { background: transparent !important; color: #000 !important; border: none !important; font-size: 13px; font-family: 'Times New Roman', serif; padding: 2px 0; width: 100%; }
+        .form-block textarea { resize: none; }
+        
+        .section-banner { background: #000; color: #fff; font-size: 12px; font-weight: bold; padding: 4px 8px; text-transform: uppercase; margin: 15px 0 8px 0; letter-spacing: 0.5px; }
+        .report-string-box { border: 1px solid #000; background: #f9f9f9; padding: 10px; font-family: monospace; font-size: 11px; max-height: 150px; overflow-y: auto; margin-bottom: 15px; color: #000; line-height: 1.4; }
+        
+        /* Print Configuration Overrides */
         @media print {
             body, html { background: #fff !important; color: #000 !important; overflow: visible !important; height: auto !important; }
-            .main-ui, .legend-bar, .sidebar, .top-bar, .modal-actions, #map { display: none !important; }
-            .modal { display: block !important; position: relative !important; width: 100% !important; height: auto !important; top: 0 !important; left: 0 !important; border: none !important; background: #fff !important; color: #000 !important; padding: 0 !important; box-sizing: content-box !important; }
-            .report-title { color: #000 !important; font-size: 24px !important; }
-            .report-subtitle { color: #000 !important; }
-            .report-meta-table td { border: 1px solid #000 !important; color: #000 !important; }
-            .section-heading { background: #f0f0f0 !important; color: #000 !important; border-left: 4px solid #000 !important; border-bottom: 1px solid #000 !important; }
-            .report-log { background: #fff !important; color: #000 !important; border: 1px solid #000 !important; height: auto !important; overflow: visible !important; }
-            textarea { background: #fff !important; color: #000 !important; border: none !important; width: 100% !important; font-family: 'Times New Roman' !important; }
-            select, input { background: #fff !important; color: #000 !important; border: none !important; border-bottom: 1px solid #000 !important; font-family: 'Times New Roman' !important; }
+            .main-ui, .legend-bar, .sidebar, .top-bar, .modal-actions, #map, .report-selector-bar, .no-print { display: none !important; }
+            .modal { display: block !important; position: relative !important; width: 100% !important; height: auto !important; top: 0 !important; left: 0 !important; border: none !important; background: #fff !important; color: #000 !important; padding: 0 !important; }
+            .report-form-container { display: none !important; padding: 0 !important; box-shadow: none !important; background: #fff !important; }
+            .report-form-container.active { display: block !important; }
+            .form-block { background: #fff !important; }
+            .report-string-box { background: #fff !important; max-height: none !important; overflow: visible !important; }
         }
     </style>
 </head>
@@ -146,54 +149,177 @@
         </div>
     </div>
 
-    <!-- Certified Incident Report Overlay -->
+    <!-- Professional Integrated Reporting System Overlay -->
     <div id="reportModal" class="modal">
-        <button class="btn-tac" style="padding: 5px 15px; margin-bottom: 15px;" onclick="document.getElementById('reportModal').style.display='none'">⬅ BACK TO MAP</button>
-        <div class="report-header">
-            <div class="report-title">TACNET MULTI-AGENCY SEARCH & RESCUE TASK FORCE COMMAND SUMMARY</div>
-            <div class="report-subtitle">Official Incident Command Record // Admissible Legal Transcript</div>
+        <div class="report-selector-bar no-print">
+            <button class="btn-tac" style="padding: 5px 15px;" onclick="document.getElementById('reportModal').style.display='none'">⬅ BACK TO MAP</button>
+            <span style="font-weight: bold; margin-left: 15px;">SELECT ADMISSIBLE RECORD TRANSCRIPT TYPE:</span>
+            <button class="btn-tac" id="toggleLEFormBtn" style="border-color:#00ff41;" onclick="setActiveForm('LE')">LAW ENFORCEMENT REPORT</button>
+            <button class="btn-tac" id="toggleFRFormBtn" style="border-color:#aaa;" onclick="setActiveForm('FR')">FIRST RESPONDER (FIRE/EMS/SAR) REPORT</button>
         </div>
-        
-        <table class="report-meta-table">
-            <tr>
-                <td style="font-weight: bold; width: 20%;">CASE / RECORD REF:</td>
-                <td id="repID" style="width: 30%;">TAC-2026-REG-01</td>
-                <td style="font-weight: bold; width: 20%;">REPORT DATE:</td>
-                <td id="repDate" style="width: 30%;">2026-06-30</td>
-            </tr>
-            <tr>
-                <td style="font-weight: bold;">SYSTEM METADATA:</td>
-                <td>GEOCENTRIC GPS LIVE LOGS</td>
-                <td style="font-weight: bold;">SECURITY STATUS:</td>
-                <td>OFFICIAL USE ONLY / UNCLASSIFIED</td>
-            </tr>
-        </table>
-        
-        <div class="section-heading">I. Chronological Telemetry & Field Operation Strings</div>
-        <div id="reportLog" class="report-log"></div>
-        
-        <div class="section-heading">II. Command Narrative & Fact Findings</div>
-        <div class="disposition-panel">
-            <textarea id="commandNotes" rows="4" style="background:#000; color:#fff; border:1px solid #444; font-family:'Times New Roman', serif; font-size:14px; padding:10px; width:100%; box-sizing:border-box; resize:none;" placeholder="Input professional timeline narrative, multi-agency coordinates, terrain tracking updates, or evidentiary notes..."></textarea>
+
+        <!-- ==========================================================================
+           FORM A: TACNET LAW ENFORCEMENT INCIDENT REPORT
+           ========================================================================== -->
+        <div id="formContainerLE" class="report-form-container active">
+            <div class="form-header">
+                <h1>TACNET</h1>
+                <h2>Law Enforcement Incident Report</h2>
+            </div>
             
-            <div style="display: flex; gap: 20px; width: 100%;">
-                <div style="flex: 1;">
-                    <label style="font-size:12px; font-weight:bold; display:block; margin-bottom:5px;">FINAL OPERATIONAL DISPOSITION:</label>
-                    <select id="finalDisp" style="width:100%; background:#000; color:#fff; border:1px solid #444; padding:8px;">
-                        <option value="SUCCESSFUL COMPLETED">TACTICAL OBJECTIVE LOCATED / MISSION SUCCESSFUL</option>
-                        <option value="SUSPENDED PENDING INTELLIGENCE">SEARCH OPERATIONS SUSPENDED PENDING FURTHER INTEL/EVIDENCE</option>
-                        <option value="RE-ROUTE / TRANSFERRED">MUTUAL AID ASSIGNMENT TRANSFERRED TO ADJACENT JURISDICTION</option>
-                    </select>
+            <div class="form-row">
+                <div class="form-block" style="flex: 1;"><label>Fire Dept ID</label><input value="02312"></div>
+                <div class="form-block" style="flex: 1.2;"><label>Incident #</label><input placeholder="LE-2026-X1"></div>
+                <div class="form-block" style="flex: 1.2;"><label>Incident Date</label><input id="leFormDate" value="2026-06-30"></div>
+                <div class="form-block" style="flex: 1.5;"><label>Type of Call</label><input placeholder="Federal/State/Local LEO Ops"></div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-block" style="flex: 1;"><label>No. of Personnel</label><input placeholder="Total Officers"></div>
+                <div class="form-block" style="flex: 2;">
+                    <label>Incident Times</label>
+                    <div style="display:flex; gap:10px; font-size:11px;">
+                        <span>Alarm: <input style="width:60px; display:inline;" value="10-8"></span>
+                        <span>10-23: <input style="width:60px; display:inline;" placeholder="Arrived"></span>
+                        <span>10-24: <input style="width:60px; display:inline;" placeholder="Clear"></span>
+                    </div>
                 </div>
-                <div style="flex: 1;">
-                    <label style="font-size:12px; font-weight:bold; display:block; margin-bottom:5px;">ON-SCENE COMMAND AUTHORIZATION:</label>
-                    <input id="sigName" placeholder="Rank / Badge / Subscribed Agency Sign-off" style="width:100%; background:#000; color:#fff; border:1px solid #444; padding:8px;">
+                <div class="form-block" style="flex: 2.5;"><label>Other Depts Responding</label><input placeholder="VSP, Federal, K9 Tactical Units"></div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-block" style="flex: 1;"><label>1st Unit On Scene</label><input placeholder="Command Asset"></div>
+                <div class="form-block" style="flex: 2.5;"><label>Highest Level @ Scene</label><input placeholder="Commanding Officer"></div>
+            </div>
+
+            <div style="border: 2px solid #000; padding: 10px; margin-top: 15px;">
+                <div class="form-block" style="margin-bottom:8px;"><label>Incident Address</label><input id="leFormAddr" placeholder="Target Search Sector Location"></div>
+                <div class="form-row">
+                    <div class="form-block" style="flex: 3;"><label>Patient / Subject Name</label><input placeholder="Full Legal Name"></div>
+                    <div class="form-block" style="flex: 1;"><label>Gender</label><input placeholder="M/F/UNK"></div>
                 </div>
+                <div class="form-row">
+                    <div class="form-block" style="flex: 2;"><label>Street</label><input placeholder="Street Address"></div>
+                    <div class="form-block" style="flex: 1.5;"><label>City</label><input placeholder="City"></div>
+                    <div class="form-block" style="flex: 1;"><label>State</label><input placeholder="VA"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-block" style="flex: 1.5;"><label>Patient Phone #</label><input placeholder="(###) ###-####"></div>
+                    <div class="form-block" style="flex: 1.2;"><label>DOB</label><input placeholder="YYYY-MM-DD"></div>
+                    <div class="form-block" style="flex: 1.5;"><label>SS#</label><input placeholder="###-##-####"></div>
+                    <div class="form-block" style="flex: 1.2;"><label>Race</label><input placeholder="Race/Identifier"></div>
+                </div>
+            </div>
+
+            <div class="section-banner">Chronological Field Telemetry Logs</div>
+            <div class="report-string-box reportLogClass"></div>
+
+            <div class="section-banner">Additional Patient / Subject Information</div>
+            <div class="form-block" style="margin-bottom:8px;"><label>Prior Medical History</label><input placeholder="Known diagnoses, conditions, injuries"></div>
+            <div class="form-block" style="margin-bottom:8px;"><label>If Yes Please Elaborate</label><textarea rows="2" placeholder="Specific physical or physiological details..."></textarea></div>
+            <div class="form-block"><label>Insurance Information</label><input placeholder="Carrier / Policy Data"></div>
+
+            <div class="form-row" style="margin-top:15px;">
+                <div style="flex: 1; display:flex; flex-direction:column; gap:10px;">
+                    <div class="form-block"><label>Chief Complaint</label><textarea rows="2" placeholder="Primary complaint or status..."></textarea></div>
+                    <div class="form-block"><label>Alcohol / Drug Use Suspected</label><input placeholder="Yes / No / Pending"></div>
+                </div>
+                <div style="flex: 1; display:flex; flex-direction:column; gap:10px;">
+                    <div class="form-block"><label>Patient Transported</label><input placeholder="Yes / No"></div>
+                    <div class="form-block"><label>Transported To</label><input placeholder="Medical Facility Location"></div>
+                    <div class="form-block"><label>By What Department</label><input placeholder="Responding Transport Unit"></div>
+                </div>
+            </div>
+
+            <div class="section-banner">Detailed Information About Incident & Vital Readings</div>
+            <div class="form-block">
+                <label>Give Detailed Information About Incident and List All Vital Readings</label>
+                <textarea rows="5" placeholder="Enter formal prosecutorial or defense-admissible narrative..."></textarea>
+            </div>
+        </div>
+
+        <!-- ==========================================================================
+           FORM B: TACNET FIRST RESPONDER INCIDENT REPORT
+           ========================================================================== -->
+        <div id="formContainerFR" class="report-form-container">
+            <div class="form-header">
+                <h1>TACNET</h1>
+                <h2>First Responder Incident Report</h2>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-block" style="flex: 1;"><label>Fire Dept ID</label><input value="02312"></div>
+                <div class="form-block" style="flex: 1.2;"><label>Incident #</label><input placeholder="FR-2026-X1"></div>
+                <div class="form-block" style="flex: 1.2;"><label>Incident Date</label><input id="frFormDate" value="2026-06-30"></div>
+                <div class="form-block" style="flex: 1.5;"><label>Type of Call</label><input placeholder="Fire / EMS / SAR Operations"></div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-block" style="flex: 1;"><label>No. of Personnel</label><input placeholder="Total Responders"></div>
+                <div class="form-block" style="flex: 2;">
+                    <label>Incident Times</label>
+                    <div style="display:flex; gap:10px; font-size:11px;">
+                        <span>Alarm: <input style="width:60px; display:inline;" value="10-8"></span>
+                        <span>10-23: <input style="width:60px; display:inline;" placeholder="Arrived"></span>
+                        <span>10-24: <input style="width:60px; display:inline;" placeholder="Clear"></span>
+                    </div>
+                </div>
+                <div class="form-block" style="flex: 2.5;"><label>Other Depts Responding</label><input placeholder="EMS, Paramedic, Rescue Squad, ALS Units"></div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-block" style="flex: 1;"><label>1st Unit On Scene</label><input placeholder="SAR Unit Anchor"></div>
+                <div class="form-block" style="flex: 2.5;"><label>Arrival Time of ALS / Highest Level @ Scene</label><input placeholder="Paramedic Triage Arrival Stamp"></div>
+            </div>
+
+            <div style="border: 2px solid #000; padding: 10px; margin-top: 15px;">
+                <div class="form-block" style="margin-bottom:8px;"><label>Incident Address</label><input id="frFormAddr" placeholder="Target Sector Coordinates"></div>
+                <div class="form-row">
+                    <div class="form-block" style="flex: 3;"><label>Patient Name</label><input placeholder="Full Patient Name"></div>
+                    <div class="form-block" style="flex: 1;"><label>Gender</label><input placeholder="M/F/UNK"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-block" style="flex: 2;"><label>Street</label><input placeholder="Patient Legal Address"></div>
+                    <div class="form-block" style="flex: 1.5;"><label>City</label><input placeholder="City"></div>
+                    <div class="form-block" style="flex: 1;"><label>State</label><input placeholder="VA"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-block" style="flex: 1.5;"><label>Patient Phone #</label><input placeholder="(###) ###-####"></div>
+                    <div class="form-block" style="flex: 1.2;"><label>DOB</label><input placeholder="YYYY-MM-DD"></div>
+                    <div class="form-block" style="flex: 1.5;"><label>SS#</label><input placeholder="###-##-####"></div>
+                    <div class="form-block" style="flex: 1.2;"><label>Race</label><input placeholder="Race/Demographics"></div>
+                </div>
+            </div>
+
+            <div class="section-banner">Chronological Field Telemetry Logs</div>
+            <div class="report-string-box reportLogClass"></div>
+
+            <div class="section-banner">Additional Patient Information</div>
+            <div class="form-block" style="margin-bottom:8px;"><label>Prior Medical History</label><input placeholder="Known allergies, cardiovascular history, medication strings"></div>
+            <div class="form-block" style="margin-bottom:8px;"><label>If Yes Please Elaborate</label><textarea rows="2" placeholder="Elaborate on specific extraction or triage health criteria..."></textarea></div>
+            <div class="form-block"><label>Insurance Information</label><input placeholder="Medical Provider Details"></div>
+
+            <div class="form-row" style="margin-top:15px;">
+                <div style="flex: 1; display:flex; flex-direction:column; gap:10px;">
+                    <div class="form-block"><label>Chief Complaint</label><textarea rows="2" placeholder="Trauma status, environmental factors, immersion exposure details..."></textarea></div>
+                    <div class="form-block"><label>Alcohol / Drug Use Suspected</label><input placeholder="Yes / No / Unknown"></div>
+                </div>
+                <div style="flex: 1; display:flex; flex-direction:column; gap:10px;">
+                    <div class="form-block"><label>Patient Transported</label><input placeholder="Yes / No / Refused"></div>
+                    <div class="form-block"><label>Transported To</label><input placeholder="Hospital Trauma Core Location"></div>
+                    <div class="form-block"><label>By What Department</label><input placeholder="EMS Agency Name"></div>
+                </div>
+            </div>
+
+            <div class="section-banner">Detailed Information About Incident & Vital Readings</div>
+            <div class="form-block">
+                <label>Give Detailed Information About Incident and List All Vital Readings</label>
+                <textarea rows="5" placeholder="Enter on-scene observations, K9 search tracking notes, vitals tracker, or rescue logs..."></textarea>
             </div>
         </div>
         
-        <div class="modal-actions">
-            <button class="btn-tac" style="border-color:#ffd700; color:#ffd700;" onclick="alert('Reviewing tactical playback sequence...')">REPLAY RECORDER</button>
+        <div class="modal-actions no-print" style="max-width:850px; margin:20px auto 0 auto;">
+            <button class="btn-tac" style="border-color:#ffd700; color:#ffd700;" onclick="alert('Reviewing operational playback sequence...')">REPLAY RECORDER</button>
             <button class="btn-tac" style="border-color:#00ff41; color:#00ff41;" onclick="window.print()">APPROVE & PRINT PDF</button>
             <button class="btn-tac btn-danger" onclick="resetConsole()">CLEAR & RESET CONSOLE</button>
         </div>
@@ -236,7 +362,6 @@
             document.getElementById('crossfireBtn').classList.remove('btn-active'); crossfireActive = false;
         }
 
-        // Treetop view lock function targeting maximum legal zoom depth
         function triggerTreeTopHeight() {
             map.setZoom(20);
             logEvent("CRITICAL PERSPECTIVE: Commanded maximum zoom depth down to tree-top height view boundaries.");
@@ -357,10 +482,8 @@
             crossfireVectors.forEach(v => {
                 let posA = v.ptA.marker ? v.ptA.marker.getLatLng() : v.ptA.latlng;
                 let posB = v.ptB.marker ? v.ptB.marker.getLatLng() : v.ptB.latlng;
-                
                 v.line.setLatLngs([posA, posB]);
                 let currentDist = posA.distanceTo(posB) * 3.28084;
-                
                 v.labelMarker.setLatLng(v.line.getCenter());
                 v.labelMarker.setIcon(L.divIcon({ className: 'orange-dist-label', html: `${currentDist.toFixed(0)} FT` }));
             });
@@ -398,6 +521,10 @@
                         map.setView(perimeterCenter, 15);
                         logEvent(`METRIC CAPTURE: Anchored baseline target grid centerpoint at ${q}`);
                         drawPerimeter(radiusFeet);
+                        
+                        // Pass location details directly into both specialized form headers
+                        document.getElementById('leFormAddr').value = q;
+                        document.getElementById('frFormAddr').value = q;
                     } 
                 });
         }
@@ -424,11 +551,37 @@
             }, null, {enableHighAccuracy: true});
         }
 
+        /* Form Switcher Subroutine */
+        function setActiveForm(type) {
+            document.getElementById('formContainerLE').classList.remove('active');
+            document.getElementById('formContainerFR').classList.remove('active');
+            document.getElementById('toggleLEFormBtn').style.borderColor = '#aaa';
+            document.getElementById('toggleFRFormBtn').style.borderColor = '#aaa';
+            
+            if(type === 'LE') {
+                document.getElementById('formContainerLE').classList.add('active');
+                document.getElementById('toggleLEFormBtn').style.borderColor = '#00ff41';
+            } else {
+                document.getElementById('formContainerFR').classList.add('active');
+                document.getElementById('toggleFRFormBtn').style.borderColor = '#00ff41';
+            }
+        }
+
+        /* Unified Document Generation */
         function generateReport() {
             logEvent("AUDIT SYSTEM: Compiled absolute multi-agency operational data manifest.");
-            const logBox = document.getElementById('reportLog'); logBox.innerHTML = "";
-            eventLog.forEach(e => logBox.innerHTML += `[${e.time}] &gt;&gt; ${e.desc}<br>`);
-            document.getElementById('repDate').innerText = new Date().toISOString().substring(0,10);
+            
+            // Push active telemetry strings to both report boxes simultaneously
+            const targetBoxes = document.getElementsByClassName('reportLogClass');
+            for(let i = 0; i < targetBoxes.length; i++) {
+                targetBoxes[i].innerHTML = "";
+                eventLog.forEach(e => targetBoxes[i].innerHTML += `[${e.time}] &gt;&gt; ${e.desc}<br>`);
+            }
+            
+            const currentStamp = new Date().toISOString().substring(0,10);
+            document.getElementById('leFormDate').value = currentStamp;
+            document.getElementById('frFormDate').value = currentStamp;
+            
             document.getElementById('reportModal').style.display = 'block';
         }
 
