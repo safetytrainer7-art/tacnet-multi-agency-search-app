@@ -1,78 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <style>
-        body, html { margin:0; padding:0; height:100%; width:100%; background:#000; color:#00ff41; font-family: monospace; overflow: hidden; }
-        .main-ui { display:flex; flex-direction:column; height:100vh; width:100vw; }
-        .top-bar { padding:10px; background:#000; border-bottom:2px solid #00ff41; display:flex; gap:10px; }
-        .middle-section { display:flex; flex:1; width:100%; }
-        #map { flex:1; border-right:2px solid #00ff41; cursor: crosshair; }
-        .sidebar { width:260px; background:#000; padding:15px; border-left:2px solid #00ff41; display:flex; flex-direction:column; gap:10px; }
-        .legend-bar { height:60px; background:#000; display:flex; align-items:center; overflow-x:auto; gap:20px; padding:0 20px; border-top:2px solid #00ff41; font-size:18px; }
-        .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding:12px; cursor:pointer; font-weight:bold; }
-        input { background:#000; color:#00ff41; border:1px solid #00ff41; padding:8px; flex:1; }
-    </style>
-</head>
-<body>
-    <div class="main-ui">
-        <div class="top-bar">
-            <input id="addrInput" placeholder="Enter Address...">
-            <button class="btn-tac" onclick="searchAddr()">GO</button>
-        </div>
-        <div class="middle-section">
-            <div id="map"></div>
-            <div class="sidebar">
-                <h3>COMMAND CONSOLE</h3>
-                <button class="btn-tac" onclick="activateGPS()">ACTIVATE SEARCHERS</button>
-                <div style="display:flex; justify-content:space-between;"><span>RED PEN</span> <input type="checkbox" id="penToggle"></div>
-                <button class="btn-tac" onclick="window.location.href='index.html'" style="color:red; border-color:red;">TERMINATE</button>
-            </div>
-        </div>
-        <div class="legend-bar">
-            <span onclick="setMarker('LE')" style="cursor:pointer;">🔵 LE</span>
-            <span onclick="setMarker('K9')" style="cursor:pointer;">🔘 K9</span>
-            <span onclick="setMarker('SAR')" style="cursor:pointer;">🔴 SAR</span>
-            <span onclick="setMarker('CIV')" style="cursor:pointer;">🟢 CIV</span>
-            <span onclick="setMarker('SUS')" style="cursor:pointer;">🟣 SUS</span>
-            <span onclick="setMarker('DRN')" style="cursor:pointer;">⚪ DRN</span>
-            <span onclick="setMarker('ART')" style="cursor:pointer;">🟠 ART</span>
-            <span onclick="setMarker('VIC')" style="cursor:pointer;">⚪ VIC</span>
-            <span onclick="setMarker('BOAT')" style="cursor:pointer;">🟡 BOAT</span>
-            <span onclick="setMarker('VEH')" style="cursor:pointer;">⬛ VEH</span>
-            <span onclick="setMarker('CP')" style="cursor:pointer;">🟨 CP</span>
-            <span onclick="setMarker('FND')" style="cursor:pointer;">🔼 FND</span>
-            <span onclick="setMarker('CUS')" style="cursor:pointer;">🔽 CUS</span>
-            <span onclick="setMarker('HEL')" style="cursor:pointer;">🟧 HEL</span>
-        </div>
-    </div>
-    <script>
-      <script>
-    const map = L.map('map').setView([37.5, -79.2], 14);
-    L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png').addTo(map);
+<script>
+    // Initialize map
+    const map = L.map('map').setView([37.4138, -79.1422], 14);
+    
+    // Use a reliable, fast-loading tile source
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data © OpenStreetMap'
+    }).addTo(map);
 
-    // Map Legend Colors
+    // Legend Mapping
     const unitColors = { 'LE': 'blue', 'K9': 'gray', 'SAR': 'red', 'CIV': 'green', 'SUS': 'purple', 'DRN': 'white', 'ART': 'orange', 'VIC': 'white', 'BOAT': 'yellow', 'VEH': 'black', 'CP': 'yellow', 'FND': 'blue', 'CUS': 'blue', 'HEL': 'orange' };
     
     let activeType = null;
-    let markers = [];
-
-    function setMarker(type) { 
-        if (activeType === type) { activeType = null; } 
-        else { activeType = type; }
-    }
+    function setMarker(type) { activeType = type; }
 
     map.on('click', e => { 
         if (activeType) { 
             let m = L.circleMarker(e.latlng, {radius: 8, fillColor: unitColors[activeType], color: '#fff', fillOpacity: 1}).addTo(map);
             m.on('click', function() { map.removeLayer(this); });
-            markers.push(m);
+            activeType = null;
         } 
     });
 
-    // Address & Pen logic remains...
-</script>pup("FIELD UNIT LIVE").openPopup(), null, {enableHighAccuracy: true}); }
-    </script>
-</body>
-</html>
+    // Address Search
+    function searchAddr() {
+        const query = document.getElementById('addrInput').value;
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.length > 0) map.setView([data[0].lat, data[0].lon], 16);
+            });
+    }
+
+    // GPS
+    function activateGPS() {
+        navigator.geolocation.getCurrentPosition(p => {
+            L.marker([p.coords.latitude, p.coords.longitude]).addTo(map);
+            map.setView([p.coords.latitude, p.coords.longitude], 16);
+        }, null, {enableHighAccuracy: true});
+    }
+</script>
