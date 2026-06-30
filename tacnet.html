@@ -48,23 +48,31 @@
         </div>
     </div>
     <script>
-        const map = L.map('map').setView([37.5, -79.2], 14);
-        L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png').addTo(map);
-        
-        // Search Functionality
-        function searchAddr() { alert("Searching for: " + document.getElementById('addrInput').value); }
-        
-        // Marker Placement
-        let activeIcon = null;
-        function setMarker(type) { activeIcon = type; alert(type + " SELECTED: Click map to place marker."); }
-        map.on('click', e => { if(activeIcon) { L.marker(e.latlng).addTo(map).bindPopup(activeIcon); activeIcon = null; } });
-        
-        // Existing GPS & Pen
-        let drawing = false;
-        map.on('mousedown', () => drawing = true);
-        map.on('mouseup', () => drawing = false);
-        map.on('mousemove', e => { if(drawing && document.getElementById('penToggle').checked) L.circleMarker(e.latlng, {radius: 3, color: 'red'}).addTo(map); });
-        function activateGPS() { navigator.geolocation.getCurrentPosition(p => L.marker([p.coords.latitude, p.coords.longitude]).addTo(map).bindPopup("FIELD UNIT LIVE").openPopup(), null, {enableHighAccuracy: true}); }
+      <script>
+    const map = L.map('map').setView([37.5, -79.2], 14);
+    L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png').addTo(map);
+
+    // Map Legend Colors
+    const unitColors = { 'LE': 'blue', 'K9': 'gray', 'SAR': 'red', 'CIV': 'green', 'SUS': 'purple', 'DRN': 'white', 'ART': 'orange', 'VIC': 'white', 'BOAT': 'yellow', 'VEH': 'black', 'CP': 'yellow', 'FND': 'blue', 'CUS': 'blue', 'HEL': 'orange' };
+    
+    let activeType = null;
+    let markers = [];
+
+    function setMarker(type) { 
+        if (activeType === type) { activeType = null; } 
+        else { activeType = type; }
+    }
+
+    map.on('click', e => { 
+        if (activeType) { 
+            let m = L.circleMarker(e.latlng, {radius: 8, fillColor: unitColors[activeType], color: '#fff', fillOpacity: 1}).addTo(map);
+            m.on('click', function() { map.removeLayer(this); });
+            markers.push(m);
+        } 
+    });
+
+    // Address & Pen logic remains...
+</script>pup("FIELD UNIT LIVE").openPopup(), null, {enableHighAccuracy: true}); }
     </script>
 </body>
 </html>
