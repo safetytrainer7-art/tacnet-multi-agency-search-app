@@ -1,8 +1,108 @@
 <!DOCTYPE html>
-<html>
-<body style="background:#000; color:#00ff41; font-family:monospace; text-align:center; padding-top:150px;">
-    <h2>TACNET OPERATOR SIGN-IN</h2>
-    <input style="background:#111; color:#00ff41; border:1px solid #00ff41; padding:10px;" placeholder="Unit Name"><br><br>
-    <button style="background:#00ff41; color:#000; padding:10px 20px; font-weight:bold;" onclick="window.location.href='tacnet.html'">JOIN SEARCH</button>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TACNET - Agency Authentication</title>
+    <style>
+        body, html { margin:0; padding:0; height:100%; width:100%; background:#000; color:#00ff41; font-family: 'Courier New', monospace; overflow: hidden; }
+        
+        /* Tactical Space / Earth Orbital Background Simulation */
+        .auth-screen { 
+            height: 100vh; width: 100vw; 
+            background: radial-gradient(circle at 80% 20%, #001a00 0%, #000000 60%), url('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/4/6/9');
+            background-size: cover;
+            display: flex; align-items: center; justify-content: center; gap: 40px; padding: 20px; box-sizing: border-box;
+        }
+        
+        .auth-panel { background: rgba(0, 5, 0, 0.9); border: 2px solid #00ff41; padding: 25px; width: 340px; box-sizing: border-box; box-shadow: 0 0 15px rgba(0, 255, 65, 0.2); }
+        .auth-panel h2 { margin: 0 0 20px 0; font-size: 18px; text-transform: uppercase; text-align: center; border-bottom: 1px solid #00ff41; padding-bottom: 10px; letter-spacing: 1px; }
+        
+        .input-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px; }
+        .input-group label { font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        input, select { background: #000; color: #fff; border: 1px solid #00ff41; padding: 10px; font-family: monospace; font-size: 14px; }
+        input:focus { background: #001100; outline: none; }
+        
+        .btn-auth { background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 12px; cursor: pointer; font-weight: bold; text-transform: uppercase; width: 100%; margin-top: 10px; font-size: 14px; }
+        .btn-auth:hover { background: #00ff41; color: #00; }
+        .commander-panel { border-color: #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); }
+        .commander-panel h2 { color: #ffd700; border-bottom-color: #ffd700; }
+        .commander-panel input { border-color: #ffd700; }
+        .commander-panel .btn-auth { color: #ffd700; border-color: #ffd700; }
+        .commander-panel .btn-auth:hover { background: #ffd700; color: #000; }
+    </style>
+</head>
+<body>
+    <div class="auth-screen">
+        <!-- Panel 1: Field Searcher Deployment Portal -->
+        <div class="auth-panel">
+            <h2>FIELD ASSET DEPLOYMENT</h2>
+            <div class="input-group">
+                <label>Operator Name / Call Sign</label>
+                <input id="srchName" placeholder="e.g., Deputy Wood">
+            </div>
+            <div class="input-group">
+                <label>Assigned Agency Branch</label>
+                <select id="srchAgency">
+                    <option value="LE">Local Law Enforcement</option>
+                    <option value="VSP">Virginia State Police</option>
+                    <option value="FED">Federal Agent Matrix</option>
+                    <option value="SAR">Search and Rescue</option>
+                    <option value="K9">Tactical K9 Unit</option>
+                </select>
+            </div>
+            <button class="btn-auth" onclick="launchApp('searcher')">DEPLOY TO TARGET FIELD</button>
+        </div>
+
+        <!-- Panel 2: Incident Commander Authorization Portal -->
+        <div class="auth-panel commander-panel">
+            <h2>INCIDENT POST COMMANDER</h2>
+            <div class="input-group">
+                <label>Commanding Officer Name</label>
+                <input id="cmdName" placeholder="Rank and Surname">
+            </div>
+            <div class="input-group">
+                <label>Lead Operations Agency</label>
+                <input id="cmdAgency" placeholder="e.g., Sheriff's Office">
+            </div>
+            <div class="input-group">
+                <label>Command Passcode Verification</label>
+                <input type="password" id="cmdPass" placeholder="••••••••">
+            </div>
+            <button class="btn-auth" onclick="launchApp('commander')">AUTHORIZE MASTER POST</button>
+        </div>
+    </div>
+
+    <script>
+        function launchApp(role) {
+            if (role === 'searcher') {
+                const name = document.getElementById('srchName').value.trim();
+                if (!name) return;
+                
+                // Track assignments out to memory strings
+                sessionStorage.setItem('tacnet_role', 'searcher');
+                sessionStorage.setItem('tacnet_user', name);
+                sessionStorage.setItem('tacnet_agency', document.getElementById('srchAgency').value);
+                window.location.href = 'tacnet.html';
+            } else {
+                const name = document.getElementById('cmdName').value.trim();
+                const agency = document.getElementById('cmdAgency').value.trim();
+                const pass = document.getElementById('cmdPass').value;
+                
+                if (!name || !agency) return;
+                
+                // Exact passcode control match check
+                if (pass === 'tacnet2026') {
+                    sessionStorage.setItem('tacnet_role', 'commander');
+                    sessionStorage.setItem('tacnet_user', name);
+                    sessionStorage.setItem('tacnet_agency', agency);
+                    window.location.href = 'tacnet.html';
+                } else {
+                    document.getElementById('cmdPass').style.borderColor = 'red';
+                    document.getElementById('cmdPass').value = '';
+                }
+            }
+        }
+    </script>
 </body>
 </html>
