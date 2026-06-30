@@ -1,41 +1,40 @@
-<script>
-    // Initialize map
-    const map = L.map('map').setView([37.4138, -79.1422], 14);
-    
-    // Use a reliable, fast-loading tile source
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: 'Map data © OpenStreetMap'
-    }).addTo(map);
-
-    // Legend Mapping
-    const unitColors = { 'LE': 'blue', 'K9': 'gray', 'SAR': 'red', 'CIV': 'green', 'SUS': 'purple', 'DRN': 'white', 'ART': 'orange', 'VIC': 'white', 'BOAT': 'yellow', 'VEH': 'black', 'CP': 'yellow', 'FND': 'blue', 'CUS': 'blue', 'HEL': 'orange' };
-    
-    let activeType = null;
-    function setMarker(type) { activeType = type; }
-
-    map.on('click', e => { 
-        if (activeType) { 
-            let m = L.circleMarker(e.latlng, {radius: 8, fillColor: unitColors[activeType], color: '#fff', fillOpacity: 1}).addTo(map);
-            m.on('click', function() { map.removeLayer(this); });
-            activeType = null;
-        } 
-    });
-
-    // Address Search
-    function searchAddr() {
-        const query = document.getElementById('addrInput').value;
-        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`)
-            .then(res => res.json())
-            .then(data => {
-                if(data.length > 0) map.setView([data[0].lat, data[0].lon], 16);
-            });
-    }
-
-    // GPS
-    function activateGPS() {
-        navigator.geolocation.getCurrentPosition(p => {
-            L.marker([p.coords.latitude, p.coords.longitude]).addTo(map);
-            map.setView([p.coords.latitude, p.coords.longitude], 16);
-        }, null, {enableHighAccuracy: true});
-    }
-</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body, html { margin:0; padding:0; height:100%; width:100%; background:#000; overflow:hidden; }
+        #map { height: 80vh; width: 100%; background: #222; }
+        .controls { height: 20vh; background: #000; color: #00ff41; padding: 10px; display: flex; flex-wrap: wrap; gap: 10px; }
+        button { background:#000; color:#00ff41; border:1px solid #00ff41; padding:10px; cursor:pointer; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div class="controls">
+        <input id="addrInput" placeholder="Address..." style="background:#000; color:#00ff41; border:1px solid #00ff41;">
+        <button onclick="searchAddr()">GO</button>
+        <button onclick="activateGPS()">ACTIVATE GPS</button>
+        <button onclick="window.location.href='index.html'" style="color:red; border-color:red;">TERMINATE</button>
+    </div>
+    <script>
+        const map = L.map('map').setView([37.4138, -79.1422], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map).on('error', function(e) { console.log("Tile Load Error", e); });
+        
+        function searchAddr() { 
+            const query = document.getElementById('addrInput').value;
+            fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query))
+                .then(res => res.json())
+                .then(data => { if(data.length > 0) map.setView([data[0].lat, data[0].lon], 16); });
+        }
+        
+        function activateGPS() {
+            navigator.geolocation.getCurrentPosition(p => {
+                L.marker([p.coords.latitude, p.coords.longitude]).addTo(map);
+                map.setView([p.coords.latitude, p.coords.longitude], 16);
+            }, (e) => alert("GPS Error: " + e.message));
+        }
+    </script>
+</body>
+</html>
