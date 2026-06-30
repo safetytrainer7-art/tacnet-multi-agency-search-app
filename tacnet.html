@@ -2,58 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="TACNET" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>TACNET - SECURE PORTRAIT MATRIX</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body, html { margin:0; padding:0; height:100%; width:100%; background:#000; color:#00ff41; font-family: -apple-system, BlinkMacSystemFont, monospace; overflow: hidden; }
-        .main-ui { display: flex; flex-direction: column; height: 100vh; width: 100vw; box-sizing: border-box; position: relative; }
         
-        /* Row 1: Top Navigation Bar Header Track */
-        .top-bar { height: 45px; background:#001a00; border-bottom:2px solid #00ff41; display:flex; padding: 0 10px; align-items:center; justify-content: space-between; gap:12px; box-sizing: border-box; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; flex-shrink: 0; }
-        .search-container { display:flex; gap:6px; align-items:center; }
-        .map-toggles { display:flex; gap:4px; }
+        /* Strict Mobile Grid with Inner Margins to pull content away from the glass edges */
+        .main-ui { display: flex; flex-direction: column; height: 100vh; width: 100vw; box-sizing: border-box; position: relative; padding-top: 10px; padding-bottom: 15px; }
         
-        /* Row 2: Maximum Map Canvas Window Workspace */
-        .map-wrapper { flex: 1; width: 100%; min-height: 0; position: relative; }
-        #map { height: 100%; width: 100%; background: #111; }
+        /* Row 1: Top Navigation Header (Pulled down slightly from the absolute top edge) */
+        .top-bar { height: 50px; background:#001a00; border:2px solid #00ff41; border-radius: 6px; display:flex; padding: 0 10px; align-items:center; justify-content: space-between; gap:12px; box-sizing: border-box; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; flex-shrink: 0; margin: 0 8px 5px 8px; }
+        .search-container { display:flex; gap:8px; align-items:center; }
+        .map-toggles { display:flex; gap:5px; }
         
-        /* ==========================================================================
-           EARL'S MASTER UNDERGROUND CONSOLE SYSTEM (SLIDES UP ON COMMAND)
-           ========================================================================== */
-        .bottom-drawer-tray {
-            position: absolute; left: 0; bottom: -175px; /* Safely shunted down below frame */
-            width: 100vw; height: 175px; background: rgba(0, 0, 0, 0.96);
-            display: flex; flex-direction: column; z-index: 5000;
-            transition: bottom 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
-            box-sizing: border-box;
-            border-top: 1px solid #00ff41;
-        }
-        .bottom-drawer-tray.open { bottom: 15px; /* Elevated 15px from bottom screen lip */ }
+        /* Row 2: Map Window Canvas Frame (Fills the center area) */
+        .map-wrapper { flex: 1; width: 100%; min-height: 0; position: relative; padding: 0 8px; box-sizing: border-box; }
+        #map { height: 100%; width: 100%; background: #111; border: 1px solid #333; }
         
-        /* Clickable Access Tab Module */
-        .tray-toggle-tab {
-            position: absolute; top: -34px; left: 50%; transform: translateX(-50%);
-            width: 140px; height: 34px; background: #001a00; border: 2px solid #00ff41; border-bottom: none;
-            border-radius: 6px 6px 0 0; color: #00ff41; font-weight: bold; font-size: 11px;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-            z-index: 5001; text-transform: uppercase; letter-spacing: 0.5px;
-        }
+        /* Row 3: Operational Control Panel Row (Pulled inward with comfort spacing) */
+        .console-row { height: 95px; background: #000; border: 2px solid #00ff41; border-radius: 6px; padding: 10px 5px; box-sizing: border-box; flex-shrink: 0; overflow-x: auto; white-space: nowrap; display: flex; gap: 10px; align-items: center; -webkit-overflow-scrolling: touch; margin: 8px 8px 0 8px; }
         
-        /* ROW SWAP - Top Line inside Drawer: Multi-Agency Searchers Legend Track */
-        .legend-bar { height: 75px; border-bottom: 1px solid #222; padding: 0 10px; box-sizing: border-box; overflow-x: auto; white-space: nowrap; display: flex; gap: 15px; align-items: center; -webkit-overflow-scrolling: touch; }
+        /* Row 4: Multi-Agency Legend Bar Track (Pulled upward completely out of the bottom lip) */
+        .legend-bar { height: 65px; background:#000; border: 2px solid #00ff41; border-radius: 6px; display:flex; align-items:center; overflow-x:auto; white-space:nowrap; gap:15px; padding: 0 10px; box-sizing: border-box; flex-shrink: 0; -webkit-overflow-scrolling: touch; margin: 6px 8px 0 8px; }
         
-        /* ROW SWAP - Bottom Line inside Drawer: Console Operational Tools Track */
-        .console-row { height: 95px; padding: 0 10px; box-sizing: border-box; overflow-x: auto; white-space: nowrap; display: flex; gap: 10px; align-items: center; -webkit-overflow-scrolling: touch; }
-        
-        /* High-Visibility Touch Target Profiles */
-        .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding: 10px 16px; cursor:pointer; font-weight:bold; text-transform:uppercase; font-size: 13px; border-radius: 5px; display: inline-block; height: 40px; box-sizing: border-box; }
-        .btn-map-type { background:#001a00; color:#00ff41; border:1px solid #00ff41; padding:4px 8px; cursor:pointer; font-size:11px; font-weight: bold; border-radius: 3px; }
+        /* Clear Sized Field Buttons for Instant Selection */
+        .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding: 12px 18px; cursor:pointer; font-weight:bold; text-transform:uppercase; font-size: 14px; border-radius: 6px; display: inline-block; height: 44px; box-sizing: border-box; }
+        .btn-map-type { background:#001a00; color:#00ff41; border:1px solid #00ff41; padding:6px 12px; cursor:pointer; font-size:12px; font-weight: bold; border-radius: 4px; }
         .btn-map-type.active { background:#00ff41; color:#000; font-weight:bold; }
         .btn-danger { color:red; border-color:red; }
         .btn-active { background: #FF8C00 !important; color: #000 !important; border-color: #FF8C00 !important; }
@@ -61,12 +37,12 @@
         .btn-sos { background: #ff0000 !important; color: #fff !important; border: 1px solid #fff !important; animation: pulseSOS 1s infinite; }
         @keyframes pulseSOS { 0% { background: #ff0000; } 50% { background: #880000; } 100% { background: #ff0000; } }
         
-        .legend-item { cursor:pointer; font-size:20px; font-weight:bold; display:inline-flex; align-items:center; gap:6px; background: rgba(0,26,0,0.4); padding: 5px 10px; border: 1px solid #333; border-radius: 4px; color: #00ff41; }
+        .legend-item { cursor:pointer; font-size:22px; font-weight:bold; display:inline-flex; align-items:center; gap:6px; background: rgba(0,26,0,0.4); padding: 6px 12px; border: 1px solid #333; border-radius: 4px; color: #00ff41; }
         
-        input, select { background:#000; color:#fff; border:1px solid #00ff41; padding:4px 6px; box-sizing: border-box; font-family: monospace; font-size: 12px; height: 30px; border-radius: 4px; }
+        input, select { background:#000; color:#fff; border:1px solid #00ff41; padding:6px; box-sizing: border-box; font-family: monospace; font-size: 13px; height: 34px; border-radius: 4px; }
         .slider-box { display:flex; align-items:center; gap:4px; font-weight:bold; font-size:11px; color: #00ff41; }
-        input[type="range"] { -webkit-appearance: none; background: #002b00; border: 1px solid #00ff41; height: 6px; width: 65px; cursor: pointer; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; background: #00ff41; width: 12px; height: 12px; border: 1px solid #000; border-radius: 50%; }
+        input[type="range"] { -webkit-appearance: none; background: #002b00; border: 1px solid #00ff41; height: 8px; width: 70px; cursor: pointer; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; background: #00ff41; width: 14px; height: 14px; border: 1px solid #000; border-radius: 50%; }
 
         .orange-dist-label { background: #000; color: #FF8C00; border: 1px solid #FF8C00; font-weight: bold; font-family: monospace; padding: 4px 8px; font-size: 12px; border-radius: 4px; }
         .leaflet-sos-pulse { animation: mapPulse 1.2s infinite ease-out; }
@@ -76,22 +52,21 @@
         .report-selector-bar { display: flex; gap: 10px; background: #000; padding: 10px; border: 1px solid #00ff41; margin-bottom: 15px; align-items: center; }
         .report-form-container { background: #fff; color: #000; padding: 15px; box-sizing: border-box; max-width: 800px; margin: 0 auto; display: none; }
         .report-form-container.active { display: block; }
+        .report-string-box { border: 1px solid #000; background: #f9f9f9; padding: 8px; font-family: monospace; font-size: 11px; height: 110px; overflow-y: auto; color: #000; }
     </style>
 </head>
 <body>
     <div class="main-ui">
         <div class="top-bar">
             <div class="search-container">
-                <button class="btn-tac" style="padding: 0 12px; height: 30px; font-size: 12px; width: auto;" onclick="window.location.href='signin.html'">⬅</button>
-                <input id="addrInput" placeholder="Target Address..." style="width:115px;">
-                <button class="btn-tac" id="cmdGoBtn" style="width: auto; padding: 0 10px; height: 30px;" onclick="searchAddr()">GO</button>
+                <button class="btn-tac" style="padding: 0 12px; height: 34px; font-size: 14px; width: auto;" onclick="window.location.href='signin.html'">⬅</button>
+                <input id="addrInput" placeholder="Target Address..." style="width:125px;">
+                <button class="btn-tac" id="cmdGoBtn" style="width: auto; padding: 0 12px; height: 34px;" onclick="searchAddr()">GO</button>
                 
                 <div class="slider-box">
                     <input type="range" id="radiusSlider" min="200" max="10560" value="2500" oninput="adjustPerimeter(this.value)">
                     <span id="radiusVal" style="min-width: 45px;">2500 FT</span>
                 </div>
-                
-                <button class="btn-tac" id="freezeMapBtn" style="height:30px; padding:0 10px; border-color:#00ff41; color:#00ff41; width:auto;" onclick="toggleMapFreeze()">MAP LOCK [OFF]</button>
             </div>
 
             <div class="map-toggles">
@@ -103,41 +78,37 @@
 
         <div class="map-wrapper">
             <div id="map"></div>
-            
-            <div class="bottom-drawer-tray" id="masterTray">
-                <div class="tray-toggle-tab" id="tabButton" onclick="toggleMasterTray()">▲ OPEN PANEL</div>
-                
-                <div class="legend-bar">
-                    <span class="legend-item" onclick="setMarker('LE'); toggleMasterTray();">🔵 LE</span>
-                    <span class="legend-item" onclick="setMarker('K9'); toggleMasterTray();">🔘 K9</span>
-                    <span class="legend-item" onclick="setMarker('SAR'); toggleMasterTray();">🔴 SAR</span>
-                    <span class="legend-item" onclick="setMarker('CIV'); toggleMasterTray();">🟢 CIV</span>
-                    <span class="legend-item" onclick="setMarker('SUS'); toggleMasterTray();">🟣 SUS</span>
-                    <span class="legend-item" onclick="setMarker('DRN'); toggleMasterTray();">⚪ DRN</span>
-                    <span class="legend-item" onclick="setMarker('ART'); toggleMasterTray();">🟠 ART</span>
-                    <span class="legend-item" onclick="setMarker('VIC'); toggleMasterTray();">⚪ VIC</span>
-                    <span class="legend-item" onclick="setMarker('BOAT'); toggleMasterTray();">🟡 BOAT</span>
-                    <span class="legend-item" onclick="setMarker('VEH'); toggleMasterTray();">⬛ VEH</span>
-                    <span class="legend-item" onclick="setMarker('CP'); toggleMasterTray();">🟨 CP</span>
-                    <span class="legend-item" onclick="setMarker('FND'); toggleMasterTray();">🔼 FND</span>
-                    <span class="legend-item" onclick="setMarker('CUS'); toggleMasterTray();">🔽 CUS</span>
-                    <span class="legend-item" onclick="setMarker('HEL'); toggleMasterTray();">🟧 HEL</span>
-                    <span class="legend-item" onclick="setMarker('FED'); toggleMasterTray();"><span style="color:#ffd700;">🟡</span> FED</span>
-                    <span class="legend-item" onclick="setMarker('VSP'); toggleMasterTray();"><span style="color:#0000ff;">🔵</span> VSP</span>
-                </div>
+        </div>
 
-                <div class="console-row">
-                    <button class="btn-tac btn-sos" onclick="triggerSOSAlert(); toggleMasterTray();">🚨 SOS ALERT</button>
-                    <button class="btn-tac" onclick="setMarker('FND'); toggleMasterTray();">🔍 ARTICLE FIND</button>
-                    <button class="btn-tac" onclick="activateGPS(); toggleMasterTray();">ACTIVATE UNITS</button>
-                    <button class="btn-tac" style="border-color: #ffd700; color: #ffd700;" onclick="triggerTreeTopHeight(); toggleMasterTray();">🔎 TREETOP VIEW</button>
-                    <button class="btn-tac" id="crossfireBtn" onclick="toggleCrossfireMode(); toggleMasterTray();">CROSSFIRE DIST</button>
-                    <button class="btn-tac" id="trapTraceBtn" onclick="toggleTrapTrace()">TRAP N TRACE</button>
-                    <button class="btn-tac" style="border-color: #ff3333; color: #ff3333;" onclick="eraseLastLine(); toggleMasterTray();">❌ ERASE LINE</button>
-                    <button class="btn-tac" style="border-color: #00ff41; color: #00ff41;" onclick="generateReport()">📄 VIEW REPORT</button>
-                    <button class="btn-tac btn-danger" onclick="resetConsole()">TERMINATE SEARCH</button>
-                </div>
-            </div>
+        <div class="console-row">
+            <button class="btn-tac btn-sos" onclick="triggerSOSAlert();">🚨 SOS ALERT</button>
+            <button class="btn-tac" onclick="setMarker('FND');">🔍 ARTICLE FIND</button>
+            <button class="btn-tac" onclick="activateGPS();">ACTIVATE UNITS</button>
+            <button class="btn-tac" style="border-color: #ffd700; color: #ffd700;" onclick="triggerTreeTopHeight();">🔎 TREETOP VIEW</button>
+            <button class="btn-tac" id="crossfireBtn" onclick="toggleCrossfireMode();">CROSSFIRE DIST</button>
+            <button class="btn-tac" id="trapTraceBtn" onclick="toggleTrapTrace()">TRAP N TRACE</button>
+            <button class="btn-tac" style="border-color: #ff3333; color: #ff3333;" onclick="eraseLastLine();">❌ ERASE LINE</button>
+            <button class="btn-tac" style="border-color: #00ff41; color: #00ff41;" onclick="generateReport()">📄 VIEW REPORT</button>
+            <button class="btn-tac btn-danger" onclick="resetConsole()">TERMINATE SEARCH</button>
+        </div>
+
+        <div class="legend-bar">
+            <span class="legend-item" onclick="setMarker('LE')">🔵 LE</span>
+            <span class="legend-item" onclick="setMarker('K9')">🔘 K9</span>
+            <span class="legend-item" onclick="setMarker('SAR')">🔴 SAR</span>
+            <span class="legend-item" onclick="setMarker('CIV')">🟢 CIV</span>
+            <span class="legend-item" onclick="setMarker('SUS')">🟣 SUS</span>
+            <span class="legend-item" onclick="setMarker('DRN')">⚪ DRN</span>
+            <span class="legend-item" onclick="setMarker('ART')">🟠 ART</span>
+            <span class="legend-item" onclick="setMarker('VIC')">⚪ VIC</span>
+            <span class="legend-item" onclick="setMarker('BOAT')">🟡 BOAT</span>
+            <span class="legend-item" onclick="setMarker('VEH')">⬛ VEH</span>
+            <span class="legend-item" onclick="setMarker('CP')">🟨 CP</span>
+            <span class="legend-item" onclick="setMarker('FND')">🔼 FND</span>
+            <span class="legend-item" onclick="setMarker('CUS')">🔽 CUS</span>
+            <span class="legend-item" onclick="setMarker('HEL')">🟧 HEL</span>
+            <span class="legend-item" onclick="setMarker('FED')"><span style="color:#ffd700;">🟡</span> FED</span>
+            <span class="legend-item" onclick="setMarker('VSP')"><span style="color:#0000ff;">🔵</span> VSP</span>
         </div>
     </div>
 
@@ -158,41 +129,6 @@
     </div>
 
     <script>
-        let isMapLocked = false;
-
-        // Freeze map interaction completely to clear thumb interference when scrolling tracks
-        function toggleMapLockViaButton() {
-            const btn = document.getElementById('lockFreezeBtn');
-            crossfireActive = false;
-            document.getElementById('crossfireBtn').classList.remove('btn-active');
-            
-            if(!map.dragging.enabled()) {
-                map.dragging.enable();
-                if(map.tap) map.tap.enable();
-                btn.innerText = "LOCK MAP";
-                btn.style.borderColor = "#00ff41";
-                btn.style.color = "#00ff41";
-                btn.style.background = "#000";
-            } else {
-                map.dragging.disable();
-                if(map.tap) map.tap.disable();
-                btn.innerText = "MAP LOCKED";
-                btn.style.background = "#00ff41";
-                btn.style.color = "#000";
-            }
-        }
-
-        function toggleMasterTray() {
-            const tray = document.getElementById('masterTray');
-            const tab = document.getElementById('tabButton');
-            tray.classList.toggle('open');
-            if (tray.classList.contains('open')) {
-                tab.innerText = "▼ CLOSE PANEL";
-            } else {
-                tab.innerText = "▲ OPEN PANEL";
-            }
-        }
-
         document.addEventListener("DOMContentLoaded", () => {
             initDuressAccelerometer();
             setTimeout(() => { map.invalidateSize(); }, 400);
@@ -220,6 +156,10 @@
             const time = new Date().toISOString().replace('T', ' ').substring(0, 19);
             eventLog.push({ time, desc });
         }
+
+        style = document.createElement('style');
+        style.innerHTML = '.orange-dist-label { background: #000; color: #FF8C00; border: 1px solid #FF8C00; font-weight: bold; font-family: monospace; padding: 4px 8px; font-size: 13px; border-radius: 4px; z-index: 99999 !important; }';
+        document.head.appendChild(style);
 
         function setMarker(type) { activeType = type; crossfireActive = false; if(document.getElementById('crossfireBtn')) document.getElementById('crossfireBtn').classList.remove('btn-active'); }
         function triggerTreeTopHeight() { map.setZoom(20); }
@@ -258,9 +198,15 @@
                 let borderCol = (activeType === 'VSP') ? '#ffd700' : '#fff';
                 let m = L.circleMarker(e.latlng, { radius: 14, fillColor: unitColors[activeType], color: borderCol, fillOpacity: 1, weight: 3, draggable: true }).addTo(map);
                 m.unitType = activeType;
+                
                 if(activeType === 'SUS') m.bindTooltip("SUSPECT LKL", {permanent: true, direction: 'top', className: 'orange-dist-label'}).openTooltip();
                 m.on('drag', function() { updateCrossfireDimensionality(); });
                 m.on('click', function(ev) { L.DomEvent.stopPropagation(ev); map.removeLayer(this); activeMarkers = activeMarkers.filter(item => item !== this); updateCrossfireDimensionality(); });
+                
+                m.on('mousedown', function () { if(!document.getElementById('lockToggle').checked) { map.dragging.disable(); map.on('mousemove', onMarkerDrag); } });
+                function onMarkerDrag(ev) { m.setLatLng(ev.latlng); updateCrossfireDimensionality(); }
+                map.on('mouseup', function () { map.off('mousemove', onMarkerDrag); if(!document.getElementById('lockToggle').checked) map.dragging.enable(); });
+                
                 activeMarkers.push(m); activeType = null;
             } else if (crossfireActive) {
                 handleCrossfireClick(e.latlng);
@@ -317,12 +263,4 @@
                 .then(r => r.json()).then(d => { if(d.length > 0) { perimeterCenter = [d[0].lat, d[0].lon]; map.setView(perimeterCenter, 15); drawPerimeter(radiusFeet); } });
         }
 
-        function drawPerimeter(feet) { if (searchPerimeter) map.removeLayer(searchPerimeter); if (!perimeterCenter) return; searchPerimeter = L.circle(perimeterCenter, { radius: feet / 3.28084, color: '#00661a', fillColor: '#00ff41', fillOpacity: 0.12, weight: 4, dashArray: '8, 8' }).addTo(map); }
-        function adjustPerimeter(val) { document.getElementById('radiusVal').innerText = val + " FT"; if (perimeterCenter) { drawPerimeter(parseFloat(val)); } }
-        function activateGPS() { navigator.geolocation.getCurrentPosition(p => { let m = L.marker([p.coords.latitude, p.coords.longitude]).addTo(map); activeMarkers.push(m); map.setView([p.coords.latitude, p.coords.longitude], 16); }, null, {enableHighAccuracy: true}); }
-        function setActiveForm(type) { document.getElementById('formContainerLE').classList.remove('active'); document.getElementById('formContainerFR').classList.remove('active'); if(type === 'LE') document.getElementById('formContainerLE').classList.add('active'); else document.getElementById('formContainerFR').classList.add('active'); }
-        function generateReport() { document.getElementById('reportModal').style.display = 'block'; }
-        function resetConsole() { activeMarkers.forEach(m => map.removeLayer(m)); if (searchPerimeter) map.removeLayer(searchPerimeter); activeMarkers = []; window.location.href = 'signin.html'; }
-    </script>
-</body>
-</html>
+        function drawPerimeter(feet) { if (searchPerimeter) map.removeLayer(searchPerimeter); if (!perimeterCenter) return; searchPerimeter = L.circle(perimeterCenter, { radius: feet / 3.28084, color: '#00661a', fillColor: '#00ff41', fillOpacity: 0.12, weight: 4, dashArray:
