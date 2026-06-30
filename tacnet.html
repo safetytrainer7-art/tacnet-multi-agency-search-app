@@ -3,32 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>TACNET PORTRAIT-STABILIZED ENGINE</title>
+    <title>TACNET - RECON CP MASTER</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body, html { margin:0; padding:0; height:100%; width:100%; background:#000; color:#00ff41; font-family: -apple-system, BlinkMacSystemFont, monospace; overflow: hidden; }
-        
-        /* Rigid Mobile Frame */
         .main-ui { display: flex; flex-direction: column; height: 100vh; width: 100vw; box-sizing: border-box; position: relative; }
         
-        /* Row 1: Top Navigation Header (Compact 45px Height) */
+        /* Row 1: Streamlined Top Address/Map Type Taskbar */
         .top-bar { height: 45px; background:#001a00; border-bottom:2px solid #00ff41; display:flex; padding: 0 10px; align-items:center; justify-content: space-between; gap:12px; box-sizing: border-box; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; flex-shrink: 0; }
         .search-container { display:flex; gap:6px; align-items:center; }
         .map-toggles { display:flex; gap:4px; }
         
-        /* Row 2: Map Screen Canvas Box (Gains more room from lower panel compression) */
+        /* Row 2: Maximum Map Canvas Window Workspace */
         .map-wrapper { flex: 1; width: 100%; min-height: 0; position: relative; }
-        #map { height: 100%; width: 100%; background: #222; }
+        #map { height: 100%; width: 100%; background: #111; }
         
-        /* Row 3: FIXED - Compressed Console Row (Shrunk down to 95px height) */
-        .console-row { height: 95px; background: #000; border-top: 2px solid #00ff41; padding: 6px 4px; box-sizing: border-box; flex-shrink: 0; overflow-x: auto; white-space: nowrap; display: flex; gap: 8px; align-items: center; -webkit-overflow-scrolling: touch; }
+        /* ==========================================================================
+           EARL'S MASTER UNDERGROUND CONSOLE SYSTEM (SLIDES UP ON COMMAND)
+           ========================================================================== */
+        .bottom-drawer-tray {
+            position: absolute; left: 0; bottom: -155px; /* Safely tucked away entirely under the fold */
+            width: 100vw; height: 155px; background: rgba(0, 0, 0, 0.95);
+            display: flex; flex-direction: column; z-index: 5000;
+            transition: bottom 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
+            box-sizing: border-box;
+        }
+        .bottom-drawer-tray.open { bottom: 0; /* Pops up clean on click */ }
         
-        /* Row 4: FIXED - Compressed Bottom Legend Bar (Shrunk to 52px height to force it onto the screen view) */
-        .legend-bar { height: 52px; background:#000; display:flex; align-items:center; overflow-x:auto; white-space:nowrap; gap:12px; padding: 0 10px; border-top: 2px solid #00ff41; box-sizing: border-box; flex-shrink: 0; -webkit-overflow-scrolling: touch; }
+        /* The Master Tab Toggle Button Pinned on Top of the Tray */
+        .tray-toggle-tab {
+            position: absolute; top: -34px; left: 50%; transform: translateX(-50%);
+            width: 130px; height: 34px; background: #001a00; border: 2px solid #00ff41; border-bottom: none;
+            border-radius: 6px 6px 0 0; color: #00ff41; font-weight: bold; font-size: 11px;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            z-index: 5001; text-transform: uppercase; letter-spacing: 0.5px;
+            box-shadow: 0 -4px 10px rgba(0, 255, 65, 0.25);
+        }
         
-        /* Slightly Shrunk Buttons for Total Screen Clearance */
-        .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding: 10px 14px; cursor:pointer; font-weight:bold; text-transform:uppercase; font-size: 12px; border-radius: 5px; display: inline-block; height: 38px; box-sizing: border-box; }
+        /* Internal Scrollable Control Panel Row Track */
+        .console-row { height: 90px; border-bottom: 1px solid #00ff41; padding: 0 10px; box-sizing: border-box; overflow-x: auto; white-space: nowrap; display: flex; gap: 10px; align-items: center; -webkit-overflow-scrolling: touch; }
+        
+        /* Internal Scrollable Multi-Agency Marker Legend Track */
+        .legend-bar { height: 65px; padding: 0 10px; box-sizing: border-box; overflow-x: auto; white-space: nowrap; display: flex; gap: 15px; align-items: center; -webkit-overflow-scrolling: touch; }
+        
+        /* High-Visibility Tactically Sized Touch UI Targets */
+        .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding: 10px 16px; cursor:pointer; font-weight:bold; text-transform:uppercase; font-size: 13px; border-radius: 5px; display: inline-block; height: 40px; box-sizing: border-box; }
         .btn-map-type { background:#001a00; color:#00ff41; border:1px solid #00ff41; padding:4px 8px; cursor:pointer; font-size:11px; font-weight: bold; border-radius: 3px; }
         .btn-map-type.active { background:#00ff41; color:#000; font-weight:bold; }
         .btn-danger { color:red; border-color:red; }
@@ -37,8 +57,7 @@
         .btn-sos { background: #ff0000 !important; color: #fff !important; border: 1px solid #fff !important; animation: pulseSOS 1s infinite; }
         @keyframes pulseSOS { 0% { background: #ff0000; } 50% { background: #880000; } 100% { background: #ff0000; } }
         
-        /* Shrunk Icon Sizing for Flawless Portrait Fit */
-        .legend-item { cursor:pointer; font-size:18px; font-weight:bold; display:inline-flex; align-items:center; gap:5px; background: rgba(0,26,0,0.4); padding: 4px 8px; border: 1px solid #333; border-radius: 4px; color: #00ff41; }
+        .legend-item { cursor:pointer; font-size:20px; font-weight:bold; display:inline-flex; align-items:center; gap:6px; background: rgba(0,26,0,0.4); padding: 5px 10px; border: 1px solid #333; border-radius: 4px; color: #00ff41; }
         
         input, select { background:#000; color:#fff; border:1px solid #00ff41; padding:4px 6px; box-sizing: border-box; font-family: monospace; font-size: 12px; height: 30px; border-radius: 4px; }
         .slider-box { display:flex; align-items:center; gap:4px; font-weight:bold; font-size:11px; color: #00ff41; }
@@ -58,10 +77,10 @@
 </head>
 <body>
     <div class="main-ui">
-        <!-- ROW 1: Top Control Header Track -->
+        <!-- ROW 1: Top Navigation Bar Header Track -->
         <div class="top-bar">
             <div class="search-container">
-                <button class="btn-tac" style="padding: 0 10px; height: 30px; font-size: 12px; width: auto;" onclick="window.location.href='signin.html'">⬅</button>
+                <button class="btn-tac" style="padding: 0 12px; height: 30px; font-size: 12px; width: auto;" onclick="window.location.href='signin.html'">⬅</button>
                 <input id="addrInput" placeholder="Target Address..." style="width:115px;">
                 <button class="btn-tac" id="cmdGoBtn" style="width: auto; padding: 0 10px; height: 30px;" onclick="searchAddr()">GO</button>
                 
@@ -81,43 +100,49 @@
         <!-- ROW 2: Map Window Canvas Frame -->
         <div class="map-wrapper">
             <div id="map"></div>
-        </div>
-
-        <!-- ROW 3: Fixed Horizontal Console Panel Track (95px Portrait Guarded) -->
-        <div class="console-row">
-            <button class="btn-tac btn-sos" onclick="triggerSOSAlert();">🚨 SOS ALERT</button>
-            <button class="btn-tac" onclick="setMarker('FND');">🔍 ARTICLE FIND</button>
-            <button class="btn-tac" onclick="activateGPS();">ACTIVATE UNITS</button>
-            <button class="btn-tac" style="border-color: #ffd700; color: #ffd700;" onclick="triggerTreeTopHeight();">🔎 TREETOP VIEW</button>
-            <button class="btn-tac" id="crossfireBtn" onclick="toggleCrossfireMode();">CROSSFIRE DIST</button>
-            <button class="btn-tac" id="trapTraceBtn" onclick="toggleTrapTrace()">TRAP N TRACE</button>
-            <button class="btn-tac" style="border-color: #ff3333; color: #ff3333;" onclick="eraseLastLine();">❌ ERASE LINE</button>
-            <button class="btn-tac" style="border-color: #00ff41; color: #00ff41;" onclick="generateReport()">📄 VIEW REPORT</button>
-            <button class="btn-tac btn-danger" onclick="resetConsole()">TERMINATE SEARCH</button>
-        </div>
-
-        <!-- ROW 4: Fixed Bottom Multi-Agency Legend Bar Track (52px Portrait Guarded) -->
-        <div class="legend-bar">
-            <span class="legend-item" onclick="setMarker('LE')">🔵 LE</span>
-            <span class="legend-item" onclick="setMarker('K9')">🔘 K9</span>
-            <span class="legend-item" onclick="setMarker('SAR')">🔴 SAR</span>
-            <span class="legend-item" onclick="setMarker('CIV')">🟢 CIV</span>
-            <span class="legend-item" onclick="setMarker('SUS')">🟣 SUS</span>
-            <span class="legend-item" onclick="setMarker('DRN')">⚪ DRN</span>
-            <span class="legend-item" onclick="setMarker('ART')">🟠 ART</span>
-            <span class="legend-item" onclick="setMarker('VIC')">⚪ VIC</span>
-            <span class="legend-item" onclick="setMarker('BOAT')">🟡 BOAT</span>
-            <span class="legend-item" onclick="setMarker('VEH')">⬛ VEH</span>
-            <span class="legend-item" onclick="setMarker('CP')">🟨 CP</span>
-            <span class="legend-item" onclick="setMarker('FND')">🔼 FND</span>
-            <span class="legend-item" onclick="setMarker('CUS')">🔽 CUS</span>
-            <span class="legend-item" onclick="setMarker('HEL')">🟧 HEL</span>
-            <span class="legend-item" onclick="setMarker('FED')"><span style="color:#ffd700;">🟡</span> FED</span>
-            <span class="legend-item" onclick="setMarker('VSP')"><span style="color:#0000ff;">🔵</span> VSP</span>
+            
+            <!-- THE TACTICAL UNDERGROUND TRAY MECHANISM ASSEMBLY -->
+            <div class="bottom-drawer-tray" id="masterTray">
+                <!-- Clickable Access Node Tab -->
+                <div class="tray-toggle-tab" id="tabButton" onclick="toggleMasterTray()">▲ OPEN PANEL</div>
+                
+                <!-- Scrollable Console Tools Track -->
+                <div class="console-row">
+                    <button class="btn-tac btn-sos" onclick="triggerSOSAlert(); toggleMasterTray();">🚨 SOS ALERT</button>
+                    <button class="btn-tac" onclick="setMarker('FND'); toggleMasterTray();">🔍 ARTICLE FIND</button>
+                    <button class="btn-tac" onclick="activateGPS(); toggleMasterTray();">ACTIVATE UNITS</button>
+                    <button class="btn-tac" style="border-color: #ffd700; color: #ffd700;" onclick="triggerTreeTopHeight(); toggleMasterTray();">🔎 TREETOP VIEW</button>
+                    <button class="btn-tac" id="crossfireBtn" onclick="toggleCrossfireMode(); toggleMasterTray();">CROSSFIRE DIST</button>
+                    <button class="btn-tac" id="trapTraceBtn" onclick="toggleTrapTrace()">TRAP N TRACE</button>
+                    <button class="btn-tac" style="border-color: #ff3333; color: #ff3333;" onclick="eraseLastLine(); toggleMasterTray();">❌ ERASE LINE</button>
+                    <button class="btn-tac" style="border-color: #00ff41; color: #00ff41;" onclick="generateReport()">📄 VIEW REPORT</button>
+                    <button class="btn-tac btn-danger" onclick="resetConsole()">TERMINATE SEARCH</button>
+                </div>
+                
+                <!-- Scrollable Searchers Legend Track -->
+                <div class="legend-bar">
+                    <span class="legend-item" onclick="setMarker('LE'); toggleMasterTray();">🔵 LE</span>
+                    <span class="legend-item" onclick="setMarker('K9'); toggleMasterTray();">🔘 K9</span>
+                    <span class="legend-item" onclick="setMarker('SAR'); toggleMasterTray();">🔴 SAR</span>
+                    <span class="legend-item" onclick="setMarker('CIV'); toggleMasterTray();">🟢 CIV</span>
+                    <span class="legend-item" onclick="setMarker('SUS'); toggleMasterTray();">🟣 SUS</span>
+                    <span class="legend-item" onclick="setMarker('DRN'); toggleMasterTray();">⚪ DRN</span>
+                    <span class="legend-item" onclick="setMarker('ART'); toggleMasterTray();">🟠 ART</span>
+                    <span class="legend-item" onclick="setMarker('VIC'); toggleMasterTray();">⚪ VIC</span>
+                    <span class="legend-item" onclick="setMarker('BOAT'); toggleMasterTray();">🟡 BOAT</span>
+                    <span class="legend-item" onclick="setMarker('VEH'); toggleMasterTray();">⬛ VEH</span>
+                    <span class="legend-item" onclick="setMarker('CP'); toggleMasterTray();">🟨 CP</span>
+                    <span class="legend-item" onclick="setMarker('FND'); toggleMasterTray();">🔼 FND</span>
+                    <span class="legend-item" onclick="setMarker('CUS'); toggleMasterTray();">🔽 CUS</span>
+                    <span class="legend-item" onclick="setMarker('HEL'); toggleMasterTray();">🟧 HEL</span>
+                    <span class="legend-item" onclick="setMarker('FED'); toggleMasterTray();"><span style="color:#ffd700;">🟡</span> FED</span>
+                    <span class="legend-item" onclick="setMarker('VSP'); toggleMasterTray();"><span style="color:#0000ff;">🔵</span> VSP</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Incident Forms Overlay Window -->
+    <!-- Legal Incident Documentation Overlay -->
     <div id="reportModal" class="modal">
         <div class="report-selector-bar">
             <button class="btn-tac" style="height:auto;" onclick="document.getElementById('reportModal').style.display='none'">⬅ MAP</button>
@@ -135,6 +160,18 @@
     </div>
 
     <script>
+        // Toggle Underground Drawer Logic safely
+        function toggleMasterTray() {
+            const tray = document.getElementById('masterTray');
+            const tab = document.getElementById('tabButton');
+            tray.classList.toggle('open');
+            if (tray.classList.contains('open')) {
+                tab.innerText = "▼ CLOSE PANEL";
+            } else {
+                tab.innerText = "▲ OPEN PANEL";
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             initDuressAccelerometer();
             setTimeout(() => { map.invalidateSize(); }, 400);
