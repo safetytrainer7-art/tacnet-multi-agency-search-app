@@ -13,27 +13,35 @@
         .slider-box { display:flex; align-items:center; gap:8px; font-weight:bold; font-size:12px; }
         .map-toggles { display:flex; gap:8px; }
         
-        .middle-section { display:flex; flex:1; width:100%; height:calc(100vh - 135px); }
+        .middle-section { display:flex; flex:1; width:100%; height:calc(100vh - 145px); }
         #map { flex:1; border-right:2px solid #00ff41; background:#000; cursor: crosshair; }
         .sidebar { width:260px; background:#000; padding:15px; border-left:2px solid #00ff41; display:flex; flex-direction:column; gap:12px; box-sizing: border-box; overflow-y: auto; }
-        .legend-bar { height:60px; background:#000; display:flex; align-items:center; overflow-x:auto; white-space:nowrap; gap:20px; padding:0 20px; border-top:2px solid #00ff41; box-sizing: border-box; }
+        .legend-bar { height:75px; background:#000; display:flex; align-items:center; overflow-x:auto; white-space:nowrap; gap:25px; padding:0 20px; border-top:2px solid #00ff41; box-sizing: border-box; }
         
         /* UI Inputs and Buttons */
-        .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding:10px; cursor:pointer; font-weight:bold; text-transform:uppercase; }
+        .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding:10px; cursor:pointer; font-weight:bold; text-transform:uppercase; text-align: center; }
         .btn-map-type { background:#001a00; color:#00ff41; border:1px solid #00ff41; padding:6px 12px; cursor:pointer; font-size:12px; }
         .btn-map-type.active { background:#00ff41; color:#000; font-weight:bold; }
         .btn-danger { color:red; border-color:red; }
-        .btn-active { background:#00ff41; color:#000; }
+        .btn-active { background:FFA500 !important; color:#000 !important; border-color: #FFA500 !important; }
         input, select { background:#000; color:#00ff41; border:1px solid #00ff41; padding:8px; box-sizing: border-box; }
         
+        /* Enlarged Toggles for Field Use */
+        .large-toggle { width: 22px; height: 22px; cursor: pointer; accent-color: #00ff41; }
+        
         /* Slider Adjustment Styling */
-        input[type="range"] { -webkit-appearance: none; background: #002b00; border: 1px solid #00ff41; height: 8px; width: 140px; cursor: pointer; }
+        input[type="range"] { -webkit-appearance: none; background: #002b00; border: 1px solid #00ff41; height: 8px; width: 120px; cursor: pointer; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; background: #00ff41; width: 16px; height: 16px; border: 1px solid #000; }
 
-        .toggle-row { display:flex; justify-content:space-between; align-items:center; width:100%; }
-        .legend-item { cursor:pointer; font-size:20px; font-weight:bold; display:inline-flex; align-items:center; gap:5px; }
+        .toggle-row { display:flex; justify-content:space-between; align-items:center; width:100%; font-size:14px; font-weight:bold; }
+        .legend-item { cursor:pointer; font-size:26px; font-weight:bold; display:inline-flex; align-items:center; gap:8px; }
         
-        /* Professional Report Modal Overlay (Dark Preview Mode) */
+        /* Trap N Trace Radar Display Scanner */
+        .radar-box { border: 1px solid #00ff41; background: #020f02; padding: 8px; font-size: 11px; display: none; flex-direction: column; gap:4px; font-family: monospace; }
+        .radar-scan-line { width: 100%; background: #00ff41; height: 2px; opacity: 0.7; animation: scan 2s linear infinite; }
+        @keyframes scan { 0% { transform: translateY(0px); } 50% { transform: translateY(40px); } 100% { transform: translateY(0px); } }
+
+        /* Professional Report Modal Overlay */
         .modal { display:none; position:fixed; top:5%; left:5%; width:90%; height:90%; background:#0a0a0a; border:2px solid #00ff41; z-index:9999; padding:30px; box-sizing:border-box; overflow-y:auto; color:#fff; font-family: 'Times New Roman', Times, serif; }
         .report-header { text-align: center; border-bottom: 2px solid #fff; padding-bottom: 10px; margin-bottom: 20px; }
         .report-title { font-size: 22px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #fff; }
@@ -41,13 +49,12 @@
         .report-meta-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
         .report-meta-table td { border: 1px solid #444; padding: 8px; font-size: 13px; }
         .section-heading { background: #222; color: #00ff41; padding: 5px 10px; font-size: 14px; font-weight: bold; text-transform: uppercase; margin-top: 20px; border-left: 3px solid #00ff41; }
-        .report-log { background:#111; border:1px solid #333; padding:15px; font-family: monospace; height:200px; overflow-y:auto; color:#fff; font-size: 12px; margin-top: 10px; line-height: 1.5; }
+        .report-log { background:#111; border:1px solid #333; padding:15px; font-family: monospace; height:180px; overflow-y:auto; color:#fff; font-size: 12px; margin-top: 10px; line-height: 1.5; }
         .disposition-panel { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
         .modal-actions { margin-top: 30px; display: flex; gap: 15px; justify-content: flex-end; }
 
-        /* ==========================================================================
-           CRITICAL ADVANCED PRINT STYLESHEET OVERRIDES FOR COURT/OFFICIAL USE
-           ========================================================================== */
+        .orange-dist-label { background: #000; color: #FFA500; border: 1px solid #FFA500; font-weight: bold; font-family: monospace; padding: 2px 5px; font-size: 12px; border-radius: 3px; cursor: pointer; }
+
         @media print {
             body, html { background: #fff !important; color: #000 !important; overflow: visible !important; height: auto !important; }
             .main-ui, .legend-bar, .sidebar, .top-bar, .modal-actions, #map { display: none !important; }
@@ -59,17 +66,16 @@
             .report-log { background: #fff !important; color: #000 !important; border: 1px solid #000 !important; height: auto !important; overflow: visible !important; }
             textarea { background: #fff !important; color: #000 !important; border: none !important; width: 100% !important; font-family: 'Times New Roman' !important; }
             select, input { background: #fff !important; color: #000 !important; border: none !important; border-bottom: 1px solid #000 !important; font-family: 'Times New Roman' !important; }
-            .certification-clause { display: block !important; font-size: 11px !important; italic: true; margin-top: 30px !important; border-top: 1px solid #000 !important; padding-top: 10px !important; }
         }
-        .certification-clause { display: none; }
     </style>
 </head>
 <body>
     <div class="main-ui">
-        <!-- Top Bar with Real-Time Slider and View Toggles -->
+        <!-- Top Bar with Real-Time Slider and Navigation Back Arrow -->
         <div class="top-bar">
             <div class="search-container">
-                <input id="addrInput" placeholder="Enter Target Address..." style="width:250px;">
+                <button class="btn-tac" style="padding: 6px 12px; font-size: 16px;" onclick="window.location.href='signin.html'">⬅</button>
+                <input id="addrInput" placeholder="Enter Target Address..." style="width:230px;">
                 <button class="btn-tac" onclick="searchAddr()">GO</button>
                 
                 <div class="slider-box">
@@ -92,31 +98,40 @@
             <div class="sidebar">
                 <h3>COMMAND CONSOLE</h3>
                 <button class="btn-tac" onclick="activateGPS()">ACTIVATE SEARCHERS</button>
+                <button class="btn-tac" style="border-color: #ffd700; color: #ffd700;" onclick="triggerTreeTopHeight()">🔎 TREE TOP VIEW</button>
                 
                 <div class="toggle-row">
                     <span>MAP LOCK</span> 
-                    <input type="checkbox" id="lockToggle" onchange="toggleMapLock(this.checked)" style="width:auto;">
+                    <input type="checkbox" id="lockToggle" class="large-toggle" onchange="toggleMapLock(this.checked)">
                 </div>
                 <div class="toggle-row">
                     <span>RED PEN</span> 
-                    <input type="checkbox" id="penToggle" style="width:auto;" onchange="togglePenMode(this.checked)">
+                    <input type="checkbox" id="penToggle" class="large-toggle" onchange="togglePenMode(this.checked)">
                 </div>
                 
+                <button class="btn-tac" style="border-color: #ff3333; color: #ff3333;" onclick="eraseLastLine()">❌ ERASE LAST LINE</button>
                 <button class="btn-tac" id="crossfireBtn" onclick="toggleCrossfireMode()">CROSSFIRE DIST</button>
-                <button class="btn-tac" style="border-color: #00ff41; color: #00ff41; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="generateReport()">
-                    📄 PREVIEW REPORT HERE
-                </button>
+                <button class="btn-tac" id="trapTraceBtn" onclick="toggleTrapTrace()">TRAP N TRACE [OFF]</button>
+                
+                <!-- Live Trap N Trace Display Box -->
+                <div class="radar-box" id="radarDisplay">
+                    <div class="radar-scan-line"></div>
+                    <div style="display:flex; justify-content:space-between; color:#00ff41;"><span id="radarIP">NET: SECURE</span><span id="radarPing">PING: 14ms</span></div>
+                    <div id="radarStatus" style="font-size:9px; color:#aaa;">SCANNING LOCAL TRANSCEIVERS...</div>
+                </div>
+
+                <button class="btn-tac" style="border-color: #00ff41; color: #00ff41;" onclick="generateReport()">📄 PREVIEW REPORT HERE</button>
                 <button class="btn-tac btn-danger" onclick="generateReport()">TERMINATE SEARCH</button>
             </div>
         </div>
 
-        <!-- Scrollable Legend -->
+        <!-- Enlarged Scrollable Legend -->
         <div class="legend-bar">
             <span class="legend-item" onclick="setMarker('LE')">🔵 LE</span>
             <span class="legend-item" onclick="setMarker('K9')">🔘 K9</span>
             <span class="legend-item" onclick="setMarker('SAR')">🔴 SAR</span>
             <span class="legend-item" onclick="setMarker('CIV')">🟢 CIV</span>
-            <span class="legend-item" onclick="setMarker('SUS')">🟣 SUS</span>
+            <span class="legend-item" onclick="setMarker('SUS')">🟣 SUS (LKL)</span>
             <span class="legend-item" onclick="setMarker('DRN')">⚪ DRN</span>
             <span class="legend-item" onclick="setMarker('ART')">🟠 ART</span>
             <span class="legend-item" onclick="setMarker('VIC')">⚪ VIC</span>
@@ -131,10 +146,11 @@
         </div>
     </div>
 
-    <!-- Official Multi-Agency Certified Incident Report (Print Optimized) -->
+    <!-- Certified Incident Report Overlay -->
     <div id="reportModal" class="modal">
+        <button class="btn-tac" style="padding: 5px 15px; margin-bottom: 15px;" onclick="document.getElementById('reportModal').style.display='none'">⬅ BACK TO MAP</button>
         <div class="report-header">
-            <div class="report-title">TACNET MULTI-AGENCY TASK FORCE SUMMARY REPORT</div>
+            <div class="report-title">TACNET MULTI-AGENCY SEARCH & RESCUE TASK FORCE COMMAND SUMMARY</div>
             <div class="report-subtitle">Official Incident Command Record // Admissible Legal Transcript</div>
         </div>
         
@@ -158,7 +174,7 @@
         
         <div class="section-heading">II. Command Narrative & Fact Findings</div>
         <div class="disposition-panel">
-            <textarea id="commandNotes" rows="5" style="background:#000; color:#fff; border:1px solid #444; font-family:'Times New Roman', serif; font-size:14px; padding:10px; width:100%; box-sizing:border-box; resize:none;" placeholder="Input professional timeline narrative, multi-agency coordinates, terrain tracking updates, or evidentiary notes..."></textarea>
+            <textarea id="commandNotes" rows="4" style="background:#000; color:#fff; border:1px solid #444; font-family:'Times New Roman', serif; font-size:14px; padding:10px; width:100%; box-sizing:border-box; resize:none;" placeholder="Input professional timeline narrative, multi-agency coordinates, terrain tracking updates, or evidentiary notes..."></textarea>
             
             <div style="display: flex; gap: 20px; width: 100%;">
                 <div style="flex: 1;">
@@ -175,10 +191,6 @@
                 </div>
             </div>
         </div>
-
-        <div class="certification-clause">
-            I hereby certify that this auto-generated summary report represents a true, unmodified, chronological and precise data collection recorded directly by the TACNET Emergency Command Platform on the time-stamps specified herein.
-        </div>
         
         <div class="modal-actions">
             <button class="btn-tac" style="border-color:#ffd700; color:#ffd700;" onclick="alert('Reviewing tactical playback sequence...')">REPLAY RECORDER</button>
@@ -188,11 +200,11 @@
     </div>
 
     <script>
-        const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
-        const terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png');
-        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}');
+        const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 20 });
+        const terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 20 });
+        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 20 });
 
-        const map = L.map('map', { center: [37.4138, -79.1422], zoom: 14, layers: [streetLayer] });
+        const map = L.map('map', { center: [37.4138, -79.1422], zoom: 14, maxZoom: 20, layers: [streetLayer] });
 
         function switchBaseLayer(type) {
             map.removeLayer(streetLayer); map.removeLayer(terrainLayer); map.removeLayer(satelliteLayer);
@@ -205,7 +217,7 @@
             if (type === 'sat') { satelliteLayer.addTo(map); document.getElementById('btn-sat').classList.add('active'); }
         }
 
-        let eventLog = []; let activeMarkers = []; let drawingLayers = []; let crossfireLinesArray = [];
+        let eventLog = []; let activeMarkers = []; let drawingLayers = []; let crossfireVectors = [];
         let searchPerimeter = null; let perimeterCenter = null; let activeType = null;
 
         const unitColors = { 
@@ -224,20 +236,53 @@
             document.getElementById('crossfireBtn').classList.remove('btn-active'); crossfireActive = false;
         }
 
+        // Treetop view lock function targeting maximum legal zoom depth
+        function triggerTreeTopHeight() {
+            map.setZoom(20);
+            logEvent("CRITICAL PERSPECTIVE: Commanded maximum zoom depth down to tree-top height view boundaries.");
+        }
+
         map.on('click', e => {
             if (activeType) {
                 let borderCol = (activeType === 'VSP') ? '#ffd700' : '#fff';
-                let m = L.circleMarker(e.latlng, {radius: 11, fillColor: unitColors[activeType], color: borderCol, fillOpacity: 1, weight: 2.5}).addTo(map);
+                let m = L.circleMarker(e.latlng, {
+                    radius: 14,
+                    fillColor: unitColors[activeType],
+                    color: borderCol,
+                    fillOpacity: 1,
+                    weight: 3,
+                    draggable: true
+                }).addTo(map);
+                
                 m.unitType = activeType;
                 
+                if(activeType === 'SUS') {
+                    m.bindTooltip("SUSPECT LKL", {permanent: true, direction: 'top', className: 'orange-dist-label'}).openTooltip();
+                }
+
+                m.on('drag', function() { updateCrossfireDimensionality(); });
+                m.on('dragend', function() { logEvent(`ASSET SHIFT: Movable ${this.unitType} shifted position across map topology.`); });
+
                 m.on('click', function(ev) {
                     L.DomEvent.stopPropagation(ev);
-                    logEvent(`ASSET DISPATCH: Removed ${this.unitType} deployment tracker.`);
+                    logEvent(`ASSET PURGE: Removed ${this.unitType} asset element.`);
                     map.removeLayer(this);
                     activeMarkers = activeMarkers.filter(item => item !== this);
+                    updateCrossfireDimensionality();
                 });
+
+                m.on('mousedown', function () {
+                    if(!document.getElementById('lockToggle').checked) {
+                        map.dragging.disable();
+                        map.on('mousemove', onMarkerDrag);
+                    }
+                });
+                
+                function onMarkerDrag(ev) { m.setLatLng(ev.latlng); updateCrossfireDimensionality(); }
+                map.on('mouseup', function () { map.off('mousemove', onMarkerDrag); if(!document.getElementById('lockToggle').checked) map.dragging.enable(); });
+
                 activeMarkers.push(m);
-                logEvent(`ASSET DISPATCH: Placed ${activeType} unit onto operational map canvas.`);
+                logEvent(`ASSET DISPATCH: Movable ${activeType} marker placed at canvas target.`);
                 activeType = null;
             } else if (crossfireActive) {
                 handleCrossfireClick(e.latlng);
@@ -246,6 +291,14 @@
 
         function toggleMapLock(locked) { locked ? map.dragging.disable() : map.dragging.enable(); }
         function togglePenMode(checked) { if (checked) { activeType = null; crossfireActive = false; document.getElementById('crossfireBtn').classList.remove('btn-active'); } }
+
+        function eraseLastLine() {
+            if (drawingLayers.length > 0) {
+                let lastLine = drawingLayers.pop();
+                map.removeLayer(lastLine);
+                logEvent("ERASER SIGNAL: Removed last freehand line overlay segment backward.");
+            }
+        }
 
         let isDrawing = false; let activeLine = null;
         map.on('mousedown', e => {
@@ -258,34 +311,79 @@
         map.on('mousemove', e => { if (isDrawing && activeLine) activeLine.addLatLng(e.latlng); });
         map.on('mouseup', () => { if (isDrawing) isDrawing = false; });
 
-        let crossfireActive = false; let firstPoint = null; let visualLine = null;
+        let crossfireActive = false; let firstPoint = null;
+
         function toggleCrossfireMode() {
             crossfireActive = !crossfireActive; const btn = document.getElementById('crossfireBtn');
             if (crossfireActive) { btn.classList.add('btn-active'); firstPoint = null; activeType = null; document.getElementById('penToggle').checked = false; }
-            else { btn.classList.remove('btn-active'); if (visualLine) map.removeLayer(visualLine); }
+            else { btn.classList.remove('btn-active'); }
         }
 
         function handleCrossfireClick(latlng) {
+            let clickedMarker = activeMarkers.find(m => map.distance(latlng, m.getLatLng()) < 300);
+            let targetLatLng = clickedMarker ? clickedMarker.getLatLng() : latlng;
+
             if (!firstPoint) {
-                firstPoint = latlng;
-                visualLine = L.polyline([firstPoint], {color: '#00ff41', weight: 3, dashArray: '6, 6'}).addTo(map);
-                crossfireLinesArray.push(visualLine);
-                map.on('mousemove', updateCrossfireLine);
+                firstPoint = { latlng: targetLatLng, marker: clickedMarker || null };
             } else {
-                map.off('mousemove', updateCrossfireLine);
-                let finalDistance = firstPoint.distanceTo(latlng) * 3.28084;
-                visualLine.addLatLng(latlng);
-                visualLine.bindPopup(`RANGE: ${finalDistance.toFixed(0)} FEET`, {closeOnClick: false}).openPopup();
-                logEvent(`TELEMETRY VECTOR: Measured baseline vector grid distance at ${finalDistance.toFixed(0)} feet.`);
-                crossfireActive = false; document.getElementById('crossfireBtn').classList.remove('btn-active');
+                let secondPoint = { latlng: targetLatLng, marker: clickedMarker || null };
+                createCrossfireVector(firstPoint, secondPoint);
+                crossfireActive = false;
+                document.getElementById('crossfireBtn').classList.remove('btn-active');
             }
         }
 
-        function updateCrossfireLine(e) {
-            if (visualLine && firstPoint) {
-                visualLine.setLatLngs([firstPoint, e.latlng]);
-                let dynamicDist = firstPoint.distanceTo(e.latlng) * 3.28084;
-                visualLine.bindTooltip(`${dynamicDist.toFixed(0)} FT`, {sticky: true, opacity: 0.9}).openTooltip();
+        function createCrossfireVector(ptA, ptB) {
+            let line = L.polyline([ptA.latlng, ptB.latlng], {color: '#FF8C00', weight: 4, dashArray: '4, 4'}).addTo(map);
+            let dist = ptA.latlng.distanceTo(ptB.latlng) * 3.28084;
+            
+            let labelMarker = L.marker(line.getCenter(), {
+                icon: L.divIcon({ className: 'orange-dist-label', html: `${dist.toFixed(0)} FT` })
+            }).addTo(map);
+
+            let vectorObj = { line, labelMarker, ptA, ptB };
+
+            labelMarker.on('click', function() {
+                map.removeLayer(line); map.removeLayer(labelMarker);
+                crossfireVectors = crossfireVectors.filter(v => v !== vectorObj);
+                logEvent("CROSSFIRE METRIC: Cleared distance measurement vector.");
+            });
+
+            crossfireVectors.push(vectorObj);
+            logEvent(`TELEMETRY VECTOR: Linked orange crossfire distance vector at ${dist.toFixed(0)} feet.`);
+        }
+
+        function updateCrossfireDimensionality() {
+            crossfireVectors.forEach(v => {
+                let posA = v.ptA.marker ? v.ptA.marker.getLatLng() : v.ptA.latlng;
+                let posB = v.ptB.marker ? v.ptB.marker.getLatLng() : v.ptB.latlng;
+                
+                v.line.setLatLngs([posA, posB]);
+                let currentDist = posA.distanceTo(posB) * 3.28084;
+                
+                v.labelMarker.setLatLng(v.line.getCenter());
+                v.labelMarker.setIcon(L.divIcon({ className: 'orange-dist-label', html: `${currentDist.toFixed(0)} FT` }));
+            });
+        }
+
+        let trapTraceInterval = null;
+        function toggleTrapTrace() {
+            const btn = document.getElementById('trapTraceBtn'); const box = document.getElementById('radarDisplay'); const statusText = document.getElementById('radarStatus');
+            if (!trapTraceInterval) {
+                btn.innerText = "TRAP N TRACE [ON]"; btn.style.borderColor = "#00ff41"; box.style.display = "flex";
+                logEvent("NETWORK SCAN: Initiated Trap 'N' Trace multi-agency transceiver intercept array.");
+                let scanCount = 0;
+                trapTraceInterval = setInterval(() => {
+                    scanCount++;
+                    document.getElementById('radarPing').innerText = `PING: ${Math.floor(Math.random() * 20) + 10}ms`;
+                    if(scanCount % 3 === 0) { statusText.innerText = `PINGING SECTOR NODE CELL ID [0${Math.floor(Math.random()*800)+100}]...`; } 
+                    else if (scanCount % 3 === 1) { statusText.innerText = "TRIANGULATING CELL TOWER CARRIER STRINGS..."; } 
+                    else { statusText.innerText = "LIVE SCANNING PACKET CHANNELS MOUNTED..."; }
+                }, 2000);
+            } else {
+                btn.innerText = "TRAP N TRACE [OFF]"; btn.style.borderColor = "#111"; box.style.display = "none";
+                clearInterval(trapTraceInterval); trapTraceInterval = null;
+                logEvent("NETWORK SCAN: Suspended Trap 'N' Trace tracker matrix.");
             }
         }
 
@@ -334,16 +432,11 @@
             document.getElementById('reportModal').style.display = 'block';
         }
 
-        // Complete Reset Vector Function (Fixes sticking crossfire lines)
         function resetConsole() {
-            activeMarkers.forEach(m => map.removeLayer(m));
-            drawingLayers.forEach(l => map.removeLayer(l));
-            crossfireLinesArray.forEach(line => map.removeLayer(line));
-            if (visualLine) map.removeLayer(visualLine);
-            if (searchPerimeter) map.removeLayer(searchPerimeter);
-            
-            activeMarkers = []; drawingLayers = []; crossfireLinesArray = []; eventLog = [];
-            searchPerimeter = null; perimeterCenter = null; visualLine = null;
+            activeMarkers.forEach(m => map.removeLayer(m)); drawingLayers.forEach(l => map.removeLayer(l));
+            crossfireVectors.forEach(v => { map.removeLayer(v.line); map.removeLayer(v.labelMarker); });
+            if (searchPerimeter) map.removeLayer(searchPerimeter); if (trapTraceInterval) toggleTrapTrace();
+            activeMarkers = []; drawingLayers = []; crossfireVectors = []; eventLog = []; searchPerimeter = null; perimeterCenter = null;
             document.getElementById('reportModal').style.display = 'none';
         }
     </script>
