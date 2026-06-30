@@ -5,41 +5,133 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body, html { margin:0; padding:0; height:100%; width:100%; background:#000; color:#00ff41; font-family: 'Courier New', monospace; overflow: hidden; }
-        .main-ui { display:flex; height:100vh; width:100vw; }
-        #map { flex:1; border-right:2px solid #00ff41; }
-        .sidebar { width:260px; background:#000; padding:15px; border-left:2px solid #00ff41; display:flex; flex-direction:column; gap:10px; }
-        .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding:10px; cursor:pointer; font-weight:bold; width:100%; text-transform:uppercase; }
-        input { background:#000; color:#00ff41; border:1px solid #00ff41; padding:8px; width:100%; box-sizing:border-box; }
+        .main-ui { display:flex; flex-direction:column; height:100vh; width:100vw; }
+        .top-bar { padding:10px; background:#000; border-bottom:2px solid #00ff41; display:flex; gap:10px; align-items:center; }
+        .middle-section { display:flex; flex:1; width:100%; height:calc(100vh - 120px); }
+        #map { flex:1; border-right:2px solid #00ff41; background:#000; }
+        .sidebar { width:260px; background:#000; padding:15px; border-left:2px solid #00ff41; display:flex; flex-direction:column; gap:12px; box-sizing: border-box; }
+        .legend-bar { height:60px; background:#000; display:flex; align-items:center; overflow-x:auto; white-space:nowrap; gap:20px; padding:0 20px; border-top:2px solid #00ff41; box-sizing: border-box; }
+        
+        /* Tactical Elements */
+        .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding:10px; cursor:pointer; font-weight:bold; text-transform:uppercase; }
+        .btn-danger { color:red; border-color:red; }
+        input { background:#000; color:#00ff41; border:1px solid #00ff41; padding:8px; width:300px; }
+        .toggle-row { display:flex; justify-content:space-between; align-items:center; width:100%; }
+        .legend-item { cursor:pointer; font-size:20px; font-weight:bold; }
     </style>
 </head>
 <body>
     <div class="main-ui">
-        <div id="map"></div>
-        <div class="sidebar">
+        <!-- Top Bar -->
+        <div class="top-bar">
             <input id="addrInput" placeholder="Enter Address...">
             <button class="btn-tac" onclick="searchAddr()">GO</button>
-            <hr style="width:100%; border:0; border-top:1px solid #00ff41;">
-            <button class="btn-tac" onclick="activateGPS()">ACTIVATE GPS</button>
-            <button class="btn-tac" onclick="window.location.href='index.html'" style="color:red; border-color:red;">TERMINATE</button>
+            <button class="btn-tac" onclick="toggleCanopy()">TREETOP HEIGHT VIEW</button>
+        </div>
+
+        <!-- Main Workspace -->
+        <div class="middle-section">
+            <div id="map"></div>
+            <div class="sidebar">
+                <h3>COMMAND CONSOLE</h3>
+                <button class="btn-tac" style="border-color:#00ff41;" onclick="activateGPS()">ACTIVATE SEARCHERS</button>
+                
+                <div class="toggle-row">
+                    <span>RED PEN</span> 
+                    <input type="checkbox" id="penToggle" style="width:auto;">
+                </div>
+                <div class="toggle-row">
+                    <span>MAP LOCK</span> 
+                    <input type="checkbox" id="lockToggle" onchange="setLock(this.checked)" style="width:auto;">
+                </div>
+                
+                <button class="btn-tac" onclick="triggerTool('Trap N Trace')">TRAP N TRACE</button>
+                <button class="btn-tac" onclick="triggerTool('Crossfire Distance')">CROSSFIRE DIST</button>
+                <button class="btn-tac" onclick="triggerTool('Reports')">REPORTS</button>
+                <button class="btn-tac btn-danger" onclick="triggerTool('SOS')">SOS</button>
+                <button class="btn-tac btn-danger" onclick="window.location.href='index.html'">TERMINATE</button>
+            </div>
+        </div>
+
+        <!-- Enlarged, Scrollable Legend -->
+        <div class="legend-bar">
+            <span class="legend-item" onclick="setMarker('LE')">🔵 LE</span>
+            <span class="legend-item" onclick="setMarker('K9')">🔘 K9</span>
+            <span class="legend-item" onclick="setMarker('SAR')">🔴 SAR</span>
+            <span class="legend-item" onclick="setMarker('CIV')">🟢 CIV</span>
+            <span class="legend-item" onclick="setMarker('SUS')">🟣 SUS</span>
+            <span class="legend-item" onclick="setMarker('DRN')">⚪ DRN</span>
+            <span class="legend-item" onclick="setMarker('ART')">🟠 ART</span>
+            <span class="legend-item" onclick="setMarker('VIC')">⚪ VIC</span>
+            <span class="legend-item" onclick="setMarker('BOAT')">🟡 BOAT</span>
+            <span class="legend-item" onclick="setMarker('VEH')">⬛ VEH</span>
+            <span class="legend-item" onclick="setMarker('CP')">🟨 CP</span>
+            <span class="legend-item" onclick="setMarker('FND')">🔼 FND</span>
+            <span class="legend-item" onclick="setMarker('CUS')">🔽 CUS</span>
+            <span class="legend-item" onclick="setMarker('HEL')">🟧 HEL</span>
         </div>
     </div>
+
     <script>
+        // Setup map centered on Virginia area
         const map = L.map('map').setView([37.4138, -79.1422], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        
-        function searchAddr() { 
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data © OpenStreetMap'
+        }).addTo(map);
+
+        // Unit Palette Map Colors
+        const unitColors = { 'LE': 'blue', 'K9': 'gray', 'SAR': 'red', 'CIV': 'green', 'SUS': 'purple', 'DRN': 'white', 'ART': 'orange', 'VIC': 'white', 'BOAT': 'yellow', 'VEH': 'black', 'CP': 'yellow', 'FND': 'blue', 'CUS': 'blue', 'HEL': 'orange' };
+        let activeType = null;
+
+        // Arm the marker type from legend click
+        function setMarker(type) { 
+            activeType = type; 
+        }
+
+        // Silent click to place colored marker or remove it on second click
+        map.on('click', e => { 
+            if (activeType) { 
+                let m = L.circleMarker(e.latlng, {radius: 9, fillColor: unitColors[activeType], color: '#fff', fillOpacity: 1, weight: 2}).addTo(map);
+                m.on('click', function() { map.removeLayer(this); });
+                activeType = null;
+            } 
+        });
+
+        // Precise Red Pen Logic (Continuous Drawing)
+        let drawing = false;
+        map.on('mousedown', () => drawing = true);
+        map.on('mouseup', () => drawing = false);
+        map.on('mousemove', e => { 
+            if(drawing && document.getElementById('penToggle').checked) {
+                L.circleMarker(e.latlng, {radius: 3, color: 'red', fillColor: 'red', fillOpacity: 1}).addTo(map); 
+            }
+        });
+
+        // Map Lock Switch
+        function setLock(lock) { 
+            lock ? map.dragging.disable() : map.dragging.enable(); 
+        }
+
+        // Address Geocoding Tracker
+        function searchAddr() {
             const query = document.getElementById('addrInput').value;
             fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query))
                 .then(res => res.json())
                 .then(data => { if(data.length > 0) map.setView([data[0].lat, data[0].lon], 16); });
         }
-        
+
+        // Live Operational Tracker Mode
         function activateGPS() {
-            navigator.geolocation.getCurrentPosition(p => {
-                L.marker([p.coords.latitude, p.coords.longitude]).addTo(map).bindPopup("FIELD UNIT").openPopup();
-                map.setView([p.coords.latitude, p.coords.longitude], 16);
-            }, (e) => alert("GPS Error: " + e.message));
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(p => {
+                    L.marker([p.coords.latitude, p.coords.longitude]).addTo(map);
+                    map.setView([p.coords.latitude, p.coords.longitude], 16);
+                }, null, {enableHighAccuracy: true});
+            }
         }
+
+        function toggleCanopy() { /* Future Treetop Logic Hook */ }
+        function triggerTool(name) { /* Silent Hook for Tactical Tools */ }
     </script>
 </body>
 </html>
