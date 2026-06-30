@@ -13,7 +13,10 @@
         .map-toggles { display:flex; gap:8px; }
         
         .middle-section { display:flex; flex:1; width:100%; height:calc(100vh - 145px); }
-        #map { flex:1; border-right:2px solid #00ff41; background:#000; cursor: crosshair; }
+        
+        /* FIXED: Stripped background:#000 color rule to let Leaflet map tiles render natively */
+        #map { flex:1; border-right:2px solid #00ff41; cursor: crosshair; height: 100%; width: 100%; }
+        
         .sidebar { width:260px; background:#000; padding:15px; border-left:2px solid #00ff41; display:flex; flex-direction:column; gap:12px; box-sizing: border-box; overflow-y: auto; }
         .legend-bar { height:75px; background:#000; display:flex; align-items:center; overflow-x:auto; white-space:nowrap; gap:25px; padding:0 20px; border-top:2px solid #00ff41; box-sizing: border-box; }
         
@@ -22,11 +25,9 @@
         .btn-map-type.active { background:#00ff41; color:#000; font-weight:bold; }
         .btn-danger { color:red; border-color:red; }
         
-        /* High-Visibility SOS UI Pulse Elements */
         .btn-sos { background: #ff0000 !important; color: #fff !important; border: 2px solid #fff !important; font-size: 14px; animation: pulseSOS 1s infinite; font-weight: bold; }
         @keyframes pulseSOS { 0% { background: #ff0000; box-shadow: 0 0 10px #ff0000; } 50% { background: #880000; box-shadow: 0 0 0px #000; } 100% { background: #ff0000; box-shadow: 0 0 10px #ff0000; } }
         
-        /* Flashing Map Overlay CSS for Live Downed Officer Circle */
         .leaflet-sos-pulse { animation: mapPulse 1.2s infinite ease-out; }
         @keyframes mapPulse { 0% { stroke-width: 4; stroke-opacity: 1; fill-opacity: 0.6; } 100% { stroke-width: 25; stroke-opacity: 0; fill-opacity: 0; } }
 
@@ -143,6 +144,7 @@
         </div>
     </div>
 
+    <!-- Reports Window -->
     <div id="reportModal" class="modal">
         <div class="report-selector-bar no-print">
             <button class="btn-tac" style="padding: 5px 15px; width:auto;" onclick="document.getElementById('reportModal').style.display='none'">⬅ BACK TO MAP</button>
@@ -151,6 +153,7 @@
             <button class="btn-tac" id="toggleFRFormBtn" style="border-color:#aaa; width:auto;" onclick="setActiveForm('FR')">FIRST RESPONDER</button>
         </div>
 
+        <!-- LE FORM -->
         <div id="formContainerLE" class="report-form-container active">
             <div class="form-header"><h1>TACNET</h1><h2>Law Enforcement Incident Report</h2></div>
             <div class="form-row">
@@ -191,6 +194,7 @@
             <div class="form-block"><label>Narration Box</label><textarea rows="4"></textarea></div>
         </div>
 
+        <!-- FIRST RESPONDER FORM -->
         <div id="formContainerFR" class="report-form-container">
             <div class="form-header"><h1>TACNET</h1><h2>First Responder Incident Report</h2></div>
             <div class="form-row">
@@ -265,8 +269,10 @@
                 title.innerText = "FIELD ASSET CONSOLE";
             }
             
-            // Activate structural monitoring for device phone loss / impacts
             initDuressAccelerometer();
+            
+            // Forces Leaflet layout calculations to process immediately, clearing any layout anomalies
+            setTimeout(() => { map.invalidateSize(); }, 200);
         });
 
         // Leaflet Configuration
@@ -302,83 +308,38 @@
 
         function triggerTreeTopHeight() { map.setZoom(20); logEvent("PERSPECTIVE LOCK: Commanded tree-top zoom focus."); }
 
-        // Core SOS Broadcast Array
         function triggerSOSAlert() {
-            logEvent(`🚨 CRITICAL: SOS EMERGENCY BROADCAST SIGNALLED BY: ${currentUser.toUpperCase()}`);
-            
+            logEvent(`🚨 EMERGENCY SOS ALERT SIGNALLED BY OPERATOR: ${currentUser.toUpperCase()}`);
             navigator.geolocation.getCurrentPosition(p => {
-                const lat = p.coords.latitude;
-                const lon = p.coords.longitude;
-                
-                // Clear any old rings
+                const lat = p.coords.latitude; const lon = p.coords.longitude;
                 if(sosVisualRing) map.removeLayer(sosVisualRing);
                 
-                // Drop high intensity pulsing warning circle over the target coordinate
-                sosVisualRing = L.circle([lat, lon], {
-                    radius: 90,
-                    color: '#ff0000',
-                    fillColor: '#ff0000',
-                    fillOpacity: 0.5,
-                    className: 'leaflet-sos-pulse'
-                }).addTo(map);
-                
-                // Add secure anchor marker
-                let sosMarker = L.marker([lat, lon]).addTo(map).bindPopup(`<b style="color:red;">🚨 OFFICER DOWN: ${currentUser.toUpperCase()}</b>`).openPopup();
-                activeMarkers.push(sosMarker);
-                
-                // Force map focus to target immediately across boundaries
+                sosVisualRing = L.circle([lat, lon], { radius: 90, color: '#ff0000', fillColor: '#ff0000', fillOpacity: 0.5, className: 'leaflet-sos-pulse' }).addTo(map);
+                let m = L.marker([lat, lon]).addTo(map).bindPopup(`<b style="color:red;">🚨 OFFICER DOWN: ${currentUser.toUpperCase()}</b>`).openPopup();
+                activeMarkers.push(m);
                 map.setView([lat, lon], 18);
-            }, () => {
-                alert("SOS Error: Unable to determine field location vectors.");
-            }, {enableHighAccuracy: true});
+            }, null, {enableHighAccuracy: true});
         }
 
-        // Automated 911 Impact / Disconnect Duress Listener
         function initDuressAccelerometer() {
             if (window.DeviceMotionEvent) {
                 window.addEventListener('devicemotion', event => {
                     let acceleration = event.accelerationIncludingGravity;
                     let totalForce = Math.sqrt(acceleration.x * acceleration.x + acceleration.y * acceleration.y + acceleration.z * acceleration.z);
-                    
-                    // Threshold mapping tracking severe structural impact forces (g-force spikes)
-                    if (totalForce > 35) { 
-                        window.removeEventListener('devicemotion', this);
-                        executeAutomatedDuressCountdown();
-                    }
+                    if (totalForce > 35) { window.removeEventListener('devicemotion', this); executeAutomatedDuressCountdown(); }
                 });
             }
         }
 
         function executeAutomatedDuressCountdown() {
-            logEvent("⚠️ ACCELEROMETER SENSOR: High-impact event/struggle signature detected on operator device.");
+            logEvent("⚠️ ACCELEROMETER SENSOR: High-impact event signature detected on operator device.");
             let countdown = 5;
-            
-            let duressTimer = setInterval(() => {
-                if (countdown > 0) {
-                    // Audible check simulated or natively linked out to web view frequencies
-                    console.log(`DURESS TIMEOUT: ${countdown} seconds remaining to cancel...`);
-                    countdown--;
-                } else {
-                    clearInterval(duressTimer);
-                    triggerAutomated911Call();
-                }
-            }, 1000);
-            
-            // Allow manual touch override bypass if it was an accidental drop
+            let duressTimer = setInterval(() => { if (countdown > 0) { countdown--; } else { clearInterval(duressTimer); triggerAutomated911Call(); } }, 1000);
             let bypass = confirm(`WARNING: Tactical impact detected. System initiating emergency direct dispatch in 5 seconds. Press Cancel to abort.`);
-            if (bypass) {
-                clearInterval(duressTimer);
-                logEvent("DURESS BYPASS: Emergency automated dispatch manually aborted by operator.");
-                initDuressAccelerometer(); // Rearm array
-            }
+            if (bypass) { clearInterval(duressTimer); logEvent("DURESS BYPASS: Emergency automated dispatch manually aborted by operator."); initDuressAccelerometer(); }
         }
 
-        function triggerAutomated911Call() {
-            logEvent("🚨 CRITICAL AUTOMATED TRACE: Officer incapacitated or phone separated in struggle. Initializing auto-dial 911 emergency telemetry payload.");
-            // Native web API call link interface hook
-            window.location.href = "tel:911";
-            triggerSOSAlert();
-        }
+        function triggerAutomated911Call() { logEvent("🚨 CRITICAL AUTOMATED TRACE: Initializing auto-dial 911 emergency telemetry payload."); window.location.href = "tel:911"; triggerSOSAlert(); }
 
         map.on('click', e => {
             if (activeType) {
@@ -455,26 +416,16 @@
         function createCrossfireVector(ptA, ptB) {
             let line = L.polyline([ptA.latlng, ptB.latlng], {color: '#FF8C00', weight: 4, dashArray: '4, 4'}).addTo(map);
             let dist = ptA.latlng.distanceTo(ptB.latlng) * 3.28084;
-            
             let labelMarker = L.marker(line.getCenter(), { icon: L.divIcon({ className: 'orange-dist-label', html: `${dist.toFixed(0)} FT` }) }).addTo(map);
             let vectorObj = { line, labelMarker, ptA, ptB };
-            
-            labelMarker.on('click', function(ev) {
-                L.DomEvent.stopPropagation(ev);
-                if(currentRole !== 'commander') return;
-                map.removeLayer(line); map.removeLayer(labelMarker);
-                crossfireVectors = crossfireVectors.filter(v => v !== vectorObj);
-            });
-            
+            labelMarker.on('click', function(ev) { L.DomEvent.stopPropagation(ev); if(currentRole !== 'commander') return; map.removeLayer(line); map.removeLayer(labelMarker); crossfireVectors = crossfireVectors.filter(v => v !== vectorObj); });
             crossfireVectors.push(vectorObj);
         }
 
         function updateCrossfireDimensionality() {
             crossfireVectors.forEach(v => {
-                let posA = v.ptA.marker ? v.ptA.marker.getLatLng() : v.ptA.latlng;
-                let posB = v.ptB.marker ? v.ptB.marker.getLatLng() : v.ptB.latlng;
-                v.line.setLatLngs([posA, posB]);
-                v.labelMarker.setLatLng(v.line.getCenter());
+                let posA = v.ptA.marker ? v.ptA.marker.getLatLng() : v.ptA.latlng; let posB = v.ptB.marker ? v.ptB.marker.getLatLng() : v.ptB.latlng;
+                v.line.setLatLngs([posA, posB]); v.labelMarker.setLatLng(v.line.getCenter());
                 v.labelMarker.setIcon(L.divIcon({ className: 'orange-dist-label', html: `${(posA.distanceTo(posB) * 3.28084).toFixed(0)} FT` }));
             });
         }
@@ -486,12 +437,74 @@
                 btn.innerText = "TRAP N TRACE [ON]"; btn.style.borderColor = "#FF8C00"; box.style.display = "flex";
                 let scanCount = 0;
                 trapTraceInterval = setInterval(() => {
-                    scanCount++;
-                    document.getElementById('radarPing').innerText = `PING: ${Math.floor(Math.random() * 20) + 10}ms`;
+                    scanCount++; document.getElementById('radarPing').innerText = `PING: ${Math.floor(Math.random() * 20) + 10}ms`;
                     if(scanCount % 3 === 0) { statusText.innerText = `SCANNING APEX NODE ID [${Math.floor(Math.random()*800)+100}]...`; } 
                     else if (scanCount % 3 === 1) { statusText.innerText = "TRIANGULATING MOBILE TELEMETRY CELL STRINGS..."; } 
                     else { statusText.innerText = "INTERCEPTING MULTI-CHANNEL DATA PACKETS..."; }
                 }, 2000);
             } else {
                 btn.innerText = "TRAP N TRACE [OFF]"; btn.style.borderColor = "#111"; box.style.display = "none";
-                clearInterval(trapTraceInterval); trapTraceInterval
+                clearInterval(trapTraceInterval); trapTraceInterval = null;
+            }
+        }
+
+        function searchAddr() {
+            if (currentRole !== 'commander') return;
+            const q = document.getElementById('addrInput').value;
+            const radiusFeet = parseFloat(document.getElementById('radiusSlider').value);
+            fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(q))
+                .then(r => r.json()).then(d => { 
+                    if(d.length > 0) {
+                        perimeterCenter = [d[0].lat, d[0].lon]; map.setView(perimeterCenter, 15);
+                        drawPerimeter(radiusFeet);
+                        document.getElementById('leFormAddr').value = q; document.getElementById('frFormAddr').value = q;
+                    } 
+                });
+        }
+
+        function drawPerimeter(feet) {
+            if (searchPerimeter) map.removeLayer(searchPerimeter);
+            if (!perimeterCenter) return;
+            searchPerimeter = L.circle(perimeterCenter, { radius: feet / 3.28084, color: '#00661a', fillColor: '#00ff41', fillOpacity: 0.12, weight: 4, dashArray: '8, 8' }).addTo(map);
+        }
+
+        function adjustPerimeter(val) {
+            document.getElementById('radiusVal').innerText = val + " FT";
+            if (perimeterCenter && currentRole === 'commander') { drawPerimeter(parseFloat(val)); }
+        }
+
+        function activateGPS() {
+            navigator.geolocation.getCurrentPosition(p => {
+                let m = L.marker([p.coords.latitude, p.coords.longitude]).addTo(map);
+                activeMarkers.push(m); map.setView([p.coords.latitude, p.coords.longitude], 16);
+            }, null, {enableHighAccuracy: true});
+        }
+
+        function setActiveForm(type) {
+            document.getElementById('formContainerLE').classList.remove('active'); document.getElementById('formContainerFR').classList.remove('active');
+            if(type === 'LE') document.getElementById('formContainerLE').classList.add('active');
+            else document.getElementById('formContainerFR').classList.add('active');
+        }
+
+        function generateReport() {
+            const targetBoxes = document.getElementsByClassName('reportLogClass');
+            for(let i = 0; i < targetBoxes.length; i++) {
+                targetBoxes[i].innerHTML = "";
+                eventLog.forEach(e => targetBoxes[i].innerHTML += `[${e.time}] &gt;&gt; ${e.desc}<br>`);
+            }
+            document.getElementById('leFormDate').value = new Date().toISOString().substring(0,10);
+            document.getElementById('frFormDate').value = new Date().toISOString().substring(0,10);
+            document.getElementById('reportModal').style.display = 'block';
+        }
+
+        function resetConsole() {
+            activeMarkers.forEach(m => map.removeLayer(m)); drawingLayers.forEach(l => map.removeLayer(l));
+            crossfireVectors.forEach(v => { map.removeLayer(v.line); map.removeLayer(v.labelMarker); });
+            if (searchPerimeter) map.removeLayer(searchPerimeter); if (trapTraceInterval) toggleTrapTrace();
+            if (sosVisualRing) map.removeLayer(sosVisualRing);
+            activeMarkers = []; drawingLayers = []; crossfireVectors = []; eventLog = []; searchPerimeter = null; perimeterCenter = null; sosVisualRing = null;
+            sessionStorage.clear(); window.location.href = 'signin.html';
+        }
+    </script>
+</body>
+</html>
