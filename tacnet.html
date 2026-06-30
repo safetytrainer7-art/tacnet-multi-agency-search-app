@@ -2,15 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>TACNET - RECON CP MASTER</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="TACNET" />
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body, html { margin:0; padding:0; height:100%; width:100%; background:#000; color:#00ff41; font-family: -apple-system, BlinkMacSystemFont, monospace; overflow: hidden; }
         .main-ui { display: flex; flex-direction: column; height: 100vh; width: 100vw; box-sizing: border-box; position: relative; }
         
-        /* Row 1: Streamlined Top Address/Map Type Taskbar */
+        /* Row 1: Top Navigation Bar Header Track */
         .top-bar { height: 45px; background:#001a00; border-bottom:2px solid #00ff41; display:flex; padding: 0 10px; align-items:center; justify-content: space-between; gap:12px; box-sizing: border-box; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; flex-shrink: 0; }
         .search-container { display:flex; gap:6px; align-items:center; }
         .map-toggles { display:flex; gap:4px; }
@@ -23,31 +27,31 @@
            EARL'S MASTER UNDERGROUND CONSOLE SYSTEM (SLIDES UP ON COMMAND)
            ========================================================================== */
         .bottom-drawer-tray {
-            position: absolute; left: 0; bottom: -155px; /* Safely tucked away entirely under the fold */
-            width: 100vw; height: 155px; background: rgba(0, 0, 0, 0.95);
+            position: absolute; left: 0; bottom: -175px; /* Safely shunted down below frame */
+            width: 100vw; height: 175px; background: rgba(0, 0, 0, 0.96);
             display: flex; flex-direction: column; z-index: 5000;
             transition: bottom 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
             box-sizing: border-box;
+            border-top: 1px solid #00ff41;
         }
-        .bottom-drawer-tray.open { bottom: 0; /* Pops up clean on click */ }
+        .bottom-drawer-tray.open { bottom: 15px; /* Elevated 15px from bottom screen lip */ }
         
-        /* The Master Tab Toggle Button Pinned on Top of the Tray */
+        /* Clickable Access Tab Module */
         .tray-toggle-tab {
             position: absolute; top: -34px; left: 50%; transform: translateX(-50%);
-            width: 130px; height: 34px; background: #001a00; border: 2px solid #00ff41; border-bottom: none;
+            width: 140px; height: 34px; background: #001a00; border: 2px solid #00ff41; border-bottom: none;
             border-radius: 6px 6px 0 0; color: #00ff41; font-weight: bold; font-size: 11px;
             display: flex; align-items: center; justify-content: center; cursor: pointer;
             z-index: 5001; text-transform: uppercase; letter-spacing: 0.5px;
-            box-shadow: 0 -4px 10px rgba(0, 255, 65, 0.25);
         }
         
-        /* Internal Scrollable Control Panel Row Track */
-        .console-row { height: 90px; border-bottom: 1px solid #00ff41; padding: 0 10px; box-sizing: border-box; overflow-x: auto; white-space: nowrap; display: flex; gap: 10px; align-items: center; -webkit-overflow-scrolling: touch; }
+        /* ROW SWAP - Top Line inside Drawer: Multi-Agency Searchers Legend Track */
+        .legend-bar { height: 75px; border-bottom: 1px solid #222; padding: 0 10px; box-sizing: border-box; overflow-x: auto; white-space: nowrap; display: flex; gap: 15px; align-items: center; -webkit-overflow-scrolling: touch; }
         
-        /* Internal Scrollable Multi-Agency Marker Legend Track */
-        .legend-bar { height: 65px; padding: 0 10px; box-sizing: border-box; overflow-x: auto; white-space: nowrap; display: flex; gap: 15px; align-items: center; -webkit-overflow-scrolling: touch; }
+        /* ROW SWAP - Bottom Line inside Drawer: Console Operational Tools Track */
+        .console-row { height: 95px; padding: 0 10px; box-sizing: border-box; overflow-x: auto; white-space: nowrap; display: flex; gap: 10px; align-items: center; -webkit-overflow-scrolling: touch; }
         
-        /* High-Visibility Tactically Sized Touch UI Targets */
+        /* High-Visibility Touch Target Profiles */
         .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding: 10px 16px; cursor:pointer; font-weight:bold; text-transform:uppercase; font-size: 13px; border-radius: 5px; display: inline-block; height: 40px; box-sizing: border-box; }
         .btn-map-type { background:#001a00; color:#00ff41; border:1px solid #00ff41; padding:4px 8px; cursor:pointer; font-size:11px; font-weight: bold; border-radius: 3px; }
         .btn-map-type.active { background:#00ff41; color:#000; font-weight:bold; }
@@ -72,12 +76,10 @@
         .report-selector-bar { display: flex; gap: 10px; background: #000; padding: 10px; border: 1px solid #00ff41; margin-bottom: 15px; align-items: center; }
         .report-form-container { background: #fff; color: #000; padding: 15px; box-sizing: border-box; max-width: 800px; margin: 0 auto; display: none; }
         .report-form-container.active { display: block; }
-        .report-string-box { border: 1px solid #000; background: #f9f9f9; padding: 8px; font-family: monospace; font-size: 11px; height: 110px; overflow-y: auto; color: #000; }
     </style>
 </head>
 <body>
     <div class="main-ui">
-        <!-- ROW 1: Top Navigation Bar Header Track -->
         <div class="top-bar">
             <div class="search-container">
                 <button class="btn-tac" style="padding: 0 12px; height: 30px; font-size: 12px; width: auto;" onclick="window.location.href='signin.html'">⬅</button>
@@ -88,6 +90,8 @@
                     <input type="range" id="radiusSlider" min="200" max="10560" value="2500" oninput="adjustPerimeter(this.value)">
                     <span id="radiusVal" style="min-width: 45px;">2500 FT</span>
                 </div>
+                
+                <button class="btn-tac" id="freezeMapBtn" style="height:30px; padding:0 10px; border-color:#00ff41; color:#00ff41; width:auto;" onclick="toggleMapFreeze()">MAP LOCK [OFF]</button>
             </div>
 
             <div class="map-toggles">
@@ -97,29 +101,12 @@
             </div>
         </div>
 
-        <!-- ROW 2: Map Window Canvas Frame -->
         <div class="map-wrapper">
             <div id="map"></div>
             
-            <!-- THE TACTICAL UNDERGROUND TRAY MECHANISM ASSEMBLY -->
             <div class="bottom-drawer-tray" id="masterTray">
-                <!-- Clickable Access Node Tab -->
                 <div class="tray-toggle-tab" id="tabButton" onclick="toggleMasterTray()">▲ OPEN PANEL</div>
                 
-                <!-- Scrollable Console Tools Track -->
-                <div class="console-row">
-                    <button class="btn-tac btn-sos" onclick="triggerSOSAlert(); toggleMasterTray();">🚨 SOS ALERT</button>
-                    <button class="btn-tac" onclick="setMarker('FND'); toggleMasterTray();">🔍 ARTICLE FIND</button>
-                    <button class="btn-tac" onclick="activateGPS(); toggleMasterTray();">ACTIVATE UNITS</button>
-                    <button class="btn-tac" style="border-color: #ffd700; color: #ffd700;" onclick="triggerTreeTopHeight(); toggleMasterTray();">🔎 TREETOP VIEW</button>
-                    <button class="btn-tac" id="crossfireBtn" onclick="toggleCrossfireMode(); toggleMasterTray();">CROSSFIRE DIST</button>
-                    <button class="btn-tac" id="trapTraceBtn" onclick="toggleTrapTrace()">TRAP N TRACE</button>
-                    <button class="btn-tac" style="border-color: #ff3333; color: #ff3333;" onclick="eraseLastLine(); toggleMasterTray();">❌ ERASE LINE</button>
-                    <button class="btn-tac" style="border-color: #00ff41; color: #00ff41;" onclick="generateReport()">📄 VIEW REPORT</button>
-                    <button class="btn-tac btn-danger" onclick="resetConsole()">TERMINATE SEARCH</button>
-                </div>
-                
-                <!-- Scrollable Searchers Legend Track -->
                 <div class="legend-bar">
                     <span class="legend-item" onclick="setMarker('LE'); toggleMasterTray();">🔵 LE</span>
                     <span class="legend-item" onclick="setMarker('K9'); toggleMasterTray();">🔘 K9</span>
@@ -138,11 +125,22 @@
                     <span class="legend-item" onclick="setMarker('FED'); toggleMasterTray();"><span style="color:#ffd700;">🟡</span> FED</span>
                     <span class="legend-item" onclick="setMarker('VSP'); toggleMasterTray();"><span style="color:#0000ff;">🔵</span> VSP</span>
                 </div>
+
+                <div class="console-row">
+                    <button class="btn-tac btn-sos" onclick="triggerSOSAlert(); toggleMasterTray();">🚨 SOS ALERT</button>
+                    <button class="btn-tac" onclick="setMarker('FND'); toggleMasterTray();">🔍 ARTICLE FIND</button>
+                    <button class="btn-tac" onclick="activateGPS(); toggleMasterTray();">ACTIVATE UNITS</button>
+                    <button class="btn-tac" style="border-color: #ffd700; color: #ffd700;" onclick="triggerTreeTopHeight(); toggleMasterTray();">🔎 TREETOP VIEW</button>
+                    <button class="btn-tac" id="crossfireBtn" onclick="toggleCrossfireMode(); toggleMasterTray();">CROSSFIRE DIST</button>
+                    <button class="btn-tac" id="trapTraceBtn" onclick="toggleTrapTrace()">TRAP N TRACE</button>
+                    <button class="btn-tac" style="border-color: #ff3333; color: #ff3333;" onclick="eraseLastLine(); toggleMasterTray();">❌ ERASE LINE</button>
+                    <button class="btn-tac" style="border-color: #00ff41; color: #00ff41;" onclick="generateReport()">📄 VIEW REPORT</button>
+                    <button class="btn-tac btn-danger" onclick="resetConsole()">TERMINATE SEARCH</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Legal Incident Documentation Overlay -->
     <div id="reportModal" class="modal">
         <div class="report-selector-bar">
             <button class="btn-tac" style="height:auto;" onclick="document.getElementById('reportModal').style.display='none'">⬅ MAP</button>
@@ -160,7 +158,30 @@
     </div>
 
     <script>
-        // Toggle Underground Drawer Logic safely
+        let isMapLocked = false;
+
+        // Freeze map interaction completely to clear thumb interference when scrolling tracks
+        function toggleMapLockViaButton() {
+            const btn = document.getElementById('lockFreezeBtn');
+            crossfireActive = false;
+            document.getElementById('crossfireBtn').classList.remove('btn-active');
+            
+            if(!map.dragging.enabled()) {
+                map.dragging.enable();
+                if(map.tap) map.tap.enable();
+                btn.innerText = "LOCK MAP";
+                btn.style.borderColor = "#00ff41";
+                btn.style.color = "#00ff41";
+                btn.style.background = "#000";
+            } else {
+                map.dragging.disable();
+                if(map.tap) map.tap.disable();
+                btn.innerText = "MAP LOCKED";
+                btn.style.background = "#00ff41";
+                btn.style.color = "#000";
+            }
+        }
+
         function toggleMasterTray() {
             const tray = document.getElementById('masterTray');
             const tab = document.getElementById('tabButton');
@@ -177,7 +198,6 @@
             setTimeout(() => { map.invalidateSize(); }, 400);
         });
 
-        // Initialize Map
         const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 20 });
         const terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 20 });
         const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 20 });
@@ -201,7 +221,7 @@
             eventLog.push({ time, desc });
         }
 
-        function setMarker(type) { activeType = type; crossfireActive = false; }
+        function setMarker(type) { activeType = type; crossfireActive = false; if(document.getElementById('crossfireBtn')) document.getElementById('crossfireBtn').classList.remove('btn-active'); }
         function triggerTreeTopHeight() { map.setZoom(20); }
 
         function triggerSOSAlert() {
@@ -238,7 +258,6 @@
                 let borderCol = (activeType === 'VSP') ? '#ffd700' : '#fff';
                 let m = L.circleMarker(e.latlng, { radius: 14, fillColor: unitColors[activeType], color: borderCol, fillOpacity: 1, weight: 3, draggable: true }).addTo(map);
                 m.unitType = activeType;
-                
                 if(activeType === 'SUS') m.bindTooltip("SUSPECT LKL", {permanent: true, direction: 'top', className: 'orange-dist-label'}).openTooltip();
                 m.on('drag', function() { updateCrossfireDimensionality(); });
                 m.on('click', function(ev) { L.DomEvent.stopPropagation(ev); map.removeLayer(this); activeMarkers = activeMarkers.filter(item => item !== this); updateCrossfireDimensionality(); });
