@@ -7,7 +7,6 @@
         body, html { margin:0; padding:0; height:100%; width:100%; background:#000; color:#00ff41; font-family: 'Courier New', monospace; overflow: hidden; }
         .main-ui { display:flex; flex-direction:column; height:100vh; width:100vw; }
         
-        /* Tactical Header Styling */
         .top-bar { padding:10px 20px; background:#001a00; border-bottom:2px solid #00ff41; display:flex; gap:15px; align-items:center; justify-content: space-between; }
         .search-container { display:flex; gap:15px; align-items:center; }
         .slider-box { display:flex; align-items:center; gap:8px; font-weight:bold; font-size:12px; }
@@ -18,13 +17,21 @@
         .sidebar { width:260px; background:#000; padding:15px; border-left:2px solid #00ff41; display:flex; flex-direction:column; gap:12px; box-sizing: border-box; overflow-y: auto; }
         .legend-bar { height:75px; background:#000; display:flex; align-items:center; overflow-x:auto; white-space:nowrap; gap:25px; padding:0 20px; border-top:2px solid #00ff41; box-sizing: border-box; }
         
-        /* UI Inputs and Buttons */
-        .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding:10px; cursor:pointer; font-weight:bold; text-transform:uppercase; text-align: center; }
+        .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding:10px; cursor:pointer; font-weight:bold; text-transform:uppercase; text-align: center; width: 100%; }
         .btn-map-type { background:#001a00; color:#00ff41; border:1px solid #00ff41; padding:6px 12px; cursor:pointer; font-size:12px; }
         .btn-map-type.active { background:#00ff41; color:#000; font-weight:bold; }
         .btn-danger { color:red; border-color:red; }
+        
+        /* High-Visibility SOS UI Pulse Elements */
+        .btn-sos { background: #ff0000 !important; color: #fff !important; border: 2px solid #fff !important; font-size: 14px; animation: pulseSOS 1s infinite; font-weight: bold; }
+        @keyframes pulseSOS { 0% { background: #ff0000; box-shadow: 0 0 10px #ff0000; } 50% { background: #880000; box-shadow: 0 0 0px #000; } 100% { background: #ff0000; box-shadow: 0 0 10px #ff0000; } }
+        
+        /* Flashing Map Overlay CSS for Live Downed Officer Circle */
+        .leaflet-sos-pulse { animation: mapPulse 1.2s infinite ease-out; }
+        @keyframes mapPulse { 0% { stroke-width: 4; stroke-opacity: 1; fill-opacity: 0.6; } 100% { stroke-width: 25; stroke-opacity: 0; fill-opacity: 0; } }
+
         input, select, textarea { background:#000; color:#fff; border:1px solid #444; padding:6px; box-sizing: border-box; font-family: monospace; }
-        input::placeholder { color: #555; }
+        .form-block input, .form-block textarea { background: #fff !important; color: #000 !important; border: 1px solid #000 !important; width: 100%; display: block; padding: 4px; box-sizing: border-box; font-size: 13px; }
         
         .large-toggle { width: 22px; height: 22px; cursor: pointer; accent-color: #00ff41; }
         input[type="range"] { -webkit-appearance: none; background: #002b00; border: 1px solid #00ff41; height: 8px; width: 120px; cursor: pointer; }
@@ -33,61 +40,51 @@
         .toggle-row { display:flex; justify-content:space-between; align-items:center; width:100%; font-size:14px; font-weight:bold; }
         .legend-item { cursor:pointer; font-size:26px; font-weight:bold; display:inline-flex; align-items:center; gap:8px; }
         
-        .radar-box { border: 1px solid #00ff41; background: #020f02; padding: 8px; font-size: 11px; display: none; flex-direction: column; gap:4px; font-family: monospace; }
-        .radar-scan-line { width: 100%; background: #00ff41; height: 2px; opacity: 0.7; animation: scan 2s linear infinite; }
-        @keyframes scan { 0% { transform: translateY(0px); } 50% { transform: translateY(40px); } 100% { transform: translateY(0px); } }
-        .orange-dist-label { background: #000; color: #FFA500; border: 1px solid #FFA500; font-weight: bold; font-family: monospace; padding: 2px 5px; font-size: 12px; border-radius: 3px; cursor: pointer; }
-
-        /* ==========================================================================
-           PROFESSIONAL REPORT SYSTEM STYLING (COURT / ATTORNEY COMPLIANT)
-           ========================================================================== */
+        .radar-box { border: 1px solid #00ff41; background: #020f02; padding: 12px; font-size: 11px; display: none; flex-direction: column; gap:6px; font-family: monospace; position: relative; overflow: hidden; height: 60px; box-sizing: border-box; width: 100%; margin-top: 5px; }
+        .radar-scan-line { position: absolute; top: 0; left: 0; height: 100%; width: 4px; background: #00ff41; opacity: 0.9; box-shadow: 0 0 10px #00ff41; animation: scanAcross 2.5s linear infinite; }
+        @keyframes scanAcross { 0% { left: 0%; } 50% { left: 100%; } 100% { left: 0%; } }
+        
+        .orange-dist-label { background: #000; color: #FF8C00; border: 1px solid #FF8C00; font-weight: bold; font-family: monospace; padding: 2px 5px; font-size: 12px; border-radius: 3px; cursor: pointer; white-space: nowrap; }
         .modal { display:none; position:fixed; top:2%; left:2%; width:96%; height:96%; background:#111; border:2px solid #00ff41; z-index:9999; padding:20px; box-sizing:border-box; overflow-y:auto; color:#fff; font-family: 'Times New Roman', Times, serif; }
         .report-selector-bar { display: flex; gap: 10px; background: #000; padding: 10px; border: 1px solid #00ff41; margin-bottom: 15px; align-items: center; }
-        .report-form-container { background: #fff; color: #000; padding: 30px; box-sizing: border-box; max-width: 850px; margin: 0 auto; display: none; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .report-form-container { background: #fff; color: #000; padding: 30px; box-sizing: border-box; max-width: 850px; margin: 0 auto; display: none; }
         .report-form-container.active { display: block; }
-        
-        .form-header { text-align: center; margin-bottom: 20px; border: 1px dashed #000; padding: 10px; }
-        .form-header h1 { margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; font-family: 'Times New Roman', serif; }
+        .form-header { text-align: center; margin-bottom: 20px; border: 1px solid #000; padding: 10px; }
+        .form-header h1 { margin: 0; font-size: 24px; text-transform: uppercase; font-family: 'Times New Roman', serif; }
         .form-header h2 { margin: 5px 0 0 0; font-size: 18px; font-weight: normal; }
-        
-        /* Grid Layouts for Official Forms */
         .form-row { display: flex; width: 100%; margin-bottom: 10px; gap: 10px; }
-        .form-block { border: 1px solid #000; padding: 4px 8px; display: flex; flex-direction: column; background: #fcfcfc; }
+        .form-block { border: 1px solid #000; padding: 4px 8px; display: flex; flex-direction: column; background: #fcfcfc; flex: 1; }
         .form-block label { font-size: 10px; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; color: #000; }
-        .form-block input, .form-block select, .form-block textarea { background: transparent !important; color: #000 !important; border: none !important; font-size: 13px; font-family: 'Times New Roman', serif; padding: 2px 0; width: 100%; }
-        .form-block textarea { resize: none; }
+        .section-banner { background: #000; color: #fff; font-size: 12px; font-weight: bold; padding: 4px 8px; text-transform: uppercase; margin: 15px 0 8px 0; }
+        .report-string-box { border: 1px solid #000; background: #f9f9f9; padding: 10px; font-family: monospace; font-size: 11px; height: 120px; overflow-y: auto; margin-bottom: 15px; color: #000; }
         
-        .section-banner { background: #000; color: #fff; font-size: 12px; font-weight: bold; padding: 4px 8px; text-transform: uppercase; margin: 15px 0 8px 0; letter-spacing: 0.5px; }
-        .report-string-box { border: 1px solid #000; background: #f9f9f9; padding: 10px; font-family: monospace; font-size: 11px; max-height: 150px; overflow-y: auto; margin-bottom: 15px; color: #000; line-height: 1.4; }
-        
-        /* Print Configuration Overrides */
         @media print {
             body, html { background: #fff !important; color: #000 !important; overflow: visible !important; height: auto !important; }
             .main-ui, .legend-bar, .sidebar, .top-bar, .modal-actions, #map, .report-selector-bar, .no-print { display: none !important; }
             .modal { display: block !important; position: relative !important; width: 100% !important; height: auto !important; top: 0 !important; left: 0 !important; border: none !important; background: #fff !important; color: #000 !important; padding: 0 !important; }
-            .report-form-container { display: none !important; padding: 0 !important; box-shadow: none !important; background: #fff !important; }
+            .report-form-container { display: none !important; padding: 0 !important; background: #fff !important; }
             .report-form-container.active { display: block !important; }
             .form-block { background: #fff !important; }
-            .report-string-box { background: #fff !important; max-height: none !important; overflow: visible !important; }
         }
     </style>
 </head>
 <body>
     <div class="main-ui">
-        <!-- Top Bar with Real-Time Slider and Navigation Back Arrow -->
         <div class="top-bar">
             <div class="search-container">
-                <button class="btn-tac" style="padding: 6px 12px; font-size: 16px;" onclick="window.location.href='signin.html'">⬅</button>
+                <button class="btn-tac" style="padding: 6px 12px; font-size: 16px; width: auto;" onclick="window.location.href='signin.html'">⬅</button>
                 <input id="addrInput" placeholder="Enter Target Address..." style="width:230px;">
-                <button class="btn-tac" onclick="searchAddr()">GO</button>
+                <button class="btn-tac" id="cmdGoBtn" style="width: auto;" onclick="searchAddr()">GO</button>
                 
-                <div class="slider-box">
+                <div class="slider-box" id="cmdSliderBox">
                     <span>PERIMETER:</span>
                     <input type="range" id="radiusSlider" min="200" max="10560" value="2500" oninput="adjustPerimeter(this.value)">
                     <span id="radiusVal" style="min-width: 60px;">2500 FT</span>
                 </div>
             </div>
             
+            <div id="roleDisplayBadge" style="font-weight: bold; padding: 5px 10px; border: 1px solid #00ff41; font-size: 12px;">ASSET: SEARCHER</div>
+
             <div class="map-toggles">
                 <button class="btn-map-type active" id="btn-street" onclick="switchBaseLayer('street')">STREETS</button>
                 <button class="btn-map-type" id="btn-terrain" onclick="switchBaseLayer('terrain')">TERRAIN</button>
@@ -95,41 +92,38 @@
             </div>
         </div>
 
-        <!-- Main Workspace -->
         <div class="middle-section">
             <div id="map"></div>
             <div class="sidebar">
-                <h3>COMMAND CONSOLE</h3>
-                <button class="btn-tac" onclick="activateGPS()">ACTIVATE SEARCHERS</button>
-                <button class="btn-tac" style="border-color: #ffd700; color: #ffd700;" onclick="triggerTreeTopHeight()">🔎 TREE TOP VIEW</button>
+                <h3 id="panelTitle">FIELD CONSOLE</h3>
+                <button class="btn-tac btn-sos" onclick="triggerSOSAlert()">🚨 OFFICER DOWN SOS 🚨</button>
+                <button class="btn-tac" id="articleFindBtn" onclick="setMarker('FND')">🔍 DEPLOY ARTICLE FIND</button>
                 
-                <div class="toggle-row">
-                    <span>MAP LOCK</span> 
-                    <input type="checkbox" id="lockToggle" class="large-toggle" onchange="toggleMapLock(this.checked)">
-                </div>
-                <div class="toggle-row">
-                    <span>RED PEN</span> 
-                    <input type="checkbox" id="penToggle" class="large-toggle" onchange="togglePenMode(this.checked)">
-                </div>
-                
-                <button class="btn-tac" style="border-color: #ff3333; color: #ff3333;" onclick="eraseLastLine()">❌ ERASE LAST LINE</button>
-                <button class="btn-tac" id="crossfireBtn" onclick="toggleCrossfireMode()">CROSSFIRE DIST</button>
-                <button class="btn-tac" id="trapTraceBtn" onclick="toggleTrapTrace()">TRAP N TRACE [OFF]</button>
-                
-                <!-- Live Trap N Trace Display Box -->
                 <div class="radar-box" id="radarDisplay">
                     <div class="radar-scan-line"></div>
-                    <div style="display:flex; justify-content:space-between; color:#00ff41;"><span id="radarIP">NET: SECURE</span><span id="radarPing">PING: 14ms</span></div>
-                    <div id="radarStatus" style="font-size:9px; color:#aaa;">SCANNING LOCAL TRANSCEIVERS...</div>
+                    <div style="display:flex; justify-content:space-between; color:#00ff41;"><span id="radarIP">NET: CONNECTED</span><span id="radarPing">14ms</span></div>
+                    <div id="radarStatus" style="font-size:9px; color:#aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">SCANNING LOCAL FREQUENCIES...</div>
                 </div>
 
-                <button class="btn-tac" style="border-color: #00ff41; color: #00ff41;" onclick="generateReport()">📄 PREVIEW REPORT HERE</button>
-                <button class="btn-tac btn-danger" onclick="generateReport()">TERMINATE SEARCH</button>
+                <div id="commanderControls" style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+                    <hr style="border-color: #00ff41; width: 100%;">
+                    <button class="btn-tac" onclick="activateGPS()">ACTIVATE SEARCHERS</button>
+                    <button class="btn-tac" style="border-color: #ffd700; color: #ffd700;" onclick="triggerTreeTopHeight()">🔎 TREE TOP VIEW</button>
+                    
+                    <div class="toggle-row"><span>MAP LOCK</span><input type="checkbox" id="lockToggle" class="large-toggle" onchange="toggleMapLock(this.checked)"></div>
+                    <div class="toggle-row"><span>RED PEN</span><input type="checkbox" id="penToggle" class="large-toggle" onchange="togglePenMode(this.checked)"></div>
+                    
+                    <button class="btn-tac" style="border-color: #ff3333; color: #ff3333;" onclick="eraseLastLine()">❌ ERASE LAST LINE</button>
+                    <button class="btn-tac" id="crossfireBtn" onclick="toggleCrossfireMode()">CROSSFIRE DIST</button>
+                    <button class="btn-tac" id="trapTraceBtn" onclick="toggleTrapTrace()">TRAP N TRACE [OFF]</button>
+
+                    <button class="btn-tac" style="border-color: #00ff41; color: #00ff41;" onclick="generateReport()">📄 PREVIEW REPORT HERE</button>
+                    <button class="btn-tac btn-danger" onclick="generateReport()">TERMINATE SEARCH</button>
+                </div>
             </div>
         </div>
 
-        <!-- Enlarged Scrollable Legend -->
-        <div class="legend-bar">
+        <div class="legend-bar" id="tacticalLegend">
             <span class="legend-item" onclick="setMarker('LE')">🔵 LE</span>
             <span class="legend-item" onclick="setMarker('K9')">🔘 K9</span>
             <span class="legend-item" onclick="setMarker('SAR')">🔴 SAR</span>
@@ -149,195 +143,141 @@
         </div>
     </div>
 
-    <!-- Professional Integrated Reporting System Overlay -->
     <div id="reportModal" class="modal">
         <div class="report-selector-bar no-print">
-            <button class="btn-tac" style="padding: 5px 15px;" onclick="document.getElementById('reportModal').style.display='none'">⬅ BACK TO MAP</button>
-            <span style="font-weight: bold; margin-left: 15px;">SELECT ADMISSIBLE RECORD TRANSCRIPT TYPE:</span>
-            <button class="btn-tac" id="toggleLEFormBtn" style="border-color:#00ff41;" onclick="setActiveForm('LE')">LAW ENFORCEMENT REPORT</button>
-            <button class="btn-tac" id="toggleFRFormBtn" style="border-color:#aaa;" onclick="setActiveForm('FR')">FIRST RESPONDER (FIRE/EMS/SAR) REPORT</button>
+            <button class="btn-tac" style="padding: 5px 15px; width:auto;" onclick="document.getElementById('reportModal').style.display='none'">⬅ BACK TO MAP</button>
+            <span style="font-weight: bold; margin-left: 15px;">SELECT ADMISSIBLE LOG TYPE:</span>
+            <button class="btn-tac" id="toggleLEFormBtn" style="border-color:#00ff41; width:auto;" onclick="setActiveForm('LE')">LAW ENFORCEMENT REPORT</button>
+            <button class="btn-tac" id="toggleFRFormBtn" style="border-color:#aaa; width:auto;" onclick="setActiveForm('FR')">FIRST RESPONDER</button>
         </div>
 
-        <!-- ==========================================================================
-           FORM A: TACNET LAW ENFORCEMENT INCIDENT REPORT
-           ========================================================================== -->
         <div id="formContainerLE" class="report-form-container active">
-            <div class="form-header">
-                <h1>TACNET</h1>
-                <h2>Law Enforcement Incident Report</h2>
-            </div>
-            
+            <div class="form-header"><h1>TACNET</h1><h2>Law Enforcement Incident Report</h2></div>
             <div class="form-row">
-                <div class="form-block" style="flex: 1;"><label>Fire Dept ID</label><input value="02312"></div>
-                <div class="form-block" style="flex: 1.2;"><label>Incident #</label><input placeholder="LE-2026-X1"></div>
-                <div class="form-block" style="flex: 1.2;"><label>Incident Date</label><input id="leFormDate" value="2026-06-30"></div>
-                <div class="form-block" style="flex: 1.5;"><label>Type of Call</label><input placeholder="Federal/State/Local LEO Ops"></div>
+                <div class="form-block"><label>Fire Dept ID</label><input type="text" value="02312"></div>
+                <div class="form-block"><label>Incident #</label><input type="text" placeholder="LE-2026-X1"></div>
+                <div class="form-block"><label>Incident Date</label><input type="text" id="leFormDate"></div>
+                <div class="form-block"><label>Type of Call</label><input type="text" placeholder="LE Ops Matrix"></div>
             </div>
-            
             <div class="form-row">
-                <div class="form-block" style="flex: 1;"><label>No. of Personnel</label><input placeholder="Total Officers"></div>
-                <div class="form-block" style="flex: 2;">
+                <div class="form-block"><label>No. of Personnel</label><input type="text" placeholder="Count"></div>
+                <div class="form-block">
                     <label>Incident Times</label>
-                    <div style="display:flex; gap:10px; font-size:11px;">
-                        <span>Alarm: <input style="width:60px; display:inline;" value="10-8"></span>
-                        <span>10-23: <input style="width:60px; display:inline;" placeholder="Arrived"></span>
-                        <span>10-24: <input style="width:60px; display:inline;" placeholder="Clear"></span>
-                    </div>
+                    <div style="font-size:11px;">Alarm: <input type="text" style="width:40px;" value="10-8"> 10-23: <input type="text" style="width:40px;"> 10-24: <input type="text" style="width:40px;"></div>
                 </div>
-                <div class="form-block" style="flex: 2.5;"><label>Other Depts Responding</label><input placeholder="VSP, Federal, K9 Tactical Units"></div>
+                <div class="form-block"><label>Other Depts Responding</label><input type="text" placeholder="Units"></div>
             </div>
-            
             <div class="form-row">
-                <div class="form-block" style="flex: 1;"><label>1st Unit On Scene</label><input placeholder="Command Asset"></div>
-                <div class="form-block" style="flex: 2.5;"><label>Highest Level @ Scene</label><input placeholder="Commanding Officer"></div>
+                <div class="form-block"><label>1st Unit On Scene</label><input type="text"></div>
+                <div class="form-block"><label>Highest Level @ Scene</label><input type="text"></div>
             </div>
-
-            <div style="border: 2px solid #000; padding: 10px; margin-top: 15px;">
-                <div class="form-block" style="margin-bottom:8px;"><label>Incident Address</label><input id="leFormAddr" placeholder="Target Search Sector Location"></div>
-                <div class="form-row">
-                    <div class="form-block" style="flex: 3;"><label>Patient / Subject Name</label><input placeholder="Full Legal Name"></div>
-                    <div class="form-block" style="flex: 1;"><label>Gender</label><input placeholder="M/F/UNK"></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-block" style="flex: 2;"><label>Street</label><input placeholder="Street Address"></div>
-                    <div class="form-block" style="flex: 1.5;"><label>City</label><input placeholder="City"></div>
-                    <div class="form-block" style="flex: 1;"><label>State</label><input placeholder="VA"></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-block" style="flex: 1.5;"><label>Patient Phone #</label><input placeholder="(###) ###-####"></div>
-                    <div class="form-block" style="flex: 1.2;"><label>DOB</label><input placeholder="YYYY-MM-DD"></div>
-                    <div class="form-block" style="flex: 1.5;"><label>SS#</label><input placeholder="###-##-####"></div>
-                    <div class="form-block" style="flex: 1.2;"><label>Race</label><input placeholder="Race/Identifier"></div>
-                </div>
+            <div style="border: 1px solid #000; padding: 10px; margin-top: 15px;">
+                <div class="form-block" style="margin-bottom:8px;"><label>Incident Address</label><input type="text" id="leFormAddr"></div>
+                <div class="form-row"><div class="form-block" style="flex:3;"><label>Subject Name</label><input type="text"></div><div class="form-block"><label>Gender</label><input type="text"></div></div>
+                <div class="form-row"><div class="form-block" style="flex:2;"><label>Street</label><input type="text"></div><div class="form-block"><label>City</label><input type="text"></div><div class="form-block"><label>State</label><input type="text"></div></div>
+                <div class="form-row"><div class="form-block"><label>Phone #</label><input type="text"></div><div class="form-block"><label>DOB</label><input type="text"></div><div class="form-block"><label>SS#</label><input type="text"></div><div class="form-block"><label>Race</label><input type="text"></div></div>
             </div>
-
             <div class="section-banner">Chronological Field Telemetry Logs</div>
             <div class="report-string-box reportLogClass"></div>
-
-            <div class="section-banner">Additional Patient / Subject Information</div>
-            <div class="form-block" style="margin-bottom:8px;"><label>Prior Medical History</label><input placeholder="Known diagnoses, conditions, injuries"></div>
-            <div class="form-block" style="margin-bottom:8px;"><label>If Yes Please Elaborate</label><textarea rows="2" placeholder="Specific physical or physiological details..."></textarea></div>
-            <div class="form-block"><label>Insurance Information</label><input placeholder="Carrier / Policy Data"></div>
-
+            <div class="section-banner">Additional Information</div>
+            <div class="form-block" style="margin-bottom:8px;"><label>Prior Medical History</label><input type="text"></div>
+            <div class="form-block" style="margin-bottom:8px;"><label>If Yes Please Elaborate</label><textarea rows="2"></textarea></div>
+            <div class="form-block"><label>Insurance Information</label><input type="text"></div>
             <div class="form-row" style="margin-top:15px;">
-                <div style="flex: 1; display:flex; flex-direction:column; gap:10px;">
-                    <div class="form-block"><label>Chief Complaint</label><textarea rows="2" placeholder="Primary complaint or status..."></textarea></div>
-                    <div class="form-block"><label>Alcohol / Drug Use Suspected</label><input placeholder="Yes / No / Pending"></div>
-                </div>
-                <div style="flex: 1; display:flex; flex-direction:column; gap:10px;">
-                    <div class="form-block"><label>Patient Transported</label><input placeholder="Yes / No"></div>
-                    <div class="form-block"><label>Transported To</label><input placeholder="Medical Facility Location"></div>
-                    <div class="form-block"><label>By What Department</label><input placeholder="Responding Transport Unit"></div>
-                </div>
+                <div style="flex:1; display:flex; flex-direction:column; gap:10px;"><div class="form-block"><label>Chief Complaint</label><textarea rows="2"></textarea></div><div class="form-block"><label>Alcohol / Drug Use Suspected</label><input type="text"></div></div>
+                <div style="flex:1; display:flex; flex-direction:column; gap:10px;"><div class="form-block"><label>Patient Transported</label><input type="text"></div><div class="form-block"><label>Transported To</label><input type="text"></div><div class="form-block"><label>By What Department</label><input type="text"></div></div>
             </div>
-
             <div class="section-banner">Detailed Information About Incident & Vital Readings</div>
-            <div class="form-block">
-                <label>Give Detailed Information About Incident and List All Vital Readings</label>
-                <textarea rows="5" placeholder="Enter formal prosecutorial or defense-admissible narrative..."></textarea>
-            </div>
+            <div class="form-block"><label>Narration Box</label><textarea rows="4"></textarea></div>
         </div>
 
-        <!-- ==========================================================================
-           FORM B: TACNET FIRST RESPONDER INCIDENT REPORT
-           ========================================================================== -->
         <div id="formContainerFR" class="report-form-container">
-            <div class="form-header">
-                <h1>TACNET</h1>
-                <h2>First Responder Incident Report</h2>
-            </div>
-            
+            <div class="form-header"><h1>TACNET</h1><h2>First Responder Incident Report</h2></div>
             <div class="form-row">
-                <div class="form-block" style="flex: 1;"><label>Fire Dept ID</label><input value="02312"></div>
-                <div class="form-block" style="flex: 1.2;"><label>Incident #</label><input placeholder="FR-2026-X1"></div>
-                <div class="form-block" style="flex: 1.2;"><label>Incident Date</label><input id="frFormDate" value="2026-06-30"></div>
-                <div class="form-block" style="flex: 1.5;"><label>Type of Call</label><input placeholder="Fire / EMS / SAR Operations"></div>
+                <div class="form-block"><label>Fire Dept ID</label><input type="text" value="02312"></div>
+                <div class="form-block"><label>Incident #</label><input type="text" placeholder="FR-2026-X1"></div>
+                <div class="form-block"><label>Incident Date</label><input type="text" id="frFormDate"></div>
+                <div class="form-block"><label>Type of Call</label><input type="text" placeholder="Fire/EMS/SAR Ops"></div>
             </div>
-            
             <div class="form-row">
-                <div class="form-block" style="flex: 1;"><label>No. of Personnel</label><input placeholder="Total Responders"></div>
-                <div class="form-block" style="flex: 2;">
+                <div class="form-block"><label>No. of Personnel</label><input type="text" placeholder="Count"></div>
+                <div class="form-block">
                     <label>Incident Times</label>
-                    <div style="display:flex; gap:10px; font-size:11px;">
-                        <span>Alarm: <input style="width:60px; display:inline;" value="10-8"></span>
-                        <span>10-23: <input style="width:60px; display:inline;" placeholder="Arrived"></span>
-                        <span>10-24: <input style="width:60px; display:inline;" placeholder="Clear"></span>
-                    </div>
+                    <div style="font-size:11px;">Alarm: <input type="text" style="width:40px;" value="10-8"> 10-23: <input type="text" style="width:40px;"> 10-24: <input type="text" style="width:40px;"></div>
                 </div>
-                <div class="form-block" style="flex: 2.5;"><label>Other Depts Responding</label><input placeholder="EMS, Paramedic, Rescue Squad, ALS Units"></div>
+                <div class="form-block"><label>Other Depts Responding</label><input type="text" placeholder="Squads"></div>
             </div>
-            
             <div class="form-row">
-                <div class="form-block" style="flex: 1;"><label>1st Unit On Scene</label><input placeholder="SAR Unit Anchor"></div>
-                <div class="form-block" style="flex: 2.5;"><label>Arrival Time of ALS / Highest Level @ Scene</label><input placeholder="Paramedic Triage Arrival Stamp"></div>
+                <div class="form-block"><label>1st Unit On Scene</label><input type="text"></div>
+                <div class="form-block"><label>Arrival Time of ALS</label><input type="text"></div>
             </div>
-
-            <div style="border: 2px solid #000; padding: 10px; margin-top: 15px;">
-                <div class="form-block" style="margin-bottom:8px;"><label>Incident Address</label><input id="frFormAddr" placeholder="Target Sector Coordinates"></div>
-                <div class="form-row">
-                    <div class="form-block" style="flex: 3;"><label>Patient Name</label><input placeholder="Full Patient Name"></div>
-                    <div class="form-block" style="flex: 1;"><label>Gender</label><input placeholder="M/F/UNK"></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-block" style="flex: 2;"><label>Street</label><input placeholder="Patient Legal Address"></div>
-                    <div class="form-block" style="flex: 1.5;"><label>City</label><input placeholder="City"></div>
-                    <div class="form-block" style="flex: 1;"><label>State</label><input placeholder="VA"></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-block" style="flex: 1.5;"><label>Patient Phone #</label><input placeholder="(###) ###-####"></div>
-                    <div class="form-block" style="flex: 1.2;"><label>DOB</label><input placeholder="YYYY-MM-DD"></div>
-                    <div class="form-block" style="flex: 1.5;"><label>SS#</label><input placeholder="###-##-####"></div>
-                    <div class="form-block" style="flex: 1.2;"><label>Race</label><input placeholder="Race/Demographics"></div>
-                </div>
+            <div style="border: 1px solid #000; padding: 10px; margin-top: 15px;">
+                <div class="form-block" style="margin-bottom:8px;"><label>Incident Address</label><input type="text" id="frFormAddr"></div>
+                <div class="form-row"><div class="form-block" style="flex:3;"><label>Patient Name</label><input type="text"></div><div class="form-block"><label>Gender</label><input type="text"></div></div>
+                <div class="form-row"><div class="form-block" style="flex:2;"><label>Street</label><input type="text"></div><div class="form-block"><label>City</label><input type="text"></div><div class="form-block"><label>State</label><input type="text"></div></div>
+                <div class="form-row"><div class="form-block"><label>Phone #</label><input type="text"></div><div class="form-block"><label>DOB</label><input type="text"></div><div class="form-block"><label>SS#</label><input type="text"></div><div class="form-block"><label>Race</label><input type="text"></div></div>
             </div>
-
             <div class="section-banner">Chronological Field Telemetry Logs</div>
             <div class="report-string-box reportLogClass"></div>
-
             <div class="section-banner">Additional Patient Information</div>
-            <div class="form-block" style="margin-bottom:8px;"><label>Prior Medical History</label><input placeholder="Known allergies, cardiovascular history, medication strings"></div>
-            <div class="form-block" style="margin-bottom:8px;"><label>If Yes Please Elaborate</label><textarea rows="2" placeholder="Elaborate on specific extraction or triage health criteria..."></textarea></div>
-            <div class="form-block"><label>Insurance Information</label><input placeholder="Medical Provider Details"></div>
-
+            <div class="form-block" style="margin-bottom:8px;"><label>Prior Medical History</label><input type="text"></div>
+            <div class="form-block" style="margin-bottom:8px;"><label>If Yes Please Elaborate</label><textarea rows="2"></textarea></div>
+            <div class="form-block"><label>Insurance Information</label><input type="text"></div>
             <div class="form-row" style="margin-top:15px;">
-                <div style="flex: 1; display:flex; flex-direction:column; gap:10px;">
-                    <div class="form-block"><label>Chief Complaint</label><textarea rows="2" placeholder="Trauma status, environmental factors, immersion exposure details..."></textarea></div>
-                    <div class="form-block"><label>Alcohol / Drug Use Suspected</label><input placeholder="Yes / No / Unknown"></div>
-                </div>
-                <div style="flex: 1; display:flex; flex-direction:column; gap:10px;">
-                    <div class="form-block"><label>Patient Transported</label><input placeholder="Yes / No / Refused"></div>
-                    <div class="form-block"><label>Transported To</label><input placeholder="Hospital Trauma Core Location"></div>
-                    <div class="form-block"><label>By What Department</label><input placeholder="EMS Agency Name"></div>
-                </div>
+                <div style="flex:1; display:flex; flex-direction:column; gap:10px;"><div class="form-block"><label>Chief Complaint</label><textarea rows="2"></textarea></div><div class="form-block"><label>Alcohol / Drug Use Suspected</label><input type="text"></div></div>
+                <div style="flex:1; display:flex; flex-direction:column; gap:10px;"><div class="form-block"><label>Patient Transported</label><input type="text"></div><div class="form-block"><label>Transported To</label><input type="text"></div><div class="form-block"><label>By What Department</label><input type="text"></div></div>
             </div>
-
             <div class="section-banner">Detailed Information About Incident & Vital Readings</div>
-            <div class="form-block">
-                <label>Give Detailed Information About Incident and List All Vital Readings</label>
-                <textarea rows="5" placeholder="Enter on-scene observations, K9 search tracking notes, vitals tracker, or rescue logs..."></textarea>
-            </div>
+            <div class="form-block"><label>Log Readings</label><textarea rows="4"></textarea></div>
         </div>
         
         <div class="modal-actions no-print" style="max-width:850px; margin:20px auto 0 auto;">
-            <button class="btn-tac" style="border-color:#ffd700; color:#ffd700;" onclick="alert('Reviewing operational playback sequence...')">REPLAY RECORDER</button>
-            <button class="btn-tac" style="border-color:#00ff41; color:#00ff41;" onclick="window.print()">APPROVE & PRINT PDF</button>
-            <button class="btn-tac btn-danger" onclick="resetConsole()">CLEAR & RESET CONSOLE</button>
+            <button class="btn-tac" style="border-color:#ffd700; color:#ffd700; width:auto;" onclick="alert('Reviewing tactical playback sequence...')">REPLAY RECORDER</button>
+            <button class="btn-tac" style="border-color:#00ff41; color:#00ff41; width:auto;" onclick="window.print()">APPROVE & PRINT PDF</button>
+            <button class="btn-tac btn-danger" style="width:auto;" onclick="resetConsole()">CLEAR & RESET CONSOLE</button>
         </div>
     </div>
 
     <script>
+        const currentRole = sessionStorage.getItem('tacnet_role') || 'searcher';
+        const currentUser = sessionStorage.getItem('tacnet_user') || 'Field Asset';
+        
+        document.addEventListener("DOMContentLoaded", () => {
+            const cmdControls = document.getElementById('commanderControls');
+            const legend = document.getElementById('tacticalLegend');
+            const badge = document.getElementById('roleDisplayBadge');
+            const title = document.getElementById('panelTitle');
+            const goBtn = document.getElementById('cmdGoBtn');
+            const sliderBox = document.getElementById('cmdSliderBox');
+
+            if (currentRole === 'commander') {
+                cmdControls.style.display = 'flex';
+                legend.style.display = 'flex';
+                badge.innerText = `COMMANDER: ${currentUser.toUpperCase()}`;
+                badge.style.borderColor = '#ffd700'; badge.style.color = '#ffd700';
+                title.innerText = "COMMAND POST";
+            } else {
+                cmdControls.style.display = 'none';
+                legend.style.display = 'none';
+                goBtn.style.display = 'none';
+                sliderBox.style.display = 'none';
+                badge.innerText = `FIELD ASSET: ${currentUser.toUpperCase()}`;
+                title.innerText = "FIELD ASSET CONSOLE";
+            }
+            
+            // Activate structural monitoring for device phone loss / impacts
+            initDuressAccelerometer();
+        });
+
+        // Leaflet Configuration
         const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 20 });
         const terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 20 });
         const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 20 });
-
         const map = L.map('map', { center: [37.4138, -79.1422], zoom: 14, maxZoom: 20, layers: [streetLayer] });
 
         function switchBaseLayer(type) {
             map.removeLayer(streetLayer); map.removeLayer(terrainLayer); map.removeLayer(satelliteLayer);
-            document.getElementById('btn-street').classList.remove('active');
-            document.getElementById('btn-terrain').classList.remove('active');
-            document.getElementById('btn-sat').classList.remove('active');
-
+            document.getElementById('btn-street').classList.remove('active'); document.getElementById('btn-terrain').classList.remove('active'); document.getElementById('btn-sat').classList.remove('active');
             if (type === 'street') { streetLayer.addTo(map); document.getElementById('btn-street').classList.add('active'); }
             if (type === 'terrain') { terrainLayer.addTo(map); document.getElementById('btn-terrain').classList.add('active'); }
             if (type === 'sat') { satelliteLayer.addTo(map); document.getElementById('btn-sat').classList.add('active'); }
@@ -345,12 +285,9 @@
 
         let eventLog = []; let activeMarkers = []; let drawingLayers = []; let crossfireVectors = [];
         let searchPerimeter = null; let perimeterCenter = null; let activeType = null;
+        let sosVisualRing = null;
 
-        const unitColors = { 
-            'LE': 'blue', 'K9': 'gray', 'SAR': 'red', 'CIV': 'green', 'SUS': 'purple', 
-            'DRN': 'white', 'ART': 'orange', 'VIC': 'white', 'BOAT': 'yellow', 'VEH': 'black', 
-            'CP': 'yellow', 'FND': 'blue', 'CUS': 'blue', 'HEL': 'orange', 'FED': '#ffd700', 'VSP': '#002f6c'
-        };
+        const unitColors = { 'LE': 'blue', 'K9': 'gray', 'SAR': 'red', 'CIV': 'green', 'SUS': 'purple', 'DRN': 'white', 'ART': 'orange', 'VIC': 'white', 'BOAT': 'yellow', 'VEH': 'black', 'CP': 'yellow', 'FND': 'blue', 'CUS': 'blue', 'HEL': 'orange', 'FED': '#ffd700', 'VSP': '#002f6c' };
 
         function logEvent(desc) {
             const time = new Date().toISOString().replace('T', ' ').substring(0, 19);
@@ -358,76 +295,140 @@
         }
 
         function setMarker(type) { 
-            activeType = type; document.getElementById('penToggle').checked = false;
-            document.getElementById('crossfireBtn').classList.remove('btn-active'); crossfireActive = false;
+            activeType = type; 
+            if(document.getElementById('penToggle')) document.getElementById('penToggle').checked = false;
+            crossfireActive = false;
         }
 
-        function triggerTreeTopHeight() {
-            map.setZoom(20);
-            logEvent("CRITICAL PERSPECTIVE: Commanded maximum zoom depth down to tree-top height view boundaries.");
+        function triggerTreeTopHeight() { map.setZoom(20); logEvent("PERSPECTIVE LOCK: Commanded tree-top zoom focus."); }
+
+        // Core SOS Broadcast Array
+        function triggerSOSAlert() {
+            logEvent(`🚨 CRITICAL: SOS EMERGENCY BROADCAST SIGNALLED BY: ${currentUser.toUpperCase()}`);
+            
+            navigator.geolocation.getCurrentPosition(p => {
+                const lat = p.coords.latitude;
+                const lon = p.coords.longitude;
+                
+                // Clear any old rings
+                if(sosVisualRing) map.removeLayer(sosVisualRing);
+                
+                // Drop high intensity pulsing warning circle over the target coordinate
+                sosVisualRing = L.circle([lat, lon], {
+                    radius: 90,
+                    color: '#ff0000',
+                    fillColor: '#ff0000',
+                    fillOpacity: 0.5,
+                    className: 'leaflet-sos-pulse'
+                }).addTo(map);
+                
+                // Add secure anchor marker
+                let sosMarker = L.marker([lat, lon]).addTo(map).bindPopup(`<b style="color:red;">🚨 OFFICER DOWN: ${currentUser.toUpperCase()}</b>`).openPopup();
+                activeMarkers.push(sosMarker);
+                
+                // Force map focus to target immediately across boundaries
+                map.setView([lat, lon], 18);
+            }, () => {
+                alert("SOS Error: Unable to determine field location vectors.");
+            }, {enableHighAccuracy: true});
+        }
+
+        // Automated 911 Impact / Disconnect Duress Listener
+        function initDuressAccelerometer() {
+            if (window.DeviceMotionEvent) {
+                window.addEventListener('devicemotion', event => {
+                    let acceleration = event.accelerationIncludingGravity;
+                    let totalForce = Math.sqrt(acceleration.x * acceleration.x + acceleration.y * acceleration.y + acceleration.z * acceleration.z);
+                    
+                    // Threshold mapping tracking severe structural impact forces (g-force spikes)
+                    if (totalForce > 35) { 
+                        window.removeEventListener('devicemotion', this);
+                        executeAutomatedDuressCountdown();
+                    }
+                });
+            }
+        }
+
+        function executeAutomatedDuressCountdown() {
+            logEvent("⚠️ ACCELEROMETER SENSOR: High-impact event/struggle signature detected on operator device.");
+            let countdown = 5;
+            
+            let duressTimer = setInterval(() => {
+                if (countdown > 0) {
+                    // Audible check simulated or natively linked out to web view frequencies
+                    console.log(`DURESS TIMEOUT: ${countdown} seconds remaining to cancel...`);
+                    countdown--;
+                } else {
+                    clearInterval(duressTimer);
+                    triggerAutomated911Call();
+                }
+            }, 1000);
+            
+            // Allow manual touch override bypass if it was an accidental drop
+            let bypass = confirm(`WARNING: Tactical impact detected. System initiating emergency direct dispatch in 5 seconds. Press Cancel to abort.`);
+            if (bypass) {
+                clearInterval(duressTimer);
+                logEvent("DURESS BYPASS: Emergency automated dispatch manually aborted by operator.");
+                initDuressAccelerometer(); // Rearm array
+            }
+        }
+
+        function triggerAutomated911Call() {
+            logEvent("🚨 CRITICAL AUTOMATED TRACE: Officer incapacitated or phone separated in struggle. Initializing auto-dial 911 emergency telemetry payload.");
+            // Native web API call link interface hook
+            window.location.href = "tel:911";
+            triggerSOSAlert();
         }
 
         map.on('click', e => {
             if (activeType) {
+                if (currentRole !== 'commander' && activeType !== 'FND') return;
+
                 let borderCol = (activeType === 'VSP') ? '#ffd700' : '#fff';
-                let m = L.circleMarker(e.latlng, {
-                    radius: 14,
-                    fillColor: unitColors[activeType],
-                    color: borderCol,
-                    fillOpacity: 1,
-                    weight: 3,
-                    draggable: true
-                }).addTo(map);
-                
+                let m = L.circleMarker(e.latlng, { radius: 14, fillColor: unitColors[activeType], color: borderCol, fillOpacity: 1, weight: 3, draggable: true }).addTo(map);
                 m.unitType = activeType;
                 
-                if(activeType === 'SUS') {
-                    m.bindTooltip("SUSPECT LKL", {permanent: true, direction: 'top', className: 'orange-dist-label'}).openTooltip();
-                }
+                if(activeType === 'SUS') m.bindTooltip("SUSPECT LKL", {permanent: true, direction: 'top', className: 'orange-dist-label'}).openTooltip();
 
                 m.on('drag', function() { updateCrossfireDimensionality(); });
-                m.on('dragend', function() { logEvent(`ASSET SHIFT: Movable ${this.unitType} shifted position across map topology.`); });
-
                 m.on('click', function(ev) {
                     L.DomEvent.stopPropagation(ev);
-                    logEvent(`ASSET PURGE: Removed ${this.unitType} asset element.`);
+                    if (currentRole !== 'commander') return;
+                    logEvent(`ASSET PURGE: Removed ${this.unitType} node.`);
                     map.removeLayer(this);
                     activeMarkers = activeMarkers.filter(item => item !== this);
                     updateCrossfireDimensionality();
                 });
 
                 m.on('mousedown', function () {
-                    if(!document.getElementById('lockToggle').checked) {
-                        map.dragging.disable();
-                        map.on('mousemove', onMarkerDrag);
+                    if(currentRole === 'commander' && !document.getElementById('lockToggle').checked) {
+                        map.dragging.disable(); map.on('mousemove', onMarkerDrag);
                     }
                 });
-                
                 function onMarkerDrag(ev) { m.setLatLng(ev.latlng); updateCrossfireDimensionality(); }
-                map.on('mouseup', function () { map.off('mousemove', onMarkerDrag); if(!document.getElementById('lockToggle').checked) map.dragging.enable(); });
+                map.on('mouseup', function () { map.off('mousemove', onMarkerDrag); if(currentRole === 'commander' && !document.getElementById('lockToggle').checked) map.dragging.enable(); });
 
                 activeMarkers.push(m);
-                logEvent(`ASSET DISPATCH: Movable ${activeType} marker placed at canvas target.`);
+                logEvent(`ASSET DISPATCH: Deployed ${activeType} node asset onto operational map canvas.`);
                 activeType = null;
-            } else if (crossfireActive) {
+            } else if (crossfireActive && currentRole === 'commander') {
                 handleCrossfireClick(e.latlng);
             }
         });
 
-        function toggleMapLock(locked) { locked ? map.dragging.disable() : map.dragging.enable(); }
+        function toggleMapLock(locked) { if(currentRole === 'commander') locked ? map.dragging.disable() : map.dragging.enable(); }
         function togglePenMode(checked) { if (checked) { activeType = null; crossfireActive = false; document.getElementById('crossfireBtn').classList.remove('btn-active'); } }
 
         function eraseLastLine() {
-            if (drawingLayers.length > 0) {
-                let lastLine = drawingLayers.pop();
-                map.removeLayer(lastLine);
-                logEvent("ERASER SIGNAL: Removed last freehand line overlay segment backward.");
+            if (currentRole === 'commander' && drawingLayers.length > 0) {
+                map.removeLayer(drawingLayers.pop());
+                logEvent("ERASER: Step-back drawing segment cleared.");
             }
         }
 
         let isDrawing = false; let activeLine = null;
         map.on('mousedown', e => {
-            if (document.getElementById('penToggle').checked) {
+            if (currentRole === 'commander' && document.getElementById('penToggle').checked) {
                 isDrawing = true;
                 activeLine = L.polyline([e.latlng], {color: 'red', weight: 4, interactive: false}).addTo(map);
                 drawingLayers.push(activeLine);
@@ -437,45 +438,35 @@
         map.on('mouseup', () => { if (isDrawing) isDrawing = false; });
 
         let crossfireActive = false; let firstPoint = null;
-
         function toggleCrossfireMode() {
+            if(currentRole !== 'commander') return;
             crossfireActive = !crossfireActive; const btn = document.getElementById('crossfireBtn');
             if (crossfireActive) { btn.classList.add('btn-active'); firstPoint = null; activeType = null; document.getElementById('penToggle').checked = false; }
             else { btn.classList.remove('btn-active'); }
         }
 
         function handleCrossfireClick(latlng) {
-            let clickedMarker = activeMarkers.find(m => map.distance(latlng, m.getLatLng()) < 300);
+            let clickedMarker = activeMarkers.find(m => map.distance(latlng, m.getLatLng()) < 350);
             let targetLatLng = clickedMarker ? clickedMarker.getLatLng() : latlng;
-
-            if (!firstPoint) {
-                firstPoint = { latlng: targetLatLng, marker: clickedMarker || null };
-            } else {
-                let secondPoint = { latlng: targetLatLng, marker: clickedMarker || null };
-                createCrossfireVector(firstPoint, secondPoint);
-                crossfireActive = false;
-                document.getElementById('crossfireBtn').classList.remove('btn-active');
-            }
+            if (!firstPoint) { firstPoint = { latlng: targetLatLng, marker: clickedMarker || null }; } 
+            else { createCrossfireVector(firstPoint, { latlng: targetLatLng, marker: clickedMarker || null }); crossfireActive = false; document.getElementById('crossfireBtn').classList.remove('btn-active'); }
         }
 
         function createCrossfireVector(ptA, ptB) {
             let line = L.polyline([ptA.latlng, ptB.latlng], {color: '#FF8C00', weight: 4, dashArray: '4, 4'}).addTo(map);
             let dist = ptA.latlng.distanceTo(ptB.latlng) * 3.28084;
             
-            let labelMarker = L.marker(line.getCenter(), {
-                icon: L.divIcon({ className: 'orange-dist-label', html: `${dist.toFixed(0)} FT` })
-            }).addTo(map);
-
+            let labelMarker = L.marker(line.getCenter(), { icon: L.divIcon({ className: 'orange-dist-label', html: `${dist.toFixed(0)} FT` }) }).addTo(map);
             let vectorObj = { line, labelMarker, ptA, ptB };
-
-            labelMarker.on('click', function() {
+            
+            labelMarker.on('click', function(ev) {
+                L.DomEvent.stopPropagation(ev);
+                if(currentRole !== 'commander') return;
                 map.removeLayer(line); map.removeLayer(labelMarker);
                 crossfireVectors = crossfireVectors.filter(v => v !== vectorObj);
-                logEvent("CROSSFIRE METRIC: Cleared distance measurement vector.");
             });
-
+            
             crossfireVectors.push(vectorObj);
-            logEvent(`TELEMETRY VECTOR: Linked orange crossfire distance vector at ${dist.toFixed(0)} feet.`);
         }
 
         function updateCrossfireDimensionality() {
@@ -483,9 +474,8 @@
                 let posA = v.ptA.marker ? v.ptA.marker.getLatLng() : v.ptA.latlng;
                 let posB = v.ptB.marker ? v.ptB.marker.getLatLng() : v.ptB.latlng;
                 v.line.setLatLngs([posA, posB]);
-                let currentDist = posA.distanceTo(posB) * 3.28084;
                 v.labelMarker.setLatLng(v.line.getCenter());
-                v.labelMarker.setIcon(L.divIcon({ className: 'orange-dist-label', html: `${currentDist.toFixed(0)} FT` }));
+                v.labelMarker.setIcon(L.divIcon({ className: 'orange-dist-label', html: `${(posA.distanceTo(posB) * 3.28084).toFixed(0)} FT` }));
             });
         }
 
@@ -493,105 +483,15 @@
         function toggleTrapTrace() {
             const btn = document.getElementById('trapTraceBtn'); const box = document.getElementById('radarDisplay'); const statusText = document.getElementById('radarStatus');
             if (!trapTraceInterval) {
-                btn.innerText = "TRAP N TRACE [ON]"; btn.style.borderColor = "#00ff41"; box.style.display = "flex";
-                logEvent("NETWORK SCAN: Initiated Trap 'N' Trace multi-agency transceiver intercept array.");
+                btn.innerText = "TRAP N TRACE [ON]"; btn.style.borderColor = "#FF8C00"; box.style.display = "flex";
                 let scanCount = 0;
                 trapTraceInterval = setInterval(() => {
                     scanCount++;
                     document.getElementById('radarPing').innerText = `PING: ${Math.floor(Math.random() * 20) + 10}ms`;
-                    if(scanCount % 3 === 0) { statusText.innerText = `PINGING SECTOR NODE CELL ID [0${Math.floor(Math.random()*800)+100}]...`; } 
-                    else if (scanCount % 3 === 1) { statusText.innerText = "TRIANGULATING CELL TOWER CARRIER STRINGS..."; } 
-                    else { statusText.innerText = "LIVE SCANNING PACKET CHANNELS MOUNTED..."; }
+                    if(scanCount % 3 === 0) { statusText.innerText = `SCANNING APEX NODE ID [${Math.floor(Math.random()*800)+100}]...`; } 
+                    else if (scanCount % 3 === 1) { statusText.innerText = "TRIANGULATING MOBILE TELEMETRY CELL STRINGS..."; } 
+                    else { statusText.innerText = "INTERCEPTING MULTI-CHANNEL DATA PACKETS..."; }
                 }, 2000);
             } else {
                 btn.innerText = "TRAP N TRACE [OFF]"; btn.style.borderColor = "#111"; box.style.display = "none";
-                clearInterval(trapTraceInterval); trapTraceInterval = null;
-                logEvent("NETWORK SCAN: Suspended Trap 'N' Trace tracker matrix.");
-            }
-        }
-
-        function searchAddr() {
-            const q = document.getElementById('addrInput').value;
-            const radiusFeet = parseFloat(document.getElementById('radiusSlider').value);
-            fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(q))
-                .then(r => r.json())
-                .then(d => { 
-                    if(d.length > 0) {
-                        perimeterCenter = [d[0].lat, d[0].lon];
-                        map.setView(perimeterCenter, 15);
-                        logEvent(`METRIC CAPTURE: Anchored baseline target grid centerpoint at ${q}`);
-                        drawPerimeter(radiusFeet);
-                        
-                        // Pass location details directly into both specialized form headers
-                        document.getElementById('leFormAddr').value = q;
-                        document.getElementById('frFormAddr').value = q;
-                    } 
-                });
-        }
-
-        function drawPerimeter(feet) {
-            if (searchPerimeter) map.removeLayer(searchPerimeter);
-            if (!perimeterCenter) return;
-            const meters = feet / 3.28084;
-            searchPerimeter = L.circle(perimeterCenter, {
-                radius: meters, color: '#00661a', fillColor: '#00ff41', fillOpacity: 0.12, weight: 4, dashArray: '8, 8'
-            }).addTo(map);
-        }
-
-        function adjustPerimeter(val) {
-            document.getElementById('radiusVal').innerText = val + " FT";
-            if (perimeterCenter) { drawPerimeter(parseFloat(val)); logEvent(`RADIUS TUNE: Scaled sector containment ring radius to ${val} feet.`); }
-        }
-
-        function activateGPS() {
-            navigator.geolocation.getCurrentPosition(p => {
-                let m = L.marker([p.coords.latitude, p.coords.longitude]).addTo(map);
-                activeMarkers.push(m); map.setView([p.coords.latitude, p.coords.longitude], 16);
-                logEvent("SYSTEM TELEMETRY: Verified active command post primary tracking signal lock.");
-            }, null, {enableHighAccuracy: true});
-        }
-
-        /* Form Switcher Subroutine */
-        function setActiveForm(type) {
-            document.getElementById('formContainerLE').classList.remove('active');
-            document.getElementById('formContainerFR').classList.remove('active');
-            document.getElementById('toggleLEFormBtn').style.borderColor = '#aaa';
-            document.getElementById('toggleFRFormBtn').style.borderColor = '#aaa';
-            
-            if(type === 'LE') {
-                document.getElementById('formContainerLE').classList.add('active');
-                document.getElementById('toggleLEFormBtn').style.borderColor = '#00ff41';
-            } else {
-                document.getElementById('formContainerFR').classList.add('active');
-                document.getElementById('toggleFRFormBtn').style.borderColor = '#00ff41';
-            }
-        }
-
-        /* Unified Document Generation */
-        function generateReport() {
-            logEvent("AUDIT SYSTEM: Compiled absolute multi-agency operational data manifest.");
-            
-            // Push active telemetry strings to both report boxes simultaneously
-            const targetBoxes = document.getElementsByClassName('reportLogClass');
-            for(let i = 0; i < targetBoxes.length; i++) {
-                targetBoxes[i].innerHTML = "";
-                eventLog.forEach(e => targetBoxes[i].innerHTML += `[${e.time}] &gt;&gt; ${e.desc}<br>`);
-            }
-            
-            const currentStamp = new Date().toISOString().substring(0,10);
-            document.getElementById('leFormDate').value = currentStamp;
-            document.getElementById('frFormDate').value = currentStamp;
-            
-            document.getElementById('reportModal').style.display = 'block';
-        }
-
-        function resetConsole() {
-            activeMarkers.forEach(m => map.removeLayer(m)); drawingLayers.forEach(l => map.removeLayer(l));
-            crossfireVectors.forEach(v => { map.removeLayer(v.line); map.removeLayer(v.labelMarker); });
-            if (searchPerimeter) map.removeLayer(searchPerimeter); if (trapTraceInterval) toggleTrapTrace();
-            activeMarkers = []; drawingLayers = []; crossfireVectors = []; eventLog = []; searchPerimeter = null; perimeterCenter = null;
-            document.getElementById('reportModal').style.display = 'none';
-        }
-    </script>
-</body>
-</html>
+                clearInterval(trapTraceInterval); trapTraceInterval
