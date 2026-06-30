@@ -3,53 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>TACNET MOBILE COMMAND CP</title>
+    <title>TACNET PORTRAIT-STABILIZED ENGINE</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body, html { margin:0; padding:0; height:100%; width:100%; background:#000; color:#00ff41; font-family: -apple-system, BlinkMacSystemFont, monospace; overflow: hidden; }
         
-        /* Strict Mobile Column Grid Layout */
-        .main-ui { display: flex; flex-direction: column; height: 100vh; width: 100vw; box-sizing: border-box; }
+        /* Rigid Mobile Frame */
+        .main-ui { display: flex; flex-direction: column; height: 100vh; width: 100vw; box-sizing: border-box; position: relative; }
         
-        /* Row 1: Top Navigation Header (Swipe-Scrollable for narrow screens) */
-        .top-bar { height: 55px; background:#001a00; border-bottom:2px solid #00ff41; display:flex; padding: 0 10px; align-items:center; justify-content: space-between; gap:15px; box-sizing: border-box; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; flex-shrink: 0; }
-        .search-container { display:flex; gap:8px; align-items:center; }
-        .map-toggles { display:flex; gap:5px; }
+        /* Row 1: Top Navigation Header (Compact 45px Height) */
+        .top-bar { height: 45px; background:#001a00; border-bottom:2px solid #00ff41; display:flex; padding: 0 10px; align-items:center; justify-content: space-between; gap:12px; box-sizing: border-box; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; flex-shrink: 0; }
+        .search-container { display:flex; gap:6px; align-items:center; }
+        .map-toggles { display:flex; gap:4px; }
         
-        /* Row 2: Map Screen Canvas Box */
+        /* Row 2: Map Screen Canvas Box (Gains more room from lower panel compression) */
         .map-wrapper { flex: 1; width: 100%; min-height: 0; position: relative; }
         #map { height: 100%; width: 100%; background: #222; }
         
-        /* Row 3: High-Visibility Field Control Panel Row */
-        .console-row { height: 120px; background: #000; border-top: 2px solid #00ff41; padding: 10px 5px; box-sizing: border-box; flex-shrink: 0; overflow-x: auto; white-space: nowrap; display: flex; gap: 10px; align-items: center; -webkit-overflow-scrolling: touch; }
+        /* Row 3: FIXED - Compressed Console Row (Shrunk down to 95px height) */
+        .console-row { height: 95px; background: #000; border-top: 2px solid #00ff41; padding: 6px 4px; box-sizing: border-box; flex-shrink: 0; overflow-x: auto; white-space: nowrap; display: flex; gap: 8px; align-items: center; -webkit-overflow-scrolling: touch; }
         
-        /* Row 4: Anchored Bottom Multi-Agency Legend Bar Track */
-        .legend-bar { height: 65px; background:#000; display:flex; align-items:center; overflow-x:auto; white-space:nowrap; gap:15px; padding: 0 10px; border-top: 2px solid #00ff41; box-sizing: border-box; flex-shrink: 0; -webkit-overflow-scrolling: touch; }
+        /* Row 4: FIXED - Compressed Bottom Legend Bar (Shrunk to 52px height to force it onto the screen view) */
+        .legend-bar { height: 52px; background:#000; display:flex; align-items:center; overflow-x:auto; white-space:nowrap; gap:12px; padding: 0 10px; border-top: 2px solid #00ff41; box-sizing: border-box; flex-shrink: 0; -webkit-overflow-scrolling: touch; }
         
-        /* Big, Clear Touch UI Buttons Optimized for Field Work */
-        .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding: 12px 18px; cursor:pointer; font-weight:bold; text-transform:uppercase; font-size: 14px; border-radius: 6px; display: inline-block; height: 46px; box-sizing: border-box; }
-        .btn-map-type { background:#001a00; color:#00ff41; border:1px solid #00ff41; padding:6px 12px; cursor:pointer; font-size:12px; font-weight: bold; border-radius: 4px; }
+        /* Slightly Shrunk Buttons for Total Screen Clearance */
+        .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding: 10px 14px; cursor:pointer; font-weight:bold; text-transform:uppercase; font-size: 12px; border-radius: 5px; display: inline-block; height: 38px; box-sizing: border-box; }
+        .btn-map-type { background:#001a00; color:#00ff41; border:1px solid #00ff41; padding:4px 8px; cursor:pointer; font-size:11px; font-weight: bold; border-radius: 3px; }
         .btn-map-type.active { background:#00ff41; color:#000; font-weight:bold; }
         .btn-danger { color:red; border-color:red; }
         .btn-active { background: #FF8C00 !important; color: #000 !important; border-color: #FF8C00 !important; }
         
-        /* Pulsing Emergency Warning Triggers */
         .btn-sos { background: #ff0000 !important; color: #fff !important; border: 1px solid #fff !important; animation: pulseSOS 1s infinite; }
         @keyframes pulseSOS { 0% { background: #ff0000; } 50% { background: #880000; } 100% { background: #ff0000; } }
         
-        .legend-item { cursor:pointer; font-size:22px; font-weight:bold; display:inline-flex; align-items:center; gap:6px; background: rgba(0,26,0,0.4); padding: 6px 12px; border: 1px solid #333; border-radius: 4px; color: #00ff41; }
+        /* Shrunk Icon Sizing for Flawless Portrait Fit */
+        .legend-item { cursor:pointer; font-size:18px; font-weight:bold; display:inline-flex; align-items:center; gap:5px; background: rgba(0,26,0,0.4); padding: 4px 8px; border: 1px solid #333; border-radius: 4px; color: #00ff41; }
         
-        input, select { background:#000; color:#fff; border:1px solid #00ff41; padding:6px; box-sizing: border-box; font-family: monospace; font-size: 13px; height: 34px; border-radius: 4px; }
+        input, select { background:#000; color:#fff; border:1px solid #00ff41; padding:4px 6px; box-sizing: border-box; font-family: monospace; font-size: 12px; height: 30px; border-radius: 4px; }
         .slider-box { display:flex; align-items:center; gap:4px; font-weight:bold; font-size:11px; color: #00ff41; }
-        input[type="range"] { -webkit-appearance: none; background: #002b00; border: 1px solid #00ff41; height: 8px; width: 70px; cursor: pointer; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; background: #00ff41; width: 14px; height: 14px; border: 1px solid #000; border-radius: 50%; }
+        input[type="range"] { -webkit-appearance: none; background: #002b00; border: 1px solid #00ff41; height: 6px; width: 65px; cursor: pointer; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; background: #00ff41; width: 12px; height: 12px; border: 1px solid #000; border-radius: 50%; }
 
         .orange-dist-label { background: #000; color: #FF8C00; border: 1px solid #FF8C00; font-weight: bold; font-family: monospace; padding: 4px 8px; font-size: 12px; border-radius: 4px; }
         .leaflet-sos-pulse { animation: mapPulse 1.2s infinite ease-out; }
         @keyframes mapPulse { 0% { stroke-width: 4; stroke-opacity: 1; fill-opacity: 0.6; } 100% { stroke-width: 25; stroke-opacity: 0; fill-opacity: 0; } }
         
-        /* Legal Summary Overlay Reports Dashboard */
         .modal { display:none; position:fixed; top:2%; left:2%; width:96%; height:96%; background:#111; border:2px solid #00ff41; z-index:9999; padding:15px; box-sizing:border-box; overflow-y:auto; color:#fff; font-family: 'Times New Roman', serif; }
         .report-selector-bar { display: flex; gap: 10px; background: #000; padding: 10px; border: 1px solid #00ff41; margin-bottom: 15px; align-items: center; }
         .report-form-container { background: #fff; color: #000; padding: 15px; box-sizing: border-box; max-width: 800px; margin: 0 auto; display: none; }
@@ -62,9 +61,9 @@
         <!-- ROW 1: Top Control Header Track -->
         <div class="top-bar">
             <div class="search-container">
-                <button class="btn-tac" style="padding: 0 12px; height: 34px; font-size: 14px; width: auto;" onclick="window.location.href='signin.html'">⬅</button>
-                <input id="addrInput" placeholder="Target Address..." style="width:125px;">
-                <button class="btn-tac" id="cmdGoBtn" style="width: auto; padding: 0 12px; height: 34px;" onclick="searchAddr()">GO</button>
+                <button class="btn-tac" style="padding: 0 10px; height: 30px; font-size: 12px; width: auto;" onclick="window.location.href='signin.html'">⬅</button>
+                <input id="addrInput" placeholder="Target Address..." style="width:115px;">
+                <button class="btn-tac" id="cmdGoBtn" style="width: auto; padding: 0 10px; height: 30px;" onclick="searchAddr()">GO</button>
                 
                 <div class="slider-box">
                     <input type="range" id="radiusSlider" min="200" max="10560" value="2500" oninput="adjustPerimeter(this.value)">
@@ -84,7 +83,7 @@
             <div id="map"></div>
         </div>
 
-        <!-- ROW 3: Fixed Horizontal Console Panel Track -->
+        <!-- ROW 3: Fixed Horizontal Console Panel Track (95px Portrait Guarded) -->
         <div class="console-row">
             <button class="btn-tac btn-sos" onclick="triggerSOSAlert();">🚨 SOS ALERT</button>
             <button class="btn-tac" onclick="setMarker('FND');">🔍 ARTICLE FIND</button>
@@ -97,7 +96,7 @@
             <button class="btn-tac btn-danger" onclick="resetConsole()">TERMINATE SEARCH</button>
         </div>
 
-        <!-- ROW 4: Fixed Bottom Multi-Agency Legend Bar Track -->
+        <!-- ROW 4: Fixed Bottom Multi-Agency Legend Bar Track (52px Portrait Guarded) -->
         <div class="legend-bar">
             <span class="legend-item" onclick="setMarker('LE')">🔵 LE</span>
             <span class="legend-item" onclick="setMarker('K9')">🔘 K9</span>
@@ -118,7 +117,7 @@
         </div>
     </div>
 
-    <!-- Legal Documents Overlay Frame -->
+    <!-- Incident Forms Overlay Window -->
     <div id="reportModal" class="modal">
         <div class="report-selector-bar">
             <button class="btn-tac" style="height:auto;" onclick="document.getElementById('reportModal').style.display='none'">⬅ MAP</button>
@@ -138,7 +137,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             initDuressAccelerometer();
-            setTimeout(() => { map.invalidateSize(); }, 400); // Guarantees background drawing triggers immediately
+            setTimeout(() => { map.invalidateSize(); }, 400);
         });
 
         // Initialize Map
