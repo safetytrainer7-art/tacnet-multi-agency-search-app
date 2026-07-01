@@ -9,6 +9,7 @@
     <style>
         body, html { margin:0; padding:0; height:100%; width:100%; background:#000; color:#00ff41; font-family: -apple-system, BlinkMacSystemFont, monospace; overflow: hidden; }
         
+        /* Master structural box scales fluidly in both portrait and landscape orientation */
         .main-ui { display: flex; flex-direction: column; height: 100vh; width: 100vw; box-sizing: border-box; position: relative; padding: 5px 8px 12px 8px; }
         
         /* Row 1: Top Control Header Track */
@@ -16,16 +17,16 @@
         .search-container { display:flex; gap:6px; align-items:center; }
         .map-toggles { display:flex; gap:4px; }
         
-        /* Row 2: Map Canvas Window Container */
-        .map-wrapper { flex: 1; width: 100%; min-height: 0; position: relative; display: flex; flex-direction: column; }
-        #map { flex: 1; width: 100%; height: 100%; background: #111; border: 2px solid #00ff41; border-radius: 6px; display: block; }
+        /* Row 2: Map Canvas Frame Box with safety minimum height boundaries */
+        .map-wrapper { flex: 1; width: 100%; min-height: 150px; position: relative; display: flex; flex-direction: column; }
+        #map { flex: 1; width: 100%; height: 100%; background: #111; border: 2px solid #00ff41; border-radius: 6px; display: block; visibility: visible !important; }
         
-        /* Radar Scanning Panel */
+        /* Integrated Radar Spectrum Module */
         .radar-box { border: 2px solid #00ff41; border-radius: 6px; background: #020f02; padding: 8px 12px; font-size: 11px; display: none; flex-direction: column; gap:4px; font-family: monospace; position: relative; overflow: hidden; height: 52px; box-sizing: border-box; margin-top: 6px; box-shadow: inset 0 0 10px rgba(0,255,65,0.3); }
         .radar-scan-line { position: absolute; top: 0; left: 0; height: 100%; width: 4px; background: #00ff41; opacity: 0.8; box-shadow: 0 0 12px #00ff41; animation: scanAcross 2.2s linear infinite; }
         @keyframes scanAcross { 0% { left: -5%; } 50% { left: 105%; } 100% { left: -5%; } }
         
-        /* Row 3: Separated Operations Console Row Track */
+        /* Row 3: Separated Operations Console Row Track with custom spacing cushions */
         .console-row { height: 85px; background: #000; border: 2px solid #00ff41; border-radius: 6px; padding: 8px; box-sizing: border-box; flex-shrink: 0; overflow-x: auto; white-space: nowrap; display: flex; gap: 10px; align-items: center; -webkit-overflow-scrolling: touch; margin-top: 8px; margin-bottom: 8px; }
         
         /* Row 4: Separated Multi-Agency Legend Bar Track */
@@ -52,9 +53,7 @@
         .leaflet-sos-pulse { animation: mapPulse 1.2s infinite ease-out; }
         @keyframes mapPulse { 0% { stroke-width: 4; stroke-opacity: 1; fill-opacity: 0.6; } 100% { stroke-width: 25; stroke-opacity: 0; fill-opacity: 0; } }
         
-        /* ==========================================================================
-           FIXED REMODEL: HARD-LOCKED HIGH-CONTRAST COURTROOM REPORT ENGINE
-           ========================================================================== */
+        /* HARD-LOCKED PURE BLACK HIGH-CONTRAST COURT CONSOLE REPORT VIEWPORT */
         .modal { display:none; position:absolute; top:0; left:0; width:100vw; height:100vh; background:#f4f6f9; z-index:9999; padding:15px; box-sizing:border-box; overflow-y:auto; overflow-x:hidden; color:#000000 !important; font-family: 'Georgia', serif; }
         .no-print-bar { display: flex; gap: 12px; background: #111; padding: 12px; border-bottom: 3px solid #00ff41; margin-bottom: 20px; align-items: center; border-radius: 6px; }
         
@@ -86,6 +85,7 @@
 </head>
 <body>
     <div class="main-ui">
+        <!-- ROW 1: Top Control Header Track -->
         <div class="top-bar">
             <div class="search-container">
                 <button class="btn-tac" style="padding: 0 12px; height: 34px; font-size: 13px; width: auto;" onclick="window.location.href='signin.html'">⬅ SIGN OUT</button>
@@ -107,6 +107,7 @@
             </div>
         </div>
 
+        <!-- ROW 2: Map Canvas Wrapper Box Frame -->
         <div class="map-wrapper">
             <div id="map"></div>
             
@@ -120,6 +121,7 @@
             </div>
         </div>
 
+        <!-- ROW 3: Separated Operations Console Row Track -->
         <div class="console-row">
             <button class="btn-tac btn-sos" onclick="triggerSOSAlert();">🚨 SOS ALERT</button>
             <button class="btn-tac" style="border-color: #ff3333; color: #ff3333;" onclick="resetSOSDistressRings();">🚨 RESET SOS</button>
@@ -135,6 +137,7 @@
             <button class="btn-tac btn-danger" onclick="terminateSessionDispositions()">TERMINATE SEARCH</button>
         </div>
 
+        <!-- ROW 4: Separated Multi-Agency Legend Bar Track -->
         <div class="legend-bar">
             <span class="legend-item" onclick="setMarker('LE')">🔵 LE</span>
             <span class="legend-item" onclick="setMarker('K9')">🔘 K9</span>
@@ -155,6 +158,7 @@
         </div>
     </div>
 
+    <!-- Courtroom Evidentiary Report -->
     <div id="courtroomReportModal" class="modal">
         <div class="no-print-bar">
             <button class="btn-tac" style="border-color:#00ff41; color:#00ff41; height:36px; padding: 0 12px; font-size:12px;" onclick="document.getElementById('courtroomReportModal').style.display='none'">⬅ RETURN TO MAP</button>
@@ -205,22 +209,33 @@
         let sosVisualRing = null; let sosMarkerAnchor = null; let addressRedDotMarker = null;
         let manualCanvasMapLocked = false; let redPenDrawingModeActive = false;
 
+        let map, streetLayer, terrainLayer, satelliteLayer;
+
         function logEvent(desc) {
             const time = new Date().toISOString().replace('T', ' ').substring(0, 19);
             eventLog.push({ time, desc });
         }
 
-        // Initialize Map
-        const map = L.map('map', { center: [37.4138, -79.1422], zoom: 14, maxZoom: 20 });
-        const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 20 }).addTo(map);
-        const terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 20 });
-        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 20 });
+        // DELAYED ASYNCHRONOUS IGNITION ENGINE FORCING FULL VIEWPORT INITIALIZATION PRIOR TO DRAWING TILES
+        document.addEventListener("DOMContentLoaded", () => {
+            logEvent(`SYSTEM INITIALIZED: Command Matrix configured under Operator ${currentUser.toUpperCase()}`);
+            initDuressAccelerometer();
+            
+            // 250ms Fire break lets elements establish screen coordinate footprints securely
+            setTimeout(() => {
+                map = L.map('map', { center: [37.4138, -79.1422], zoom: 14, maxZoom: 20 });
+                streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 20 }).addTo(map);
+                terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 20 });
+                satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 20 });
+                
+                map.invalidateSize();
+            }, 250);
+        });
 
-        logEvent(`SYSTEM INITIALIZED: Command Matrix configured under Operator ${currentUser.toUpperCase()}`);
-        setTimeout(() => { map.invalidateSize(); }, 300);
-        window.addEventListener("orientationchange", () => { setTimeout(() => { map.invalidateSize(); }, 300); });
+        window.addEventListener("orientationchange", () => { if(map) { setTimeout(() => { map.invalidateSize(); }, 300); } });
 
         function switchBaseLayer(type) {
+            if(!map) return;
             map.removeLayer(streetLayer); map.removeLayer(terrainLayer); map.removeLayer(satelliteLayer);
             document.getElementById('btn-street').classList.remove('active'); document.getElementById('btn-terrain').classList.remove('active'); document.getElementById('btn-sat').classList.remove('active');
             if (type === 'street') { streetLayer.addTo(map); document.getElementById('btn-street').classList.add('active'); }
@@ -231,6 +246,7 @@
         const unitColors = { 'LE': 'blue', 'K9': 'gray', 'SAR': 'red', 'CIV': 'green', 'SUS': 'purple', 'DRN': 'white', 'ART': 'orange', 'VIC': 'white', 'BOAT': 'yellow', 'VEH': 'black', 'CP': 'yellow', 'FND': 'blue', 'CUS': 'blue', 'HEL': 'orange', 'FED': '#ffd700', 'VSP': '#002f6c' };
 
         function toggleMapCanvasLock() {
+            if(!map) return;
             manualCanvasMapLocked = !manualCanvasMapLocked;
             const btn = document.getElementById('manualLockBtn');
             if(manualCanvasMapLocked) {
@@ -245,6 +261,7 @@
         }
 
         function toggleRedPenDrawingMode() {
+            if(!map) return;
             redPenDrawingModeActive = !redPenDrawingModeActive;
             const btn = document.getElementById('redPenBtn');
             if (redPenDrawingModeActive) {
@@ -258,28 +275,52 @@
             }
         }
 
-        let isDrawing = false; let activeLine = null;
-        map.on('mousedown', e => {
-            if (redPenDrawingModeActive) {
-                isDrawing = true;
-                activeLine = L.polyline([e.latlng], {color: 'red', weight: 4, interactive: false}).addTo(map);
-                drawingLayers.push(activeLine);
-            }
-        });
-        map.on('mousemove', e => { if (isDrawing && activeLine) activeLine.addLatLng(e.latlng); });
-        map.on('mouseup', () => { if (isDrawing) { isDrawing = false; logEvent("GRID MARK: Dropped custom red pen line coordinates on map."); } });
+        // Safe script execution hooks verify map status prior to mouse listener deployments
+        document.addEventListener("DOMContentLoaded", () => {
+            setTimeout(() => {
+                if(!map) return;
+                let isDrawing = false; let activeLine = null;
+                map.on('mousedown', e => {
+                    if (redPenDrawingModeActive) {
+                        isDrawing = true;
+                        activeLine = L.polyline([e.latlng], {color: 'red', weight: 4, interactive: false}).addTo(map);
+                        drawingLayers.push(activeLine);
+                    }
+                });
+                map.on('mousemove', e => { if (isDrawing && activeLine) activeLine.addLatLng(e.latlng); });
+                map.on('mouseup', () => { if (isDrawing) { isDrawing = false; logEvent("GRID MARK: Dropped custom red pen line coordinates on map."); } });
 
-        function eraseLastLine() { if (drawingLayers.length > 0) { map.removeLayer(drawingLayers.pop()); logEvent("GRID MOD: Erased last drawn red line segment."); } }
+                map.on('click', e => {
+                    if (activeType) {
+                        let borderCol = (activeType === 'VSP') ? '#ffd700' : '#fff';
+                        let m = L.circleMarker(e.latlng, { radius: 14, fillColor: unitColors[activeType], color: borderCol, fillOpacity: 1, weight: 3, draggable: true }).addTo(map);
+                        m.unitType = activeType;
+                        logEvent(`ASSET DISPATCH: Deployed tracking asset element type: [${activeType}] to coordinates: ${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`);
+                        
+                        if(activeType === 'SUS') m.bindTooltip("SUSPECT LKL", {permanent: true, direction: 'top', className: 'orange-dist-label'}).openTooltip();
+                        m.on('drag', function() { updateCrossfireDimensionality(); });
+                        m.on('click', function(ev) { L.DomEvent.stopPropagation(ev); logEvent(`ASSET RETIRE: Purged tracking asset type [${this.unitType}] from operations canvas.`); map.removeLayer(this); activeMarkers = activeMarkers.filter(item => item !== this); updateCrossfireDimensionality(); });
+                        activeMarkers.push(m); activeType = null;
+                    } else if (crossfireActive) {
+                        handleCrossfireClick(e.latlng);
+                    }
+                });
+            }, 400);
+        });
+
+        function eraseLastLine() { if (map && drawingLayers.length > 0) { map.removeLayer(drawingLayers.pop()); logEvent("GRID MOD: Erased last drawn red line segment."); } }
         function setMarker(type) { activeType = type; crossfireActive = false; if(document.getElementById('crossfireBtn')) document.getElementById('crossfireBtn').classList.remove('btn-active'); if(redPenDrawingModeActive) toggleRedPenDrawingMode(); }
-        function triggerTreeTopHeight() { map.setZoom(20); logEvent("PERSPECTIVE: Set viewpoint target down to treetop view height bounds."); }
+        function triggerTreeTopHeight() { if(map) { map.setZoom(20); logEvent("PERSPECTIVE: Set viewpoint target down to treetop view height bounds."); } }
 
         function resetSOSDistressRings() {
+            if(!map) return;
             if (sosVisualRing) { map.removeLayer(sosVisualRing); sosVisualRing = null; }
             if (sosMarkerAnchor) { map.removeLayer(sosMarkerAnchor); activeMarkers = activeMarkers.filter(m => m !== sosMarkerAnchor); sosMarkerAnchor = null; }
             logEvent("🚨 EMERGENCY ENGINE: SOS signal cleared and reset manually at command deck.");
         }
 
         function triggerSOSAlert() {
+            if(!map) return;
             logEvent(`🚨 CRITICAL DURESS: SOS DISTRESS TRACKING METRICS ACTIVATED FIELD-WIDE.`);
             navigator.geolocation.getCurrentPosition(p => {
                 const lat = p.coords.latitude; const lon = p.coords.longitude;
@@ -309,22 +350,6 @@
 
         function triggerAutomated911Call() { window.location.href = "tel:911"; triggerSOSAlert(); }
 
-        map.on('click', e => {
-            if (activeType) {
-                let borderCol = (activeType === 'VSP') ? '#ffd700' : '#fff';
-                let m = L.circleMarker(e.latlng, { radius: 14, fillColor: unitColors[activeType], color: borderCol, fillOpacity: 1, weight: 3, draggable: true }).addTo(map);
-                m.unitType = activeType;
-                logEvent(`ASSET DISPATCH: Deployed tracking asset element type: [${activeType}] to coordinates: ${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`);
-                
-                if(activeType === 'SUS') m.bindTooltip("SUSPECT LKL", {permanent: true, direction: 'top', className: 'orange-dist-label'}).openTooltip();
-                m.on('drag', function() { updateCrossfireDimensionality(); });
-                m.on('click', function(ev) { L.DomEvent.stopPropagation(ev); logEvent(`ASSET RETIRE: Purged tracking asset type [${this.unitType}] from operations canvas.`); map.removeLayer(this); activeMarkers = activeMarkers.filter(item => item !== this); updateCrossfireDimensionality(); });
-                activeMarkers.push(m); activeType = null;
-            } else if (crossfireActive) {
-                handleCrossfireClick(e.latlng);
-            }
-        });
-
         let crossfireActive = false; let firstPoint = null;
         function toggleCrossfireMode() {
             crossfireActive = !crossfireActive; const btn = document.getElementById('crossfireBtn');
@@ -332,6 +357,7 @@
         }
 
         function handleCrossfireClick(latlng) {
+            if(!map) return;
             let clickedMarker = activeMarkers.find(m => map.distance(latlng, m.getLatLng()) < 350);
             let targetLatLng = clickedMarker ? clickedMarker.getLatLng() : latlng;
             if (!firstPoint) { firstPoint = { latlng: targetLatLng, marker: clickedMarker || null }; } 
@@ -343,7 +369,7 @@
             let dist = ptA.latlng.distanceTo(ptB.latlng) * 3.28084;
             let labelMarker = L.marker(line.getCenter(), { icon: L.divIcon({ className: 'orange-dist-label', html: `${dist.toFixed(0)} FT` }) }).addTo(map);
             let vectorObj = { line, labelMarker, ptA, ptB };
-            logEvent(`VECTOR METRIC: Computed Crossfire line gauge equal to ${dist.toFixed(0)} feet inside dispatch map grid.`);
+            logEvent("VECTOR METRIC: Computed Crossfire line gauge equal to " + dist.toFixed(0) + " feet inside dispatch map grid.");
             labelMarker.on('click', function(ev) { L.DomEvent.stopPropagation(ev); map.removeLayer(line); map.removeLayer(labelMarker); crossfireVectors = crossfireVectors.filter(v => v !== vectorObj); });
             crossfireVectors.push(vectorObj);
         }
@@ -362,4 +388,108 @@
             "SCANNING SEC-2 TOWER (MONACAN HEIGHTS)... TELEMETRY ACQUIRED",
             "UPLINK STABLE: MONITORING FREQUENCY 851.0125 MHz",
             "PINGING CELL BLOCK SECTORS... TRIANGULATING COORDINATES",
-            "SIGNAL LOCK ATTAINED
+            "SIGNAL LOCK ATTAINED: ANALYZING PROPAGATION DELAYS",
+            "TRACKING CELL SITE IMSI INTERCEPT LAYERS... MONITORING DATA"
+        ];
+
+        function toggleTrapTrace() {
+            if(!map) return;
+            const btn = document.getElementById('trapTraceBtn'); const box = document.getElementById('radarDisplay');
+            const statusText = document.getElementById('radarStatus'); const pingText = document.getElementById('radarPing');
+            
+            if (!trapTraceInterval) {
+                btn.innerText = "TRACE ON"; btn.classList.add('btn-active'); box.style.display = "flex";
+                logEvent("ENGINE ACTIVE: Initialized target frequency Trap N Trace cell spectrum sweeping.");
+                trapTraceInterval = setInterval(() => {
+                    pingText.innerText = `PING: ${Math.floor(Math.random() * 30) + 12}ms`;
+                    statusText.innerText = targetSectors[radarStringIndex];
+                    radarStringIndex = (radarStringIndex + 1) % targetSectors.length;
+                }, 2500);
+            } else {
+                btn.innerText = "TRAP N TRACE"; btn.classList.remove('btn-active'); box.style.display = "none";
+                logEvent("ENGINE ACTIVE: Disarmed spectrum sweeping protocols.");
+                clearInterval(trapTraceInterval); trapTraceInterval = null;
+            }
+            setTimeout(() => { map.invalidateSize(); }, 100);
+        }
+
+        // FIXED HIGH-VISIBILITY SEARCH RADAR DROP ENGINE EXECUTOR
+        function searchAddr() {
+            if(!map) return;
+            const q = document.getElementById('addrInput').value; const radiusFeet = parseFloat(document.getElementById('radiusSlider').value);
+            fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(q))
+                .then(r => r.json()).then(d => { 
+                    if(d.length > 0) { 
+                        perimeterCenter = [d[0].lat, d[0].lon]; map.setView(perimeterCenter, 15); 
+                        
+                        if (addressRedDotMarker) map.removeLayer(addressRedDotMarker);
+                        
+                        // Drop a custom inline HTML canvas vector asset that overrides standard Leaflet icons completely
+                        let redDotHtmlIcon = L.divIcon({
+                            className: 'custom-red-dot-anchor',
+                            html: '<div style="background: #ff0000; width: 14px; height: 14px; border: 2px solid #ffffff; border-radius: 50%; box-shadow: 0 0 10px #ff0000;"></div>',
+                            iconSize: [14, 14],
+                            iconAnchor: [7, 7]
+                        });
+                        
+                        addressRedDotMarker = L.marker(perimeterCenter, { icon: redDotHtmlIcon }).addTo(map);
+                        addressRedDotMarker.bindPopup(`<b>TARGET DISPATCH ANCHOR</b><br>${q}`).openPopup();
+                        
+                        logEvent(`LOCATE MATRIX: Executed target site lookup for: [${q}]. Dropped red center focal coordinate dot.`);
+                        drawPerimeter(radiusFeet); 
+                    } 
+                });
+        }
+
+        function drawPerimeter(feet) { if (map && searchPerimeter) map.removeLayer(searchPerimeter); if (!perimeterCenter) return; searchPerimeter = L.circle(perimeterCenter, { radius: feet / 3.28084, color: '#00661a', fillColor: '#00ff41', fillOpacity: 0.12, weight: 4, dashArray: '8, 8' }).addTo(map); logEvent(`CONTAIN MATRIX: Swept perimeter constraint zone out to ${feet} feet around red target anchor dot.`); }
+        function adjustPerimeter(val) { document.getElementById('radiusVal').innerText = val + " FT"; if (perimeterCenter) { drawPerimeter(parseFloat(val)); } }
+        function activateGPS() { navigator.geolocation.getCurrentPosition(p => { if(map) { let m = L.marker([p.coords.latitude, p.coords.longitude]).addTo(map); activeMarkers.push(m); map.setView([p.coords.latitude, p.coords.longitude], 16); logEvent("ASSET TRACK: Logged operator live GPS hardware coordinates."); } }, null, {enableHighAccuracy: true}); }
+
+        function generateCourtroomReport() {
+            document.getElementById('rptOfficerBox').value = currentUser.toUpperCase();
+            document.getElementById('rptDateBox').value = new Date().toISOString().substring(0,10);
+            document.getElementById('rptAddrBox').value = document.getElementById('addrInput').value || "No target address logged in active matrix frame.";
+            
+            const logContainer = document.getElementById('courtAuditLogBox');
+            logContainer.innerHTML = "";
+            eventLog.forEach(e => { logContainer.innerHTML += `[${e.time}] >> ${e.desc}<br/>`; });
+            
+            document.getElementById('courtroomReportModal').style.display = 'block';
+        }
+
+        function handleEvidencePhotos(files) {
+            const grid = document.getElementById('evidencePhotoGrid');
+            for(let i=0; i<files.length; i++) {
+                const file = files[i]; const reader = new FileReader();
+                reader.onload = function(e) {
+                    const slot = document.createElement('div'); slot.className = 'photo-slot';
+                    slot.innerHTML = `<img src="${e.target.result}" />`; grid.appendChild(slot);
+                    logEvent(`EVIDENCE FILE: Securely annexed image capture attachment [${file.name}] into evidentiary courtroom data structures.`);
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function emailReportPipeline() {
+            let emailBody = "TACNET INCIDENT BRIEF%0D%0A=======================%0D%0A";
+            eventLog.forEach(e => { emailBody += `[${e.time}] ${e.desc}%0D%0A`; });
+            window.location.href = `mailto:prosecutor@court.gov?subject=TACNET_Evidentiary_Matrix_Report&body=${emailBody}`;
+        }
+
+        function clearMatrixCanvas() {
+            if(!map) return;
+            if(confirm("Wipe operational data layers back to clear matrix baseline?")) {
+                activeMarkers.forEach(m => map.removeLayer(m)); drawingLayers.forEach(l => map.removeLayer(l)); crossfireVectors.forEach(v => { map.removeLayer(v.line); map.removeLayer(v.labelMarker); });
+                if (searchPerimeter) map.removeLayer(searchPerimeter); if (sosVisualRing) map.removeLayer(sosVisualRing); if (addressRedDotMarker) map.removeLayer(addressRedDotMarker);
+                activeMarkers = []; drawingLayers = []; crossfireVectors = []; searchPerimeter = null; perimeterCenter = null; sosVisualRing = null; addressRedDotMarker = null; eventLog = [];
+                document.getElementById('evidencePhotoGrid').innerHTML = ""; logEvent("SYSTEM EXECS: Flushed entire operational tracking board back to factory clear slate.");
+                if (trapTraceInterval) toggleTrapTrace();
+                alert("Matrix canvas cleared successfully.");
+            }
+        }
+
+        function terminateSessionDispositions() { logEvent("MISSION STATUS: Command terminal search operation officially terminated. Compiling final dispositions."); generateCourtroomReport(); }
+        function resetConsole() { clearMatrixCanvas(); window.location.href = 'signin.html'; }
+    </script>
+</body>
+</html>
