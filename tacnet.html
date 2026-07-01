@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>TACNET - ADMISSIBLE EVIDENCE OPERATIONS MATRIX</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -20,7 +20,7 @@
         .map-wrapper { flex: 1; width: 100%; min-height: 0; position: relative; display: flex; flex-direction: column; }
         #map { flex: 1; width: 100%; height: 100%; background: #111; border: 2px solid #00ff41; border-radius: 6px; display: block; }
         
-        /* NEW: INTEGRATED RADAR MODULE (DOCKING TRACK DIRECTLY BENEATH MAP CANVAS) */
+        /* Radar Scanning Panel */
         .radar-box { border: 2px solid #00ff41; border-radius: 6px; background: #020f02; padding: 8px 12px; font-size: 11px; display: none; flex-direction: column; gap:4px; font-family: monospace; position: relative; overflow: hidden; height: 52px; box-sizing: border-box; margin-top: 6px; box-shadow: inset 0 0 10px rgba(0,255,65,0.3); }
         .radar-scan-line { position: absolute; top: 0; left: 0; height: 100%; width: 4px; background: #00ff41; opacity: 0.8; box-shadow: 0 0 12px #00ff41; animation: scanAcross 2.2s linear infinite; }
         @keyframes scanAcross { 0% { left: -5%; } 50% { left: 105%; } 100% { left: -5%; } }
@@ -52,27 +52,40 @@
         .leaflet-sos-pulse { animation: mapPulse 1.2s infinite ease-out; }
         @keyframes mapPulse { 0% { stroke-width: 4; stroke-opacity: 1; fill-opacity: 0.6; } 100% { stroke-width: 25; stroke-opacity: 0; fill-opacity: 0; } }
         
-        /* Courtroom Report Interface */
-        .modal { display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:#f4f6f9; z-index:9999; padding:15px; box-sizing:border-box; overflow-y:auto; color:#111; font-family: 'Georgia', serif; }
+        /* ==========================================================================
+           FIXED REMODEL: HARD-LOCKED HIGH-CONTRAST COURTROOM REPORT ENGINE
+           ========================================================================== */
+        .modal { display:none; position:absolute; top:0; left:0; width:100vw; height:100vh; background:#f4f6f9; z-index:9999; padding:15px; box-sizing:border-box; overflow-y:auto; overflow-x:hidden; color:#000000 !important; font-family: 'Georgia', serif; }
         .no-print-bar { display: flex; gap: 12px; background: #111; padding: 12px; border-bottom: 3px solid #00ff41; margin-bottom: 20px; align-items: center; border-radius: 6px; }
-        .court-container { background: #fff; border: 1px solid #bdc3c7; max-width: 850px; margin: 0 auto; padding: 40px; box-sizing: border-box; border-radius: 4px; }
-        .court-header { text-align: center; border-bottom: 2px solid #111; padding-bottom: 12px; margin-bottom: 25px; }
-        .court-header h1 { margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
-        .grid-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; }
-        .grid-table td { border: 1px solid #a0a0a0; padding: 10px; font-size: 14px; }
-        .grid-title { background: #f2f4f4; font-weight: bold; text-transform: uppercase; font-size: 11px; width: 22%; }
-        .evidence-banner { background: #2c3e50; color: #fff; padding: 8px 12px; font-weight: bold; text-transform: uppercase; font-size: 12px; margin: 25px 0 12px 0; letter-spacing: 1px; }
-        .court-log-container { border: 1px solid #bdc3c7; background: #fcfcfc; padding: 12px; font-family: 'Courier New', monospace; font-size: 12px; height: 180px; overflow-y: auto; margin-bottom: 25px; line-height: 1.5; color: #222; }
-        .input-court { width: 100%; border: none; border-bottom: 1px dashed #7f8c8d; background: transparent; font-family: 'Georgia', serif; font-size: 14px; padding: 4px; }
-        .textarea-court { width: 100%; border: 1px solid #bdc3c7; background: #fff; font-family: 'Georgia', serif; font-size: 14px; padding: 10px; box-sizing: border-box; border-radius: 4px; }
+        
+        .court-container { background: #fff; border: 2px solid #000000; max-width: 850px; margin: 0 auto; padding: 30px 20px; box-sizing: border-box; border-radius: 4px; color: #000000 !important; }
+        .court-header { text-align: center; border-bottom: 3px double #000000; padding-bottom: 12px; margin-bottom: 25px; }
+        .court-header h1 { margin: 0; font-size: 24px; font-weight: 900; letter-spacing: 1px; color: #000000 !important; text-transform: uppercase; }
+        .court-header h2 { margin: 6px 0 0 0; font-size: 13px; font-weight: 700; color: #000000 !important; text-transform: uppercase; }
+        
+        .grid-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; color: #000000 !important; }
+        .grid-table td { border: 1px solid #000000; padding: 10px; font-size: 14px; color: #000000 !important; font-weight: bold; }
+        .grid-title { background: #dcdde1; font-weight: 900; text-transform: uppercase; font-size: 11px; width: 22%; color: #000000 !important; letter-spacing: 0.5px; }
+        
+        .evidence-banner { background: #000000; color: #ffffff !important; padding: 8px 12px; font-weight: 900; text-transform: uppercase; font-size: 13px; margin: 25px 0 12px 0; letter-spacing: 1px; border-radius: 3px; }
+        .court-log-container { border: 2px solid #000000; background: #ffffff; padding: 12px; font-family: 'Courier New', monospace; font-size: 13px; font-weight: 900; height: 180px; overflow-y: auto; margin-bottom: 25px; line-height: 1.5; color: #000000 !important; }
+        
+        .input-court { width: 100%; border: none; border-bottom: 1px dashed #000000; background: transparent; font-family: 'Georgia', serif; font-size: 14px; font-weight: bold; padding: 4px; color: #000000 !important; }
+        .textarea-court { width: 100%; border: 2px solid #000000; background: #fff; font-family: 'Georgia', serif; font-size: 14px; font-weight: bold; padding: 10px; box-sizing: border-box; border-radius: 4px; color: #000000 !important; }
         .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; margin-top: 15px; }
-        .photo-slot { border: 2px dashed #bdc3c7; height: 140px; display: flex; align-items: center; justify-content: center; position: relative; background: #fafbfc; overflow: hidden; }
+        .photo-slot { border: 2px dashed #000000; height: 140px; display: flex; align-items: center; justify-content: center; position: relative; background: #fafbfc; border-radius: 4px; overflow: hidden; }
         .photo-slot img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        
+        @media print {
+            body, html { background: #fff !important; color: #000000 !important; overflow: visible !important; height: auto !important; }
+            .main-ui, .no-print-bar { display: none !important; }
+            .modal { display: block !important; position: relative !important; width: 100% !important; height: auto !important; top: 0 !important; left: 0 !important; border: none !important; padding: 0 !important; background: #fff !important; }
+            .court-container { border: none !important; padding: 0 !important; max-width: 100% !important; }
+        }
     </style>
 </head>
 <body>
     <div class="main-ui">
-        <!-- ROW 1: Top taskbar line -->
         <div class="top-bar">
             <div class="search-container">
                 <button class="btn-tac" style="padding: 0 12px; height: 34px; font-size: 13px; width: auto;" onclick="window.location.href='signin.html'">⬅ SIGN OUT</button>
@@ -94,22 +107,19 @@
             </div>
         </div>
 
-        <!-- ROW 2: Map Screen Canvas -->
         <div class="map-wrapper">
             <div id="map"></div>
             
-            <!-- FIXED NEW: THE TRAP N TRACE SCANNING MONITOR -->
             <div class="radar-box" id="radarDisplay">
                 <div class="radar-scan-line"></div>
                 <div style="display:flex; justify-content:space-between; color:#00ff41; font-weight:bold;">
                     <span>⚡ RADAR MATRIX: SWEEPING CELLS...</span>
                     <span id="radarPing">PING: 24ms</span>
                 </div>
-                <div id="radarStatus" style="font-size:10px; color:#aaffaa; font-family:monospace;">CONNECTING TO LOCAL MOUNT SECTOR TOWERS...</div>
+                <div id="radarStatus" style="font-size:10px; color:#aaffaa; font-family:monospace;">CONNECTING TO LOCAL TOWER SECTORS...</div>
             </div>
         </div>
 
-        <!-- ROW 3: Centered Operations Toolbar -->
         <div class="console-row">
             <button class="btn-tac btn-sos" onclick="triggerSOSAlert();">🚨 SOS ALERT</button>
             <button class="btn-tac" style="border-color: #ff3333; color: #ff3333;" onclick="resetSOSDistressRings();">🚨 RESET SOS</button>
@@ -119,16 +129,12 @@
             <button class="btn-tac" id="crossfireBtn" onclick="toggleCrossfireMode();">CROSSFIRE DIST</button>
             <button class="btn-tac" id="redPenBtn" style="border-color: #ff3333; color: #ff3333;" onclick="toggleRedPenDrawingMode();">RED PEN [OFF]</button>
             <button class="btn-tac" style="border-color: #ff3333; color: #ff3333;" onclick="eraseLastLine();">❌ ERASE LINE</button>
-            
-            <!-- TRAP N TRACE INITIATOR TRIGGER -->
             <button class="btn-tac" id="trapTraceBtn" onclick="toggleTrapTrace()">TRAP N TRACE</button>
-            
             <button class="btn-tac" style="border-color: #00ff41; color: #00ff41;" onclick="generateCourtroomReport()">📄 PREVIEW REPORT</button>
             <button class="btn-tac" style="border-color: #ffd700; color: #ffd700;" onclick="clearMatrixCanvas();">CLEAR CANVAS</button>
             <button class="btn-tac btn-danger" onclick="terminateSessionDispositions()">TERMINATE SEARCH</button>
         </div>
 
-        <!-- ROW 4: Centered Multi-Agency Legend -->
         <div class="legend-bar">
             <span class="legend-item" onclick="setMarker('LE')">🔵 LE</span>
             <span class="legend-item" onclick="setMarker('K9')">🔘 K9</span>
@@ -149,11 +155,10 @@
         </div>
     </div>
 
-    <!-- Courtroom Admissible Report Modal -->
     <div id="courtroomReportModal" class="modal">
         <div class="no-print-bar">
             <button class="btn-tac" style="border-color:#00ff41; color:#00ff41; height:36px; padding: 0 12px; font-size:12px;" onclick="document.getElementById('courtroomReportModal').style.display='none'">⬅ RETURN TO MAP</button>
-            <button class="btn-tac" style="border-color:#ffd700; color:#ffd700; height:36px; padding: 0 12px; font-size:12px;" onclick="alert('Playing back timestamped logs...')">REPLAY SESSION</button>
+            <button class="btn-tac" style="border-color:#ffd700; color:#ffd700; height:36px; padding: 0 12px; font-size:12px;" onclick="alert('Running telemetry tactical playback simulation replay...')">REPLAY SESSION</button>
             <button class="btn-tac" style="border-color:#00ff41; color:#00ff41; height:36px; padding: 0 12px; font-size:12px;" onclick="window.print()">PRINT / EXPORT PDF</button>
             <button class="btn-tac" style="border-color:#ffd700; color:#ffd700; height:36px; padding: 0 12px; font-size:12px;" onclick="emailReportPipeline()">EMAIL DISPATCH</button>
         </div>
@@ -184,9 +189,9 @@
             <div class="evidence-banner">Chronological Telemetry Audit Trail (Admissible Court Log)</div>
             <div class="court-log-container" id="courtAuditLogBox"></div>
             <div class="evidence-banner">Evidentiary Field Notes & Scene Briefs</div>
-            <textarea class="textarea-court" rows="5" placeholder="Enter supplemental tracking briefs..."></textarea>
+            <textarea class="textarea-court" rows="5" placeholder="Enter supplemental tracking briefs, search parameters, or narrative data..."></textarea>
             <div class="evidence-banner">Final Mission Disposition Summary</div>
-            <input type="text" class="input-court" placeholder="Log recoveries..." style="font-size:15px; font-weight:bold;">
+            <input type="text" class="input-court" placeholder="Log recoveries, clear times, subject locates, or command handoffs...">
             <div class="evidence-banner">Field Evidence Photo Upload Log</div>
             <div style="margin-bottom: 12px;" class="no-print"><input type="file" id="photoUploader" accept="image/*" multiple onchange="handleEvidencePhotos(this.files)"></div>
             <div class="photo-grid" id="evidencePhotoGrid"></div>
@@ -205,6 +210,7 @@
             eventLog.push({ time, desc });
         }
 
+        // Initialize Map
         const map = L.map('map', { center: [37.4138, -79.1422], zoom: 14, maxZoom: 20 });
         const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 20 }).addTo(map);
         const terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 20 });
@@ -350,111 +356,10 @@
             });
         }
 
-        // DYNAMIC TRAP N TRACE SIMULATION DATA ENGINE
-        let trapTraceInterval = null;
-        let radarStringIndex = 0;
+        let trapTraceInterval = null; let radarStringIndex = 0;
         const targetSectors = [
             "SCANNING SEC-1 TOWER (AMHERST NORTH)... STATUS: LISTENING",
             "SCANNING SEC-2 TOWER (MONACAN HEIGHTS)... TELEMETRY ACQUIRED",
             "UPLINK STABLE: MONITORING FREQUENCY 851.0125 MHz",
             "PINGING CELL BLOCK SECTORS... TRIANGULATING COORDINATES",
-            "SIGNAL LOCK ATTAINED: ANALYZING PROPAGATION DELAYS",
-            "TRACKING CELL SITE IMSI INTERCEPT LAYERS... MONITORING DATA"
-        ];
-
-        function toggleTrapTrace() {
-            const btn = document.getElementById('trapTraceBtn');
-            const box = document.getElementById('radarDisplay');
-            const statusText = document.getElementById('radarStatus');
-            const pingText = document.getElementById('radarPing');
-            
-            if (!trapTraceInterval) {
-                btn.innerText = "TRACE ON";
-                btn.classList.add('btn-active');
-                box.style.display = "flex";
-                logEvent("ENGINE ACTIVE: Initialized target frequency Trap N Trace cell spectrum sweeping.");
-                
-                // Fire up real-time status ticker loop
-                trapTraceInterval = setInterval(() => {
-                    // Update ping latency values realistically
-                    pingText.innerText = `PING: ${Math.floor(Math.random() * 30) + 12}ms`;
-                    // Rotate diagnostic messages
-                    statusText.innerText = targetSectors[radarStringIndex];
-                    radarStringIndex = (radarStringIndex + 1) % targetSectors.length;
-                }, 2500);
-            } else {
-                btn.innerText = "TRAP N TRACE";
-                btn.classList.remove('btn-active');
-                box.style.display = "none";
-                logEvent("ENGINE ACTIVE: Disarmed spectrum sweeping protocols.");
-                clearInterval(trapTraceInterval);
-                trapTraceInterval = null;
-            }
-            // Fix map scale container automatically
-            setTimeout(() => { map.invalidateSize(); }, 100);
-        }
-
-        function searchAddr() {
-            const q = document.getElementById('addrInput').value; const radiusFeet = parseFloat(document.getElementById('radiusSlider').value);
-            fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(q))
-                .then(r => r.json()).then(d => { 
-                    if(d.length > 0) { 
-                        perimeterCenter = [d[0].lat, d[0].lon]; map.setView(perimeterCenter, 15); 
-                        if (addressRedDotMarker) map.removeLayer(addressRedDotMarker);
-                        addressRedDotMarker = L.circleMarker(perimeterCenter, { radius: 9, fillColor: '#ff0000', color: '#ffffff', fillOpacity: 1, weight: 3 }).addTo(map);
-                        drawPerimeter(radiusFeet); 
-                    } 
-                });
-        }
-
-        function drawPerimeter(feet) { if (searchPerimeter) map.removeLayer(searchPerimeter); if (!perimeterCenter) return; searchPerimeter = L.circle(perimeterCenter, { radius: feet / 3.28084, color: '#00661a', fillColor: '#00ff41', fillOpacity: 0.12, weight: 4, dashArray: '8, 8' }).addTo(map); logEvent(`CONTAIN MATRIX: Swept perimeter constraint zone out to ${feet} feet around red target anchor dot.`); }
-        function adjustPerimeter(val) { document.getElementById('radiusVal').innerText = val + " FT"; if (perimeterCenter) { drawPerimeter(parseFloat(val)); } }
-        function activateGPS() { navigator.geolocation.getCurrentPosition(p => { let m = L.marker([p.coords.latitude, p.coords.longitude]).addTo(map); activeMarkers.push(m); map.setView([p.coords.latitude, p.coords.longitude], 16); logEvent("ASSET TRACK: Logged operator live GPS hardware coordinates."); }, null, {enableHighAccuracy: true}); }
-
-        function generateCourtroomReport() {
-            document.getElementById('rptOfficerBox').value = currentUser.toUpperCase();
-            document.getElementById('rptDateBox').value = new Date().toISOString().substring(0,10);
-            document.getElementById('rptAddrBox').value = document.getElementById('addrInput').value || "No target address logged in active matrix frame.";
-            
-            const logContainer = document.getElementById('courtAuditLogBox');
-            logContainer.innerHTML = "";
-            eventLog.forEach(e => { logContainer.innerHTML += `[${e.time}] >> ${e.desc}<br/>`; });
-            
-            document.getElementById('courtroomReportModal').style.display = 'block';
-        }
-
-        function handleEvidencePhotos(files) {
-            const grid = document.getElementById('evidencePhotoGrid');
-            for(let i=0; i<files.length; i++) {
-                const file = files[i]; const reader = new FileReader();
-                reader.onload = function(e) {
-                    const slot = document.createElement('div'); slot.className = 'photo-slot';
-                    slot.innerHTML = `<img src="${e.target.result}" />`; grid.appendChild(slot);
-                    logEvent(`EVIDENCE FILE: Securely annexed image capture attachment [${file.name}] into evidentiary courtroom data structures.`);
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function emailReportPipeline() {
-            let emailBody = "TACNET INCIDENT BRIEF%0D%0A=======================%0D%0A";
-            eventLog.forEach(e => { emailBody += `[${e.time}] ${e.desc}%0D%0A`; });
-            window.location.href = `mailto:prosecutor@court.gov?subject=TACNET_Evidentiary_Matrix_Report&body=${emailBody}`;
-        }
-
-        function clearMatrixCanvas() {
-            if(confirm("Wipe operational data layers back to clear matrix baseline?")) {
-                activeMarkers.forEach(m => map.removeLayer(m)); drawingLayers.forEach(l => map.removeLayer(l)); crossfireVectors.forEach(v => { map.removeLayer(v.line); map.removeLayer(v.labelMarker); });
-                if (searchPerimeter) map.removeLayer(searchPerimeter); if (sosVisualRing) map.removeLayer(sosVisualRing); if (addressRedDotMarker) map.removeLayer(addressRedDotMarker);
-                activeMarkers = []; drawingLayers = []; crossfireVectors = []; searchPerimeter = null; perimeterCenter = null; sosVisualRing = null; addressRedDotMarker = null; eventLog = [];
-                document.getElementById('evidencePhotoGrid').innerHTML = ""; logEvent("SYSTEM EXECS: Flushed entire operational tracking board back to factory clear slate.");
-                if (trapTraceInterval) toggleTrapTrace();
-                alert("Matrix canvas cleared successfully.");
-            }
-        }
-
-        function terminateSessionDispositions() { logEvent("MISSION STATUS: Command terminal search operation officially terminated. Compiling final dispositions."); generateCourtroomReport(); }
-        function resetConsole() { clearMatrixCanvas(); window.location.href = 'signin.html'; }
-    </script>
-</body>
-</html>
+            "SIGNAL LOCK ATTAINED
