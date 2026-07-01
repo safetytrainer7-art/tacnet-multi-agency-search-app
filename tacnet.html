@@ -28,7 +28,7 @@
         .radar-scan-line { position: absolute; top: 0; left: 0; height: 100%; width: 4px; background: #00ff41; opacity: 0.8; box-shadow: 0 0 12px #00ff41; animation: scanAcross 2.2s linear infinite; }
         @keyframes scanAcross { 0% { left: -5%; } 50% { left: 105%; } 100% { left: -5%; } }
         
-        /* Row 3: Operations Console Row Track with Custom Spacing Cushions */
+        /* Row 3: Operations Console Row Track */
         .console-row { height: 85px; background: #000; border: 2px solid #00ff41; border-radius: 6px; padding: 8px; box-sizing: border-box; flex-shrink: 0; overflow-x: auto; white-space: nowrap; display: flex; gap: 10px; align-items: center; -webkit-overflow-scrolling: touch; margin-top: 12px; margin-bottom: 12px; }
         
         /* Row 4: Multi-Agency Legend Bar Track */
@@ -113,8 +113,10 @@
             <button class="btn-tac" id="gpsBroadcastBtn" style="border-color: #00ff41; color: #00ff41;" onclick="toggleLiveGPSBroadcast();">ACTIVATE UNITS</button>
             <button class="btn-tac" style="border-color: #ffd700; color: #ffd700;" onclick="triggerTreeTopHeight();">🔎 TREETOP VIEW</button>
             <button class="btn-tac" id="crossfireBtn" onclick="toggleCrossfireMode();">CROSSFIRE DIST</button>
+            
             <button class="btn-tac" id="redPenBtn" style="border-color: #ff3333; color: #ff3333;" onclick="toggleRedPenDrawingMode();">RED PEN [OFF]</button>
             <button class="btn-tac" style="border-color: #ff3333; color: #ff3333;" onclick="eraseLastLine();">❌ ERASE LINE</button>
+            
             <button class="btn-tac" id="trapTraceBtn" onclick="toggleTrapTrace()">TRAP N TRACE</button>
             <button class="btn-tac" style="border-color: #00ff41; color: #00ff41;" onclick="generateCourtroomReport()">📄 PREVIEW REPORT</button>
             <button class="btn-tac" style="border-color: #ffd700; color: #ffd700;" onclick="clearMatrixCanvas();">CLEAR CANVAS</button>
@@ -175,9 +177,9 @@
             <div class="evidence-banner">Chronological Telemetry Audit Trail (Admissible Court Log)</div>
             <div class="court-log-container" id="courtAuditLogBox"></div>
             <div class="evidence-banner">Evidentiary Field Notes & Scene Briefs</div>
-            <textarea class="textarea-court" rows="5" placeholder="Enter supplemental tracking briefs, search parameters, or narrative data..."></textarea>
+            <textarea class="textarea-court" rows="5" placeholder="Enter supplemental tracking briefs..."></textarea>
             <div class="evidence-banner">Final Mission Disposition Summary</div>
-            <input type="text" class="input-court" placeholder="Log recoveries, clear times, subject locates, or command handoffs...">
+            <input type="text" class="input-court" placeholder="Log recoveries...">
             <div class="evidence-banner">Field Evidence Photo Upload Log</div>
             <div style="margin-bottom: 12px;" class="no-print"><input type="file" id="photoUploader" accept="image/*" multiple onchange="handleEvidencePhotos(this.files)"></div>
             <div class="photo-grid" id="evidencePhotoGrid"></div>
@@ -209,7 +211,6 @@
             eventLog.push({ time, desc });
         }
 
-        // DELAYED ASYNCHRONOUS INITIALIZATION STRATEGY PREVENTS MAP ENGINE BLIND SPOTS
         document.addEventListener("DOMContentLoaded", () => {
             logEvent(`SYSTEM INITIALIZED: Command Matrix configured under Operator ${currentUser.toUpperCase()}`);
             initDuressAccelerometer();
@@ -220,12 +221,11 @@
                 terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 20 });
                 satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 20 });
                 
-                // FIXED: CREATE THE OVERLAY LAYER GROUP FOR INERRANT MARKER DRAWING
                 trackingLayerGroup = L.layerGroup().addTo(map);
                 
                 map.invalidateSize();
                 initializeLiveNetworkListener();
-                initializeMapClickHandlers();
+                initializeMapHandlers();
             }, 250);
         });
 
@@ -288,22 +288,54 @@
         }
 
         function toggleRedPenDrawingMode() {
-            if(!map) return; redPenDrawingModeActive = !redPenDrawingModeActive; const btn = document.getElementById('redPenBtn');
-            if (redPenDrawingModeActive) { activeType = null; crossfireActive = false; document.getElementById('crossfireBtn').classList.remove('btn-active'); map.dragging.disable(); btn.innerText = "RED PEN [ON]"; btn.classList.add('btn-lock-active'); } 
-            else { if(!manualCanvasMapLocked) map.dragging.enable(); btn.innerText = "RED PEN [OFF]"; btn.classList.remove('btn-lock-active'); }
+            if(!map) return;
+            redPenDrawingModeActive = !redPenDrawingModeActive;
+            const btn = document.getElementById('redPenBtn');
+            if (redPenDrawingModeActive) {
+                activeType = null; crossfireActive = false; document.getElementById('crossfireBtn').classList.remove('btn-active');
+                map.dragging.disable(); 
+                btn.innerText = "RED PEN [ON]"; btn.classList.add('btn-lock-active');
+                logEvent("MODE SHIFT: Freehand Red Pen active. Touch map canvas to trace lines.");
+            } else {
+                if(!manualCanvasMapLocked) map.dragging.enable();
+                btn.innerText = "RED PEN [OFF]"; btn.classList.remove('btn-lock-active');
+                logEvent("MODE SHIFT: Freehand Red Pen disarmed.");
+            }
         }
 
-        // FIXED: DYNAMIC LISTENERS ATTACH DIRECTLY TO VISIBLE LAYERS FOR FLUID DROPS
-        function initializeMapClickHandlers() {
+        // FIXED MOBILE DYNAMIC TOUCH INTERCEPT ENGINE FOR THE FREEHAND RED PEN
+        function initializeMapHandlers() {
             let isDrawing = false; let activeLine = null;
+
+            // 1. Desktop Mouse Fallbacks
             map.on('mousedown', e => { if (redPenDrawingModeActive) { isDrawing = true; activeLine = L.polyline([e.latlng], {color: 'red', weight: 4, interactive: false}).addTo(map); drawingLayers.push(activeLine); } });
             map.on('mousemove', e => { if (isDrawing && activeLine) activeLine.addLatLng(e.latlng); });
             map.on('mouseup', () => { if (isDrawing) isDrawing = false; });
-            
+
+            // 2. FIXED: High-Priority iPhone Touch Listeners explicitly mapping thumb tracks
+            map.on('touchstart', e => {
+                if (redPenDrawingModeActive) {
+                    isDrawing = true;
+                    activeLine = L.polyline([e.latlng], {color: 'red', weight: 5, interactive: false}).addTo(map);
+                    drawingLayers.push(activeLine);
+                    // Kill default map scrolling behaviors while active
+                    if(e.originalEvent) { e.originalEvent.preventDefault(); e.originalEvent.stopPropagation(); }
+                }
+            });
+
+            map.on('touchmove', e => {
+                if (isDrawing && activeLine) {
+                    activeLine.addLatLng(e.latlng);
+                    if(e.originalEvent) { e.originalEvent.preventDefault(); e.originalEvent.stopPropagation(); }
+                }
+            });
+
+            map.on('touchend', () => { if (isDrawing) { isDrawing = false; logEvent(`GRID MARK: Successfully drew custom Neon Red tactical path sector line on map canvas.`); } });
+
+            // 3. Central Asset Marker Drop Handling Engine
             map.on('click', e => {
                 if (activeType && trackingLayerGroup) {
                     let borderCol = (activeType === 'VSP') ? '#ffd700' : '#fff';
-                    // FIXED: FORCE MARKER DIRECTLY INTO THE ACTIVE TRACKING LAYER OVERLAY
                     let m = L.circleMarker(e.latlng, { radius: 14, fillColor: unitColors[activeType], color: borderCol, fillOpacity: 1, weight: 3, draggable: true }).addTo(trackingLayerGroup);
                     m.unitType = activeType;
                     
@@ -316,110 +348,7 @@
             });
         }
 
-        // FIXED: HIGH-VISIBILITY DISPATCH SITE DROPS DIRECTLY ON TOP OF MAP COORDINATES WITHOUT INTERFERENCE
         function searchAddr() {
             if(!map || !trackingLayerGroup) return; 
             const q = document.getElementById('addrInput').value; const radiusFeet = parseFloat(document.getElementById('radiusSlider').value);
-            fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(q)) .then(r => r.json()).then(d => { 
-                if(d.length > 0) { 
-                    perimeterCenter = [d[0].lat, d[0].lon]; map.setView(perimeterCenter, 15); 
-                    if (addressRedDotMarker) trackingLayerGroup.removeLayer(addressRedDotMarker); 
-                    
-                    let redDotHtmlIcon = L.divIcon({ 
-                        className: 'custom-red-dot-anchor', 
-                        html: '<div style="background: #ff0000; width: 16px; height: 16px; border: 3px solid #ffffff; border-radius: 50%; box-shadow: 0 0 12px #ff0000;"></div>', 
-                        iconSize: [16, 16], 
-                        iconAnchor: [8, 8] 
-                    }); 
-                    
-                    // FIXED: FORCE DROPPED ADDRESS INTO THE PRIMARY ACTIVE OVERLAY ENGINE
-                    addressRedDotMarker = L.marker(perimeterCenter, { icon: redDotHtmlIcon }).addTo(trackingLayerGroup);
-                    addressRedDotMarker.bindPopup(`<b>TARGET DISPATCH ANCHOR</b><br>${q}`).openPopup(); 
-                    
-                    logEvent(`LOCATE MATRIX: Dropped target anchor red dot for: [${q}].`);
-                    drawPerimeter(radiusFeet); 
-                } 
-            });
-        }
-
-        function drawPerimeter(feet) { if (map && searchPerimeter) map.removeLayer(searchPerimeter); if (!perimeterCenter) return; searchPerimeter = L.circle(perimeterCenter, { radius: feet / 3.28084, color: '#00661a', fillColor: '#00ff41', fillOpacity: 0.12, weight: 4, dashArray: '8, 8' }).addTo(map); }
-        function adjustPerimeter(val) { document.getElementById('radiusVal').innerText = val + " FT"; if (perimeterCenter) { drawPerimeter(parseFloat(val)); } }
-        function activateGPS() { transmitDeviceCoordinates(); }
-        function eraseLastLine() { if (map && drawingLayers.length > 0) { map.removeLayer(drawingLayers.pop()); } }
-        function setMarker(type) { activeType = type; crossfireActive = false; if(document.getElementById('crossfireBtn')) document.getElementById('crossfireBtn').classList.remove('btn-active'); if(redPenDrawingModeActive) toggleRedPenDrawingMode(); }
-        function triggerTreeTopHeight() { if(map) map.setZoom(20); }
-        function resetSOSDistressRings() { if(!map) return; if (sosVisualRing) { map.removeLayer(sosVisualRing); sosVisualRing = null; } if (sosMarkerAnchor) { trackingLayerGroup.removeLayer(sosMarkerAnchor); activeMarkers = activeMarkers.filter(m => m !== sosMarkerAnchor); sosMarkerAnchor = null; } }
-
-        function triggerSOSAlert() {
-            if(!map || !trackingLayerGroup) return;
-            navigator.geolocation.getCurrentPosition(p => {
-                const lat = p.coords.latitude; const lon = p.coords.longitude;
-                if(sosVisualRing) map.removeLayer(sosVisualRing);
-                sosVisualRing = L.circle([lat, lon], { radius: 90, color: '#ff0000', fillColor: '#ff0000', fillOpacity: 0.5, className: 'leaflet-sos-pulse' }).addTo(map);
-                sosMarkerAnchor = L.marker([lat, lon]).addTo(trackingLayerGroup).bindPopup(`<b style="color:red;">🚨 OFFICER SOS</b>`).openPopup();
-                activeMarkers.push(sosMarkerAnchor); map.setView([lat, lon], 18);
-            }, null, {enableHighAccuracy: true});
-        }
-
-        function initDuressAccelerometer() {
-            if (window.DeviceMotionEvent) {
-                window.addEventListener('devicemotion', event => {
-                    let acceleration = event.accelerationIncludingGravity;
-                    let totalForce = Math.sqrt(acceleration.x * acceleration.x + acceleration.y * acceleration.y + acceleration.z * acceleration.z);
-                    if (totalForce > 35) { window.removeEventListener('devicemotion', this); executeAutomatedDuressCountdown(); }
-                });
-            }
-        }
-
-        function executeAutomatedDuressCountdown() {
-            let countdown = 5; let duressTimer = setInterval(() => { countdown--; if (countdown <= 0) { clearInterval(duressTimer); triggerAutomated911Call(); } }, 1000);
-            let bypass = confirm(`WARNING: Tactical impact detected. Abort dispatch?`); if (bypass) { clearInterval(duressTimer); initDuressAccelerometer(); }
-        }
-
-        function triggerAutomated911Call() { window.location.href = "tel:911"; triggerSOSAlert(); }
-
-        function switchBaseLayer(type) {
-            if(!map) return;
-            map.removeLayer(streetLayer); map.removeLayer(terrainLayer); map.removeLayer(satelliteLayer);
-            document.getElementById('btn-street').classList.remove('active'); document.getElementById('btn-terrain').classList.remove('active'); document.getElementById('btn-sat').classList.remove('active');
-            if (type === 'street') { streetLayer.addTo(map); document.getElementById('btn-street').classList.add('active'); }
-            if (type === 'terrain') { terrainLayer.addTo(map); document.getElementById('btn-terrain').classList.add('active'); }
-            if (type === 'sat') { satelliteLayer.addTo(map); document.getElementById('btn-sat').classList.add('active'); }
-        }
-
-        let crossfireActive = false; let firstPoint = null;
-        function toggleCrossfireMode() { crossfireActive = !crossfireActive; const btn = document.getElementById('crossfireBtn'); if (crossfireActive) { if(redPenDrawingModeActive) toggleRedPenDrawingMode(); btn.classList.add('btn-active'); firstPoint = null; activeType = null; } else { btn.classList.remove('btn-active'); } }
-        function handleCrossfireClick(latlng) { if(!map) return; let clickedMarker = activeMarkers.find(m => map.distance(latlng, m.getLatLng()) < 350); let targetLatLng = clickedMarker ? clickedMarker.getLatLng() : latlng; if (!firstPoint) { firstPoint = { latlng: targetLatLng, marker: clickedMarker || null }; } else { createCrossfireVector(firstPoint, { latlng: targetLatLng, marker: clickedMarker || null }); crossfireActive = false; document.getElementById('crossfireBtn').classList.remove('btn-active'); } }
-        function createCrossfireVector(ptA, ptB) { let line = L.polyline([ptA.latlng, ptB.latlng], {color: '#FF8C00', weight: 4, dashArray: '4, 4'}).addTo(map); let dist = ptA.latlng.distanceTo(ptB.latlng) * 3.28084; let labelMarker = L.marker(line.getCenter(), { icon: L.divIcon({ className: 'orange-dist-label', html: `${dist.toFixed(0)} FT` }) }).addTo(map); let vectorObj = { line, labelMarker, ptA, ptB }; labelMarker.on('click', function(ev) { L.DomEvent.stopPropagation(ev); map.removeLayer(line); map.removeLayer(labelMarker); crossfireVectors = crossfireVectors.filter(v => v !== vectorObj); }); crossfireVectors.push(vectorObj); }
-        function updateCrossfireDimensionality() { crossfireVectors.forEach(v => { let posA = v.ptA.marker ? v.ptA.marker.getLatLng() : v.ptA.latlng; let posB = v.ptB.marker ? v.ptB.marker.getLatLng() : v.ptB.latlng; v.line.setLatLngs([posA, posB]); v.labelMarker.setLatLng(v.line.getCenter()); v.labelMarker.setIcon(L.divIcon({ className: 'orange-dist-label', html: `${(posA.distanceTo(posB) * 3.28084).toFixed(0)} FT` })); }); }
-        
-        let trapTraceInterval = null; let radarStringIndex = 0;
-        const targetSectors = [
-            "SCANNING SEC-1 TOWER (AMHERST NORTH)... STATUS: LISTENING",
-            "SCANNING SEC-2 TOWER (MONACAN HEIGHTS)... TELEMETRY ACQUIRED",
-            "UPLINK STABLE: MONITORING FREQUENCY 851.0125 MHz",
-            "PINGING CELL BLOCK SECTORS... TRIANGULATING COORDINATES",
-            "SIGNAL LOCK ATTAINED: ANALYZING PROPAGATION DELAYS",
-            "TRACKING CELL SITE IMSI INTERCEPT LAYERS... MONITORING DATA"
-        ];
-        function toggleTrapTrace() { const btn = document.getElementById('trapTraceBtn'); const box = document.getElementById('radarDisplay'); const statusText = document.getElementById('radarStatus'); const pingText = document.getElementById('radarPing'); if (!trapTraceInterval) { btn.innerText = "TRACE ON"; btn.classList.add('btn-active'); box.style.display = "flex"; trapTraceInterval = setInterval(() => { pingText.innerText = `PING: ${Math.floor(Math.random() * 30) + 12}ms`; statusText.innerText = targetSectors[radarStringIndex]; radarStringIndex = (radarStringIndex + 1) % targetSectors.length; }, 2500); } else { btn.innerText = "TRAP N TRACE"; btn.classList.remove('btn-active'); box.style.display = "none"; clearInterval(trapTraceInterval); trapTraceInterval = null; } setTimeout(() => { map.invalidateSize(); }, 100); }
-
-        function clearMatrixCanvas() {
-            if(!map || !trackingLayerGroup) return;
-            if(confirm("Wipe canvas?")) {
-                trackingLayerGroup.clearLayers();
-                drawingLayers.forEach(l => map.removeLayer(l));
-                crossfireVectors.forEach(v => { map.removeLayer(v.line); map.removeLayer(v.labelMarker); });
-                if (searchPerimeter) map.removeLayer(searchPerimeter);
-                if (sosVisualRing) map.removeLayer(sosVisualRing);
-                
-                activeMarkers = []; drawingLayers = []; crossfireVectors = []; eventLog = []; searchPerimeter = null; perimeterCenter = null; addressRedDotMarker = null;
-                document.getElementById('evidencePhotoGrid').innerHTML = "";
-                if (trapTraceInterval) toggleTrapTrace();
-                alert("Canvas cleared.");
-            }
-        }
-        function emailReportPipeline() { let emailBody = "TACNET INCIDENT BRIEF%0D%0A"; eventLog.forEach(e => { emailBody += `[${e.time}] ${e.desc}%0D%0A`; }); window.location.href = `mailto:prosecutor@court.gov?subject=TACNET_Report&body=${emailBody}`; }
-    </script>
-</body>
-</html>
+            fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(q)) .
