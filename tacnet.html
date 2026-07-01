@@ -3,29 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>TACNET - COURT-ROOM GRADE LAW ENFORCEMENT ENGINE</title>
+    <title>TACNET - FIXED PORTRAIT MATRIX</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         body, html { margin:0; padding:0; height:100%; width:100%; background:#000; color:#00ff41; font-family: -apple-system, BlinkMacSystemFont, monospace; overflow: hidden; }
         .main-ui { display: flex; flex-direction: column; height: 100vh; width: 100vw; box-sizing: border-box; position: relative; padding-top: 5px; padding-bottom: 10px; }
         
-        /* Row 1: Top Navigation Controls Header Track */
         .top-bar { height: 52px; background:#001a00; border:2px solid #00ff41; border-radius: 6px; display:flex; padding: 0 10px; align-items:center; justify-content: space-between; gap:10px; box-sizing: border-box; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; flex-shrink: 0; margin: 0 8px 4px 8px; }
         .search-container { display:flex; gap:6px; align-items:center; }
         .map-toggles { display:flex; gap:4px; }
         
-        /* Row 2: Enhanced Map Screen Window Area */
-        .map-wrapper { flex: 1; width: 100%; min-height: 0; position: relative; padding: 0 8px; box-sizing: border-box; display: flex; flex-direction: column; }
-        #map { flex: 1; width: 100%; height: 100%; background: #111; border: 1px solid #333; display: block; }
+        /* Fixed: High-priority layout parameters force the canvas wrapper to fill 100% space */
+        .map-wrapper { flex: 1; width: 100%; min-height: 200px; position: relative; padding: 0 8px; box-sizing: border-box; display: flex; flex-direction: column; }
+        #map { flex: 1; width: 100%; height: 100%; background: #111; border: 1px solid #333; display: block; visibility: visible !important; }
         
-        /* Row 3: Command Operations Tool Bar Row Track */
         .console-row { height: 95px; background: #000; border: 2px solid #00ff41; border-radius: 6px; padding: 10px 5px; box-sizing: border-box; flex-shrink: 0; overflow-x: auto; white-space: nowrap; display: flex; gap: 10px; align-items: center; -webkit-overflow-scrolling: touch; margin: 6px 8px 0 8px; }
-        
-        /* Row 4: Multi-Agency Searchers Legend Bar Track */
         .legend-bar { height: 65px; background:#000; border: 2px solid #00ff41; border-radius: 6px; display:flex; align-items:center; overflow-x:auto; white-space:nowrap; gap:15px; padding: 0 10px; box-sizing: border-box; flex-shrink: 0; -webkit-overflow-scrolling: touch; margin: 6px 8px 0 8px; }
         
-        /* Tactical UI Buttons and Targets */
         .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding: 12px 16px; cursor:pointer; font-weight:bold; text-transform:uppercase; font-size: 13px; border-radius: 6px; display: inline-block; height: 42px; box-sizing: border-box; }
         .btn-map-type { background:#001a00; color:#00ff41; border:1px solid #00ff41; padding:6px 12px; cursor:pointer; font-size:12px; font-weight: bold; border-radius: 4px; }
         .btn-map-type.active { background:#00ff41; color:#000; font-weight:bold; }
@@ -47,7 +42,6 @@
         .leaflet-sos-pulse { animation: mapPulse 1.2s infinite ease-out; }
         @keyframes mapPulse { 0% { stroke-width: 4; stroke-opacity: 1; fill-opacity: 0.6; } 100% { stroke-width: 25; stroke-opacity: 0; fill-opacity: 0; } }
         
-        /* Courtroom Evidentiary Document Dashboard Styles */
         .modal { display:none; position:fixed; top:1vh; left:1vw; width:98vw; height:98vh; background:#fff; border:3px solid #000; z-index:9999; padding:20px; box-sizing:border-box; overflow-y:auto; color:#000; font-family: 'Times New Roman', Times, serif; border-radius: 4px; }
         .no-print-bar { display: flex; gap: 10px; background: #000; padding: 12px; border-bottom: 2px solid #00ff41; margin-bottom: 20px; align-items: center; border-radius: 4px; }
         
@@ -63,18 +57,10 @@
         .court-log-container { border: 1px solid #000; background: #fafafa; padding: 10px; font-family: monospace; font-size: 12px; height: 160px; overflow-y: auto; margin-bottom: 20px; line-height: 1.4; }
         
         .input-court { width: 100%; border: none; border-bottom: 1px dashed #333; background: transparent; font-family: 'Times New Roman', serif; font-size: 14px; padding: 4px; box-sizing: border-box; }
-        .input-court:focus { outline: none; border-bottom-color: #000; }
         .textarea-court { width: 100%; border: 1px solid #ccc; background: #fff; font-family: 'Times New Roman', serif; font-size: 14px; padding: 8px; box-sizing: border-box; }
-        
         .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; margin-top: 10px; }
         .photo-slot { border: 2px dashed #999; height: 130px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; background: #fdfdfd; }
         .photo-slot img { max-width: 100%; max-height: 100%; object-fit: contain; position: absolute; top:0; left:0; }
-        
-        @media print {
-            body, html { background: #fff !important; color: #000 !important; overflow: visible !important; height: auto !important; }
-            .main-ui, .no-print-bar, #map { display: none !important; }
-            .modal { display: block !important; position: relative !important; width: 100% !important; height: auto !important; top: 0 !important; left: 0 !important; border: none !important; padding: 0 !important; }
-        }
     </style>
 </head>
 <body>
@@ -143,77 +129,48 @@
         </div>
     </div>
 
+    <!-- Evidentiary Report Modal Overlay -->
     <div id="courtroomReportModal" class="modal">
         <div class="no-print-bar">
             <button class="btn-tac" style="border-color:#00ff41; color:#00ff41; height:36px; padding: 0 12px; font-size:12px;" onclick="document.getElementById('courtroomReportModal').style.display='none'">⬅ RETURN TO MAP</button>
-            <button class="btn-tac" style="border-color:#ffd700; color:#ffd700; height:36px; padding: 0 12px; font-size:12px;" onclick="alert('Running telemetry tactical simulation replay...')">REPLAY MISSION</button>
-            <button class="btn-tac" style="border-color:#00ff41; color:#00ff41; height:36px; padding: 0 12px; font-size:12px;" onclick="window.print()">PRINT / EXPORT PDF</button>
-            <button class="btn-tac" style="border-color:#ffd700; color:#ffd700; height:36px; padding: 0 12px; font-size:12px;" onclick="emailReportPipeline()">EMAIL DISPATCH</button>
+            <button class="btn-tac" style="border-color:#ffd700; color:#ffd700; height:36px; padding: 0 12px; font-size:12px;" onclick="window.print()">PRINT / EXPORT PDF</button>
         </div>
-        
         <div class="court-header">
             <h1>TACNET INCIDENT COMMAND MATRIX</h1>
-            <h2>Evidentiary Search Operations Report // Federal • State • Local Law Enforcement</h2>
+            <h2>Evidentiary Search Operations Report</h2>
         </div>
-        
         <table class="grid-table">
             <tr>
                 <td class="grid-title">Reporting Agency</td>
-                <td><input type="text" class="input-court" value="Virginia State Task Force / Local Sheriff CP"></td>
-                <td class="grid-title">Case / File Number</td>
-                <td><input type="text" class="input-court" placeholder="Enter Court Docket #..."></td>
-            </tr>
-            <tr>
-                <td class="grid-title">Commanding Officer</td>
-                <td><input type="text" class="input-court" id="rptOfficerBox"></td>
-                <td class="grid-title">Incident Date</td>
-                <td><input type="text" class="input-court" id="rptDateBox"></td>
-            </tr>
-            <tr>
-                <td class="grid-title">Target Address Location</td>
-                <td colspan="3"><input type="text" class="input-court" id="rptAddrBox"></td>
+                <td><input type="text" class="input-court" value="Virginia State Task Force"></td>
+                <td class="grid-title">Case Number</td>
+                <td><input type="text" class="input-court" placeholder="Docket #..."></td>
             </tr>
         </table>
-        
-        <div class="evidence-banner">Chronological Telemetry Audit Trail (Admissible Court Log)</div>
+        <div class="evidence-banner">Chronological Telemetry Audit Trail</div>
         <div class="court-log-container" id="courtAuditLogBox"></div>
-        
-        <div class="evidence-banner">Evidentiary Notes & Scene Analysis</div>
-        <textarea class="textarea-court" rows="5" placeholder="Enter permanent tactical field narratives, witness structures, and perimeter briefs..."></textarea>
-        
-        <div class="evidence-banner">Final Mission Disposition</div>
-        <input type="text" class="input-court" placeholder="Subject Locates, Article Recoveries, Clearances, Scene Dispositions..." style="font-size:15px; font-weight:bold;">
-        
-        <div class="evidence-banner">Field Evidence Photo Logs</div>
-        <div style="margin-bottom: 10px;">
-            <input type="file" id="photoUploader" accept="image/*" multiple onchange="handleEvidencePhotos(this.files)" style="background:#fff; color:#000; font-family:serif; height:auto;">
-        </div>
-        <div class="photo-grid" id="evidencePhotoGrid">
-            </div>
     </div>
 
     <script>
-        const currentRole = sessionStorage.getItem('tacnet_role') || 'commander';
         const currentUser = sessionStorage.getItem('tacnet_user') || 'Operations Commander';
-
         let eventLog = []; let activeMarkers = []; let drawingLayers = []; let crossfireVectors = [];
         let searchPerimeter = null; let perimeterCenter = null; let activeType = null; 
-        let sosVisualRing = null; let sosMarkerAnchor = null;
-        let addressRedDotMarker = null;
-        let manualCanvasMapLocked = false;
-        let redPenDrawingModeActive = false;
+        let sosVisualRing = null; let sosMarkerAnchor = null; let addressRedDotMarker = null;
+        let manualCanvasMapLocked = false; let redPenDrawingModeActive = false;
 
-        document.addEventListener("DOMContentLoaded", () => {
-            logEvent(`SYSTEM INITIALIZED: Command Matrix configured under Operator ${currentUser.toUpperCase()}`);
-            initDuressAccelerometer();
-            setTimeout(() => { map.invalidateSize(); }, 400);
-        });
+        function logEvent(desc) {
+            const time = new Date().toISOString().replace('T', ' ').substring(0, 19);
+            eventLog.push({ time, desc });
+        }
 
-        // Map Setup
-        const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 20 });
+        // Fixed: Explicit, immediate initialization engine bypasses device geolocation delays
+        const map = L.map('map', { center: [37.4138, -79.1422], zoom: 14, maxZoom: 20 });
+        const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 20 }).addTo(map);
         const terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 20 });
         const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 20 });
-        const map = L.map('map', { center: [37.4138, -79.1422], zoom: 14, maxZoom: 20, layers: [streetLayer] });
+
+        // Force a resize trigger instantly to ensure graphics render on screen load
+        setTimeout(() => { map.invalidateSize(); }, 200);
 
         function switchBaseLayer(type) {
             map.removeLayer(streetLayer); map.removeLayer(terrainLayer); map.removeLayer(satelliteLayer);
@@ -225,39 +182,27 @@
 
         const unitColors = { 'LE': 'blue', 'K9': 'gray', 'SAR': 'red', 'CIV': 'green', 'SUS': 'purple', 'DRN': 'white', 'ART': 'orange', 'VIC': 'white', 'BOAT': 'yellow', 'VEH': 'black', 'CP': 'yellow', 'FND': 'blue', 'CUS': 'blue', 'HEL': 'orange', 'FED': '#ffd700', 'VSP': '#002f6c' };
 
-        function logEvent(desc) {
-            const time = new Date().toISOString().replace('T', ' ').substring(0, 19);
-            eventLog.push({ time, desc });
-        }
-
-        // HARD CANVAS HARD MAP LOCK FUNCTION ENGINE
         function toggleMapCanvasLock() {
             manualCanvasMapLocked = !manualCanvasMapLocked;
             const btn = document.getElementById('manualLockBtn');
             if(manualCanvasMapLocked) {
                 map.dragging.disable(); map.touchZoom.disable(); map.doubleClickZoom.disable();
                 btn.innerText = "MAP LOCKED"; btn.classList.add('btn-lock-active');
-                logEvent("SYSTEM EXECS: Manual tracking map framework locked down.");
             } else {
                 map.dragging.enable(); map.touchZoom.enable(); map.doubleClickZoom.enable();
                 btn.innerText = "MAP UNLOCKED"; btn.classList.remove('btn-lock-active');
-                logEvent("SYSTEM EXECS: Manual tracking map framework unlocked.");
             }
         }
 
-        // FREEHAND RED PEN COMPONENT DRAWING SYSTEM
         function toggleRedPenDrawingMode() {
             redPenDrawingModeActive = !redPenDrawingModeActive;
             const btn = document.getElementById('redPenBtn');
             if (redPenDrawingModeActive) {
                 activeType = null; crossfireActive = false; document.getElementById('crossfireBtn').classList.remove('btn-active');
-                map.dragging.disable();
-                btn.innerText = "RED PEN [ON]"; btn.classList.add('btn-lock-active');
-                logEvent("MODE SHIFT: Freehand Red Pen operational parameters active.");
+                map.dragging.disable(); btn.innerText = "RED PEN [ON]"; btn.classList.add('btn-lock-active');
             } else {
                 if(!manualCanvasMapLocked) map.dragging.enable();
                 btn.innerText = "RED PEN [OFF]"; btn.classList.remove('btn-lock-active');
-                logEvent("MODE SHIFT: Freehand Red Pen disarmed.");
             }
         }
 
@@ -270,33 +215,18 @@
             }
         });
         map.on('mousemove', e => { if (isDrawing && activeLine) activeLine.addLatLng(e.latlng); });
-        map.on('mouseup', () => { if (isDrawing) { isDrawing = false; logEvent("GRID MARK: Dropped custom red pen line coordinates on map."); } });
+        map.on('mouseup', () => { if (isDrawing) isDrawing = false; });
 
-        function eraseLastLine() { 
-            if (drawingLayers.length > 0) { 
-                map.removeLayer(drawingLayers.pop()); 
-                logEvent("GRID MOD: Erased last drawn red line segment.");
-            } 
-        }
+        function eraseLastLine() { if (drawingLayers.length > 0) { map.removeLayer(drawingLayers.pop()); } }
+        function setMarker(type) { activeType = type; crossfireActive = false; if(document.getElementById('crossfireBtn')) document.getElementById('crossfireBtn').classList.remove('btn-active'); if(redPenDrawingModeActive) toggleRedPenDrawingMode(); }
+        function triggerTreeTopHeight() { map.setZoom(20); }
 
-        function setMarker(type) { 
-            activeType = type; crossfireActive = false; 
-            if(document.getElementById('crossfireBtn')) document.getElementById('crossfireBtn').classList.remove('btn-active');
-            if(redPenDrawingModeActive) toggleRedPenDrawingMode();
-        }
-        
-        function triggerTreeTopHeight() { map.setZoom(20); logEvent("PERSPECTIVE: Set viewpoint target down to treetop view height bounds."); }
-
-        // DEDICATED RESET CIRCUIT TO PURGE SOS ALERT DISTRESS CODES WITHOUT WIPING ACTIVE MARKERS
         function resetSOSDistressRings() {
             if (sosVisualRing) { map.removeLayer(sosVisualRing); sosVisualRing = null; }
             if (sosMarkerAnchor) { map.removeLayer(sosMarkerAnchor); activeMarkers = activeMarkers.filter(m => m !== sosMarkerAnchor); sosMarkerAnchor = null; }
-            logEvent("🚨 EMERGENCY ENGINE: SOS signal cleared and reset manually at command deck.");
-            alert("SOS Distress Signal Reset and Purged.");
         }
 
         function triggerSOSAlert() {
-            logEvent(`🚨 CRITICAL DUCCRESS: SOS DISTRESS TRACKING METRICS ACTIVATED FIELD-WIDE.`);
             navigator.geolocation.getCurrentPosition(p => {
                 const lat = p.coords.latitude; const lon = p.coords.longitude;
                 if(sosVisualRing) map.removeLayer(sosVisualRing);
@@ -330,16 +260,9 @@
                 let borderCol = (activeType === 'VSP') ? '#ffd700' : '#fff';
                 let m = L.circleMarker(e.latlng, { radius: 14, fillColor: unitColors[activeType], color: borderCol, fillOpacity: 1, weight: 3, draggable: true }).addTo(map);
                 m.unitType = activeType;
-                
-                logEvent(`ASSET DISPATCH: Deployed tracking asset element type: [${activeType}] to coordinates: ${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`);
-                
                 if(activeType === 'SUS') m.bindTooltip("SUSPECT LKL", {permanent: true, direction: 'top', className: 'orange-dist-label'}).openTooltip();
                 m.on('drag', function() { updateCrossfireDimensionality(); });
-                m.on('click', function(ev) { 
-                    L.DomEvent.stopPropagation(ev); 
-                    logEvent(`ASSET RETIRE: Purged tracking asset type [${this.unitType}] from operations canvas.`);
-                    map.removeLayer(this); activeMarkers = activeMarkers.filter(item => item !== this); updateCrossfireDimensionality(); 
-                });
+                m.on('click', function(ev) { L.DomEvent.stopPropagation(ev); map.removeLayer(this); activeMarkers = activeMarkers.filter(item => item !== this); updateCrossfireDimensionality(); });
                 activeMarkers.push(m); activeType = null;
             } else if (crossfireActive) {
                 handleCrossfireClick(e.latlng);
@@ -349,10 +272,7 @@
         let crossfireActive = false; let firstPoint = null;
         function toggleCrossfireMode() {
             crossfireActive = !crossfireActive; const btn = document.getElementById('crossfireBtn');
-            if (crossfireActive) { 
-                if(redPenDrawingModeActive) toggleRedPenDrawingMode();
-                btn.classList.add('btn-active'); firstPoint = null; activeType = null; 
-            } else { btn.classList.remove('btn-active'); }
+            if (crossfireActive) { if(redPenDrawingModeActive) toggleRedPenDrawingMode(); btn.classList.add('btn-active'); firstPoint = null; activeType = null; } else { btn.classList.remove('btn-active'); }
         }
 
         function handleCrossfireClick(latlng) {
@@ -367,9 +287,6 @@
             let dist = ptA.latlng.distanceTo(ptB.latlng) * 3.28084;
             let labelMarker = L.marker(line.getCenter(), { icon: L.divIcon({ className: 'orange-dist-label', html: `${dist.toFixed(0)} FT` }) }).addTo(map);
             let vectorObj = { line, labelMarker, ptA, ptB };
-            
-            logEvent(`VECTOR METRIC: Computed Crossfire line gauge equal to ${dist.toFixed(0)} feet inside dispatch map grid.`);
-            
             labelMarker.on('click', function(ev) { L.DomEvent.stopPropagation(ev); map.removeLayer(line); map.removeLayer(labelMarker); crossfireVectors = crossfireVectors.filter(v => v !== vectorObj); });
             crossfireVectors.push(vectorObj);
         }
@@ -385,15 +302,8 @@
         let trapTraceInterval = null;
         function toggleTrapTrace() {
             const btn = document.getElementById('trapTraceBtn');
-            if (!trapTraceInterval) {
-                btn.innerText = "TRACE ON"; btn.classList.add('btn-active');
-                logEvent("ENGINE ACTIVE: Initialized target frequency Trap N Trace cell spectrum sweeping.");
-                trapTraceInterval = setInterval(() => {}, 2000);
-            } else {
-                btn.innerText = "TRAP N TRACE"; btn.classList.remove('btn-active');
-                logEvent("ENGINE ACTIVE: Disarmed spectrum sweeping protocols.");
-                clearInterval(trapTraceInterval); trapTraceInterval = null;
-            }
+            if (!trapTraceInterval) { btn.innerText = "TRACE ON"; btn.classList.add('btn-active'); trapTraceInterval = setInterval(() => {}, 2000); } 
+            else { btn.innerText = "TRAP N TRACE"; btn.classList.remove('btn-active'); clearInterval(trapTraceInterval); trapTraceInterval = null; }
         }
 
         function searchAddr() {
@@ -402,22 +312,20 @@
                 .then(r => r.json()).then(d => { 
                     if(d.length > 0) { 
                         perimeterCenter = [d[0].lat, d[0].lon]; map.setView(perimeterCenter, 15); 
-                        
-                        // NEW: DROP DEDICATED RED CENTER MARKER DOT ON SEARCH TARGET ADDRESS
                         if (addressRedDotMarker) map.removeLayer(addressRedDotMarker);
                         addressRedDotMarker = L.circleMarker(perimeterCenter, { radius: 6, fillColor: 'red', color: '#fff', fillOpacity: 1, weight: 2 }).addTo(map);
-                        addressRedDotMarker.bindPopup(`<b>TARGET DISPATCH SITE</b><br>${q}`).openPopup();
-                        
-                        logEvent(`LOCATE MATRIX: Executed target site lookup for: [${q}]. Dropped red center focal coordinate dot.`);
                         drawPerimeter(radiusFeet); 
                     } 
                 });
         }
 
-        function drawPerimeter(feet) { 
-            if (searchPerimeter) map.removeLayer(searchPerimeter); if (!perimeterCenter) return; 
-            searchPerimeter = L.circle(perimeterCenter, { radius: feet / 3.28084, color: '#00661a', fillColor: '#00ff41', fillOpacity: 0.12, weight: 4, dashArray: '8, 8' }).addTo(map); 
-            logEvent(`CONTAIN MATRIX: Swept perimeter constraint zone out to ${feet} feet around red target anchor dot.`);
-        }
-
-        function adjustPerimeter(val) { document.getElementById('radiusVal').innerText
+        function drawPerimeter(feet) { if (searchPerimeter) map.removeLayer(searchPerimeter); if (!perimeterCenter) return; searchPerimeter = L.circle(perimeterCenter, { radius: feet / 3.28084, color: '#00661a', fillColor: '#00ff41', fillOpacity: 0.12, weight: 4, dashArray: '8, 8' }).addTo(map); }
+        function adjustPerimeter(val) { document.getElementById('radiusVal').innerText = val + " FT"; if (perimeterCenter) { drawPerimeter(parseFloat(val)); } }
+        function activateGPS() { navigator.geolocation.getCurrentPosition(p => { let m = L.marker([p.coords.latitude, p.coords.longitude]).addTo(map); activeMarkers.push(m); map.setView([p.coords.latitude, p.coords.longitude], 16); }, null, {enableHighAccuracy: true}); }
+        function generateCourtroomReport() { document.getElementById('courtroomReportModal').style.display = 'block'; }
+        function terminateSessionDispositions() { generateCourtroomReport(); }
+        function clearMatrixCanvas() { activeMarkers.forEach(m => map.removeLayer(m)); drawingLayers.forEach(l => map.removeLayer(l)); crossfireVectors.forEach(v => { map.removeLayer(v.line); map.removeLayer(v.labelMarker); }); if (searchPerimeter) map.removeLayer(searchPerimeter); if (sosVisualRing) map.removeLayer(sosVisualRing); if (addressRedDotMarker) map.removeLayer(addressRedDotMarker); activeMarkers = []; drawingLayers = []; crossfireVectors = []; searchPerimeter = null; perimeterCenter = null; sosVisualRing = null; addressRedDotMarker = null; eventLog = []; }
+        function resetConsole() { clearMatrixCanvas(); window.location.href = 'signin.html'; }
+    </script>
+</body>
+</html>
