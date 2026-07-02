@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>TACNET - TABLET DEMO RECON MATRIX</title>
+    <title>TACNET - FIELD COMMAND MATRIX</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -12,15 +12,15 @@
     <style>
         body, html { margin:0; padding:0; height:100%; width:100%; background:#000; color:#00ff41; font-family: -apple-system, BlinkMacSystemFont, monospace; overflow: hidden; }
         
-        .main-ui { display: flex; flex-direction: column; height: 100vh; width: 100vw; box-sizing: border-box; position: relative; padding: 6px 8px 12px 8px; }
+        .main-ui { display: flex; flex-direction: column; height: 100vh; width: 100vw; box-sizing: border-box; position: relative; padding: 5px 8px 15px 8px; }
         
         /* Row 1: Top Control Header Track */
         .top-bar { height: 50px; background:#001a00; border:2px solid #00ff41; border-radius: 6px; display:flex; padding: 0 10px; align-items:center; justify-content: space-between; gap:10px; box-sizing: border-box; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; flex-shrink: 0; margin-bottom: 6px; }
         .search-container { display:flex; gap:6px; align-items:center; }
         .map-toggles { display:flex; gap:4px; }
         
-        /* Row 2: EXPANDED TABLET MAP CANVAS - Filled up dead screen space */
-        .map-wrapper { height: 58vh !important; width: 100%; position: relative; box-sizing: border-box; flex-shrink: 0; }
+        /* Row 2: FIXED STABILIZED MAP HEIGHT - Strict 44% view height leaves guaranteed room for buttons */
+        .map-wrapper { height: 44vh !important; width: 100%; position: relative; box-sizing: border-box; flex-shrink: 0; }
         #map { width: 100%; height: 100% !important; background: #111; border: 2px solid #00ff41; border-radius: 6px; display: block !important; visibility: visible !important; position: relative; z-index: 1; }
         
         /* Radar Scanning Panel */
@@ -28,15 +28,15 @@
         .radar-scan-line { position: absolute; top: 0; left: 0; height: 100%; width: 4px; background: #00ff41; opacity: 0.8; box-shadow: 0 0 12px #00ff41; animation: scanAcross 2.2s linear infinite; }
         @keyframes scanAcross { 0% { left: -5%; } 50% { left: 105%; } 100% { left: -5%; } }
         
-        /* Row 3: Operations Console Row Track - Enlarged button layout for easy tablet taps */
-        .console-row { height: 90px; background: #000; border: 2px solid #00ff41; border-radius: 6px; padding: 10px 8px; box-sizing: border-box; flex-shrink: 0; overflow-x: auto; white-space: nowrap; display: flex; gap: 12px; align-items: center; -webkit-overflow-scrolling: touch; margin-top: 8px; margin-bottom: 8px; }
+        /* Row 3: Operations Console Row Track */
+        .console-row { height: 85px; background: #000; border: 2px solid #00ff41; border-radius: 6px; padding: 8px; box-sizing: border-box; flex-shrink: 0; overflow-x: auto; white-space: nowrap; display: flex; gap: 10px; align-items: center; -webkit-overflow-scrolling: touch; margin-top: 10px; margin-bottom: 10px; }
         
-        /* Row 4: Multi-Agency Legend Bar Track - Enlarged icons for presentation visibility */
-        .legend-bar { height: 70px; background:#000; border: 2px solid #00ff41; border-radius: 6px; display:flex; align-items:center; overflow-x:auto; white-space:nowrap; gap:16px; padding: 0 12px; box-sizing: border-box; flex-shrink: 0; -webkit-overflow-scrolling: touch; }
+        /* Row 4: Multi-Agency Legend Bar Track */
+        .legend-bar { height: 65px; background:#000; border: 2px solid #00ff41; border-radius: 6px; display:flex; align-items:center; overflow-x:auto; white-space:nowrap; gap:15px; padding: 0 10px; box-sizing: border-box; flex-shrink: 0; -webkit-overflow-scrolling: touch; }
         
-        /* Buttons Optimized for Stylus/Thumb Interaction */
-        .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding: 12px 16px; cursor:pointer; font-weight:bold; text-transform:uppercase; font-size: 14px; border-radius: 6px; display: inline-block; height: 42px; box-sizing: border-box; }
-        .btn-map-type { background:#001a00; color:#00ff41; border:1px solid #00ff41; padding:8px 14px; cursor:pointer; font-size:13px; font-weight: bold; border-radius: 4px; }
+        /* Functional Layout Controls */
+        .btn-tac { background:#000; color:#00ff41; border:1px solid #00ff41; padding: 10px 14px; cursor:pointer; font-weight:bold; text-transform:uppercase; font-size: 13px; border-radius: 6px; display: inline-block; height: 38px; box-sizing: border-box; }
+        .btn-map-type { background:#001a00; color:#00ff41; border:1px solid #00ff41; padding:6px 12px; cursor:pointer; font-size:12px; font-weight: bold; border-radius: 4px; }
         .btn-map-type.active { background:#00ff41; color:#000; font-weight:bold; }
         .btn-danger { color:red; border-color:red; }
         .btn-active { background: #FF8C00 !important; color: #000 !important; border-color: #FF8C00 !important; }
@@ -45,8 +45,8 @@
         .btn-sos { background: #ff0000 !important; color: #fff !important; border: 1px solid #fff !important; animation: pulseSOS 1.2s infinite; }
         @keyframes pulseSOS { 0% { background: #ff0000; } 50% { background: #770000; } 100% { background: #ff0000; } }
         
-        .legend-item { cursor:pointer; font-size:22px; font-weight:bold; display:inline-flex; align-items:center; gap:8px; background: rgba(0,26,0,0.5); padding: 6px 12px; border: 1px solid #444; border-radius: 6px; color: #00ff41; }
-        .legend-item.selected-item { border-color: #00ff41; background: #002b00; box-shadow: 0 0 8px rgba(0,255,65,0.6); }
+        .legend-item { cursor:pointer; font-size:20px; font-weight:bold; display:inline-flex; align-items:center; gap:6px; background: rgba(0,26,0,0.4); padding: 5px 10px; border: 1px solid #333; border-radius: 4px; color: #00ff41; }
+        .legend-item.selected-item { border-color: #00ff41; background: #002b00; }
 
         input, select { background:#000; color:#fff; border:1px solid #00ff41; padding:6px; box-sizing: border-box; font-family: monospace; font-size: 13px; height: 32px; border-radius: 4px; }
         .slider-box { display:flex; align-items:center; gap:4px; font-weight:bold; font-size:11px; color: #00ff41; }
@@ -113,11 +113,8 @@
             <button class="btn-tac" id="gpsBroadcastBtn" style="border-color: #00ff41; color: #00ff41;" onclick="toggleLiveGPSBroadcast();">ACTIVATE UNITS</button>
             <button class="btn-tac" style="border-color: #ffd700; color: #ffd700;" onclick="triggerTreeTopHeight();">🔎 TREETOP VIEW</button>
             <button class="btn-tac" id="crossfireBtn" onclick="toggleCrossfireMode();">CROSSFIRE DIST</button>
-            
-            <!-- RE-LINKED PIXELS RECLAIM THE ASSIGNMENT CONTROLS -->
             <button class="btn-tac" id="redPenBtn" style="border-color: #ff3333; color: #ff3333;" onclick="toggleRedPenDrawingMode();">RED PEN [OFF]</button>
             <button class="btn-tac" style="border-color: #ff3333; color: #ff3333;" onclick="eraseLastLine();">❌ ERASE LINE</button>
-            
             <button class="btn-tac" id="trapTraceBtn" onclick="toggleTrapTrace()">TRAP N TRACE</button>
             <button class="btn-tac" style="border-color: #00ff41; color: #00ff41;" onclick="generateCourtroomReport()">📄 PREVIEW REPORT</button>
             <button class="btn-tac" style="border-color: #ffd700; color: #ffd700;" onclick="clearMatrixCanvas();">CLEAR CANVAS</button>
@@ -144,7 +141,6 @@
         </div>
     </div>
 
-    <!-- Courtroom Modal Overlay Sheet -->
     <div id="courtroomReportModal" class="modal">
         <div class="no-print-bar">
             <button class="btn-tac" style="border-color:#00ff41; color:#00ff41; height:36px; padding: 0 12px; font-size:12px;" onclick="document.getElementById('courtroomReportModal').style.display='none'">⬅ RETURN TO MAP</button>
@@ -305,7 +301,7 @@
             }
         }
 
-        // FIXED INTERFACE: TAP-TO-PLACE AND TAP-TO-DELETE RESOLVES MOBILE DRAG GLITCHES
+        // CORES ATTACHED SAFELY TO PREVENT OVER-THE-BOUNDARIES COLLISION ON ALL MOBILE RECON SCREENS
         function initializeSecureMapHandlers() {
             let isDrawing = false; let activeLine = null;
 
@@ -337,25 +333,20 @@
 
             mapBoxContainer.addEventListener('touchend', () => { if (isDrawing) { isDrawing = false; logEvent(`GRID MARK: Drawn freehand red containment boundary.`); } });
 
-            // INERRANT TAP ENGINE PLACES TARGET AND ERASES MARKERS INSTANTLY ON TAP
             map.on('click', e => {
                 if (activeType && trackingLayerGroup) {
                     let borderCol = (activeType === 'VSP') ? '#ffd700' : '#fff';
-                    
-                    // Dropped assets are completely scale-stabilized
-                    let m = L.circleMarker(e.latlng, { radius: 15, fillColor: unitColors[activeType], color: borderCol, fillOpacity: 1, weight: 3 }).addTo(trackingLayerGroup);
+                    let m = L.circleMarker(e.latlng, { radius: 14, fillColor: unitColors[activeType], color: borderCol, fillOpacity: 1, weight: 3 }).addTo(trackingLayerGroup);
                     m.unitType = activeType;
                     
                     logEvent(`ASSET PLACEMENT: Deployed operational marker element [${activeType}] to coordinates.`);
-                    
                     if(activeType === 'SUS') m.bindTooltip("SUSPECT LKL", {permanent: true, direction: 'top', className: 'orange-dist-label'}).openTooltip();
                     
-                    // FIXED: Tapping an existing marker instantly unloads it from the canvas tracking loop
                     m.on('click', function(ev) { 
                         L.DomEvent.stopPropagation(ev); 
                         trackingLayerGroup.removeLayer(this); 
                         activeMarkers = activeMarkers.filter(item => item !== this); 
-                        logEvent(`ASSET EVACUATION: Removed marker node element from active tactical display.`);
+                        logEvent(`ASSET EVACUATION: Removed marker node element.`);
                     });
                     
                     activeMarkers.push(m); 
@@ -371,8 +362,6 @@
             crossfireActive = false; 
             if(document.getElementById('crossfireBtn')) document.getElementById('crossfireBtn').classList.remove('btn-active'); 
             if(redPenDrawingModeActive) toggleRedPenDrawingMode(); 
-            
-            // Highlight the active choice item
             const itemElement = document.getElementById(`item-${type}`);
             if (itemElement) itemElement.classList.add('selected-item');
         }
@@ -391,7 +380,6 @@
                     if(d.length > 0 && map && trackingLayerGroup) { 
                         perimeterCenter = [parseFloat(d[0].lat), parseFloat(d[0].lon)]; 
                         map.setView(perimeterCenter, 15); 
-                        
                         if (addressRedDotMarker) trackingLayerGroup.removeLayer(addressRedDotMarker); 
                         
                         let redDotHtmlIcon = L.divIcon({ 
@@ -402,7 +390,6 @@
                         
                         addressRedDotMarker = L.marker(perimeterCenter, { icon: redDotHtmlIcon }).addTo(trackingLayerGroup);
                         addressRedDotMarker.bindPopup(`<b>TARGET DISPATCH ANCHOR</b><br>${q}`).openPopup(); 
-                        
                         logEvent(`LOCATE MATRIX: Dropped target anchor red dot for: [${q}].`);
                         drawPerimeter(radiusFeet); 
                     } 
@@ -444,15 +431,6 @@
 
         function triggerAutomated911Call() { window.location.href = "tel:911"; triggerSOSAlert(); }
 
-        function switchBaseLayer(type) {
-            if(!map) return;
-            map.removeLayer(streetLayer); map.removeLayer(terrainLayer); map.removeLayer(satelliteLayer);
-            document.getElementById('btn-street').classList.remove('active'); document.getElementById('btn-terrain').classList.remove('active'); document.getElementById('btn-sat').classList.remove('active');
-            if (type === 'street') { streetLayer.addTo(map); document.getElementById('btn-street').classList.add('active'); }
-            if (type === 'terrain') { terrainLayer.addTo(map); document.getElementById('btn-terrain').classList.add('active'); }
-            if (type === 'sat') { satelliteLayer.addTo(map); document.getElementById('btn-sat').classList.add('active'); }
-        }
-
         let crossfireActive = false; let firstPoint = null;
         function toggleCrossfireMode() { crossfireActive = !crossfireActive; const btn = document.getElementById('crossfireBtn'); if (crossfireActive) { clearLegendHighlights(); if(redPenDrawingModeActive) toggleRedPenDrawingMode(); btn.classList.add('btn-active'); firstPoint = null; activeType = null; } else { btn.classList.remove('btn-active'); } }
         function handleCrossfireClick(latlng) { if(!map) return; let clickedMarker = activeMarkers.find(m => map.distance(latlng, m.getLatLng()) < 350); let targetLatLng = clickedMarker ? clickedMarker.getLatLng() : latlng; if (!firstPoint) { firstPoint = { latlng: targetLatLng, marker: clickedMarker || null }; } else { createCrossfireVector(firstPoint, { latlng: targetLatLng, marker: clickedMarker || null }); crossfireActive = false; document.getElementById('crossfireBtn').classList.remove('btn-active'); } }
@@ -460,6 +438,14 @@
         function updateCrossfireDimensionality() { crossfireVectors.forEach(v => { let posA = v.ptA.marker ? v.ptA.marker.getLatLng() : v.ptA.latlng; let posB = v.ptB.marker ? v.ptB.marker.getLatLng() : v.ptB.latlng; v.line.setLatLngs([posA, posB]); v.labelMarker.setLatLng(v.line.getCenter()); v.labelMarker.setIcon(L.divIcon({ className: 'orange-dist-label', html: `${(posA.distanceTo(posB) * 3.28084).toFixed(0)} FT` })); }); }
         
         let trapTraceInterval = null; let radarStringIndex = 0;
+        const targetSectors = [
+            "SCANNING SEC-1 TOWER (AMHERST NORTH)... STATUS: LISTENING",
+            "SCANNING SEC-2 TOWER (MONACAN HEIGHTS)... TELEMETRY ACQUIRED",
+            "UPLINK STABLE: MONITORING FREQUENCY 851.0125 MHz",
+            "PINGING CELL BLOCK SECTORS... TRIANGULATING COORDINATES",
+            "SIGNAL LOCK ATTAINED: ANALYZING PROPAGATION DELAYS",
+            "TRACKING CELL SITE IMSI INTERCEPT LAYERS... MONITORING DATA"
+        ];
         function toggleTrapTrace() { const btn = document.getElementById('trapTraceBtn'); const box = document.getElementById('radarDisplay'); const statusText = document.getElementById('radarStatus'); const pingText = document.getElementById('radarPing'); if (!trapTraceInterval) { btn.innerText = "TRACE ON"; btn.classList.add('btn-active'); box.style.display = "flex"; trapTraceInterval = setInterval(() => { pingText.innerText = `PING: ${Math.floor(Math.random() * 30) + 12}ms`; statusText.innerText = targetSectors[radarStringIndex]; radarStringIndex = (radarStringIndex + 1) % targetSectors.length; }, 2500); } else { btn.innerText = "TRAP N TRACE"; btn.classList.remove('btn-active'); box.style.display = "none"; clearInterval(trapTraceInterval); trapTraceInterval = null; } setTimeout(() => { map.invalidateSize(); }, 100); }
 
         function clearMatrixCanvas() {
